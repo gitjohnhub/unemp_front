@@ -1,6 +1,6 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  Hello
+  <NavView />
 </template>
+<script setup lang="ts">
+import NavView from './NavView.vue';
+</script>

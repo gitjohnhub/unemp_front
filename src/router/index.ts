@@ -1,22 +1,49 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import ApplyTableView from '../views/apply/ApplyTableView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import storage from '@/utils/storage';
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: ()=>import('@/views/LoginView.vue'),
+      meta: { title: '登陆' },
+    },
     {
       path: '/',
       name: 'home',
-      component: HomeView,
-      meta: { title: '首页' }
+      component: ()=>import('@/views/HomeView.vue'),
+      meta:{
+        title:'首页',
+        requiresAuth:true
+      },
+      children: [
+        {
+          path: '/applyTable',
+          name: 'applyTable',
+          component: ()=>import('@/views/apply/ApplyTableView.vue'),
+          meta: {
+            title: '失业金',
+            requiresAuth: true,
+          },
+        },
+      ],
     },
-    {
-      path: '/applyTable',
-      name: 'applyTable',
-      component: ApplyTableView,
-      meta: { title: '失业金' }
-    }
-  ]
-})
+  ],
+});
 
-export default router
+router.beforeEach((to) => {
+  // const user = JSON.parse(localStorage.getItem('user'))
+  const { token } = storage.getItem('userInfo') ?? '';
+  if (to.meta.requiresAuth == true) {
+    if (token) {
+      return true;
+    } else {
+      return { name: 'login' };
+    }
+  } else {
+    return true;
+  }
+});
+
+export default router;

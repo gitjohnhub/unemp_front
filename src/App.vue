@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { theme } from 'ant-design-vue';
-import NavView from './views/NavView.vue';
 </script>
 
 <template>
@@ -11,7 +10,7 @@ import NavView from './views/NavView.vue';
       },
     }"
   >
-  <NavView />
+  <RouterView />
   </a-config-provider>
 
 

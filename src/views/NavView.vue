@@ -37,34 +37,29 @@
             <template #title>
               <span>
                 <laptop-outlined />
-                subnav 2
+                通讯录
               </span>
             </template>
-            <a-menu-item key="5">option5</a-menu-item>
-            <a-menu-item key="6">option6</a-menu-item>
-            <a-menu-item key="7">option7</a-menu-item>
-            <a-menu-item key="8">option8</a-menu-item>
+            <a-menu-item key="5">街镇</a-menu-item>
+            <a-menu-item key="6">办公室</a-menu-item>
+            <a-menu-item key="7">失业保险科</a-menu-item>
+            <a-menu-item key="8">其他科室</a-menu-item>
           </a-sub-menu>
           <a-sub-menu key="sub3">
             <template #title>
               <span>
                 <notification-outlined />
-                subnav 3
+                工具箱
               </span>
             </template>
-            <a-menu-item key="9">option9</a-menu-item>
-            <a-menu-item key="10">option10</a-menu-item>
-            <a-menu-item key="11">option11</a-menu-item>
-            <a-menu-item key="12">option12</a-menu-item>
+            <a-menu-item key="9">工龄计算器</a-menu-item>
+            <a-menu-item key="10">身份证校验</a-menu-item>
+            <a-menu-item key="11">查询</a-menu-item>
           </a-sub-menu>
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px">
-        <a-breadcrumb style="margin: 16px 0">
-          <a-breadcrumb-item>Home</a-breadcrumb-item>
-          <a-breadcrumb-item>List</a-breadcrumb-item>
-          <a-breadcrumb-item>App</a-breadcrumb-item>
-        </a-breadcrumb>
+        <BreadCrumbView />
         <a-layout-content
           :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
         >
@@ -77,6 +72,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons-vue';
+import  BreadCrumbView  from './utils/BreadCrumbView.vue';
 const selectedKeys1 = ref<string[]>(['2']);
 const selectedKeys2 = ref<string[]>(['1']);
 const openKeys = ref<string[]>(['sub1']);

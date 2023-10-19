@@ -5,18 +5,42 @@
       <a-button @click="clearFilters">Clear filters</a-button>
       <a-button @click="clearAll">Clear filters and sorters</a-button>
     </div>
+    {{ dataSource }}
     <a-table :columns="columns" :data-source="data" @change="handleChange" />
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
+import { computed, ref,onBeforeMount} from 'vue';
 import type { TableColumnType, TableProps } from 'ant-design-vue';
-
+import api from '@/api'
 interface DataItem {
   key: string;
   name: string;
   age: number;
   address: string;
+}
+
+
+
+const dataSource = ref()
+const pager = ref({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+
+onBeforeMount(() => {
+  getData()
+})
+
+const getData = async () => {
+  await api.getUnempVeriData(pager.value).then((res:any) => {
+    pager.value.pageNum = res.page.pageNum
+    pager.value.pageSize = res.page.pageSize
+    pager.value.total = res.page.total
+    console.log('data=>', res)
+      dataSource.value = res.list
+  })
 }
 
 const data: DataItem[] = [

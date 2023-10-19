@@ -7,12 +7,14 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: HomeView,
+      meta: { title: '首页' }
     },
     {
       path: '/applyTable',
       name: 'applyTable',
-      component: ApplyTableView
+      component: ApplyTableView,
+      meta: { title: '失业金' }
     }
   ]
 })

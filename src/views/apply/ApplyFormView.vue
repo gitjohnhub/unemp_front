@@ -1,26 +1,27 @@
 <template>
-  <a-form :model="formState" :label-col="labelCol" :wrapper-col="wrapperCol">
-    <a-form-item label="Activity name">
-      <a-input v-model:value="formState.name" />
+  <a-form :model="formState" ref='formRef' :rules='rules' :label-col="labelCol" :wrapper-col="wrapperCol">
+    <a-form-item label="身份证号" name="personID" has-feedback>
+      <a-input v-model:value="formState.personID">
+        <template #suffix>
+          <a-tag>{{ personIDCount }}</a-tag>
+        </template>
+        </a-input>
+
     </a-form-item>
-    <a-form-item label="Instant delivery">
-      <a-switch v-model:checked="formState.delivery" />
+    <a-form-item label="姓名"  name="personName" has-feedback>
+      <a-input v-model:value="formState.personName" />
     </a-form-item>
-    <a-form-item label="Activity type">
-      <a-checkbox-group v-model:value="formState.type">
-        <a-checkbox value="1" name="type">Online</a-checkbox>
-        <a-checkbox value="2" name="type">Promotion</a-checkbox>
-        <a-checkbox value="3" name="type">Offline</a-checkbox>
-      </a-checkbox-group>
+    <a-form-item label="初核备注">
+      <a-textarea v-model:value="formState.checknote" />
     </a-form-item>
-    <a-form-item label="Resources">
-      <a-radio-group v-model:value="formState.resource">
-        <a-radio value="1">Sponsor</a-radio>
-        <a-radio value="2">Venue</a-radio>
+    <a-form-item label="复核备注">
+      <a-textarea v-model:value="formState.reviewnote" />
+    </a-form-item>
+    <a-form-item label="是否删除">
+      <a-radio-group v-model:value="formState.alreadydelete">
+        <a-radio :value=1>保留</a-radio>
+        <a-radio :value=2>删除</a-radio>
       </a-radio-group>
-    </a-form-item>
-    <a-form-item label="Activity form">
-      <a-textarea v-model:value="formState.desc" />
     </a-form-item>
     <!-- <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
       <a-button type="primary" @click="onSubmit">Create</a-button>
@@ -29,31 +30,51 @@
   </a-form>
 </template>
 <script lang="ts" setup>
-import { reactive, toRaw } from 'vue';
-import type { UnwrapRef } from 'vue';
-interface FormState {
-  name: string;
-  delivery: boolean;
-  type: string[];
-  resource: string;
-  desc: string;
-}
-
-
-const formState: UnwrapRef<FormState> = reactive({
-  name: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+import { computed, ref } from 'vue';
+import {editDataItem} from '@/types'
+const formRef = ref(null)
+const formState = ref<editDataItem>({
+  personID: '',
+  personName: '',
+  checknote: '',
+  reviewnote: '',
+  alreadydelete:1,
 });
 const onSubmit = () => {
-  console.log('表单提交了');
+  return formRef.value
+    .validate()
+    .then(() => {
+      console.log('表单提交了');
+      console.log(formState.value);
+    })
+    // .catch(error => {
+    //   console.log('error', error);
+    //   // message.info('提交失败，格式不正确')
+    // });
 };
-defineExpose({
-  onSubmit
+
+const personIDCount = computed(()=>{
+  return formState.value.personID.length
 })
+const rules = {
+  personID:[
+    { required: true, message: '请输入身份证号', trigger: 'change' },
+    { min: 18, max: 18, message: '请填写18位身份证', trigger: 'blur' },
+    {type:'number', message:'请检查格式', trigger: 'change' }
+  ],
+  personName:[
+  { required: true, message: '请输入姓名', trigger: 'change' },
+
+  ]
+}
+const resetForm = () => {
+  formRef.value.resetFields();
+};
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };
+defineExpose({
+  onSubmit,
+  resetForm
+})
 </script>
 

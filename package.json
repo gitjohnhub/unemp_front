@@ -13,6 +13,7 @@
     "ant-design-vue": "^4.0.4",
     "axios": "^1.5.1",
     "pinia": "^2.1.6",
+    "pinyin-pro": "^3.17.0",
     "vue": "^3.3.4",
     "vue-clipboard3": "^2.0.0",
     "vue-router": "^4.2.4"

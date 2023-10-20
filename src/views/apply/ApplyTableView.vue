@@ -2,8 +2,8 @@
   <div>
     <div class="table-operations">
       <a-button @click="showAddDataModal" type="primary">添加</a-button>
-      <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk">
-        <ApplyFormView ref="formRef"/>
+      <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleCancel">
+        <ApplyFormView ref="formRef" />
       </a-modal>
       <a-button @click="clearFilters">Clear filters</a-button>
       <a-button @click="clearAll">Clear filters and sorters</a-button>
@@ -12,6 +12,11 @@
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
           <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
+        </template>
+        <template v-if="column.key === 'personName'">
+          <a-tooltip :title="pinyin(record.personName)" color="#f50">
+          <a-typography-paragraph copyable>{{ record.personName }}</a-typography-paragraph>
+          </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
           <a-tag>
@@ -43,20 +48,9 @@ import { computed, ref, onBeforeMount } from 'vue';
 import type { TableColumnType, TableProps } from 'ant-design-vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
+import {pinyin} from 'pinyin-pro'
 import ApplyFormView from './ApplyFormView.vue';
-interface DataItem {
-  id: number;
-  personName: string;
-  personID: string;
-  address: string;
-  checkoperator: string;
-  checknote: string;
-  createtime: string;
-  reviewoperator: string;
-  reviewnote: string;
-  // verification:string;
-  alreadydelete: number;
-}
+import { DataItem } from '@/types';
 
 const dataSource = ref();
 const pager = ref({
@@ -68,9 +62,7 @@ const pager = ref({
 onBeforeMount(() => {
   getData();
 });
-const onCopy = () => {
-  message.info('复制成功');
-};
+
 const getData = async () => {
   await api.getUnempVeriData(pager.value).then((res: any) => {
     pager.value.pageNum = res.page.pageNum;
@@ -88,19 +80,27 @@ const deleteData = async (id: number) => {
 };
 
 // 增加数据弹窗
-const formRef = ref(null)
+const formRef = ref(null);
 const open = ref<boolean>(false);
 const confirmLoading = ref<boolean>(false);
 const showAddDataModal = async () => {
-  open.value = true
-
+  open.value = true;
 };
 const handleOk = () => {
-  formRef.value.onSubmit()
-  confirmLoading.value = true;
-  open.value = false;
-  confirmLoading.value = false;
-  getData()
+    formRef.value.onSubmit()
+    .then(()=>{
+        confirmLoading.value = true;
+        open.value = false;
+        confirmLoading.value = false;
+    }).catch(error=>{
+      message.info('数据格式错误，无法提交')
+    });
+
+
+  getData();
+};
+const handleCancel = ()=>{
+  formRef.value.resetForm()
 }
 const filteredInfo = ref();
 const sortedInfo = ref();

@@ -5,115 +5,180 @@
       <a-button @click="clearFilters">Clear filters</a-button>
       <a-button @click="clearAll">Clear filters and sorters</a-button>
     </div>
-    {{ dataSource }}
-    <a-table :columns="columns" :data-source="data" @change="handleChange" />
+    <a-table :columns="columns" :data-source="dataSource" @change="handleChange">
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'personID'">
+            <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
+        </template>
+        <template v-if="column.key === 'checkoperator'">
+          <a-tag>
+            {{ record.checkoperator }}
+          </a-tag>
+        </template>
+        <template v-if="column.key === 'createtime'">
+          <a-tooltip :title="record.createtime.slice(11, 19)" color="#f50">
+            <a-tag> {{ record.createtime.slice(0, 10) }}</a-tag>
+          </a-tooltip>
+        </template>
+        <template v-if="column.key === 'alreadydelete'">
+          <a-tag :color="record.alreadydelete == 1 ? 'success' : 'error'">
+            {{ record.alreadydelete == 1 ? '存在' : '已删除' }}
+          </a-tag>
+        </template>
+        <template v-if="column.key === 'action'">
+          <span>
+            <a-button danger>删除</a-button>
+            <a-button type="primary">编辑</a-button>
+          </span>
+        </template>
+      </template>
+    </a-table>
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref,onBeforeMount} from 'vue';
+import { computed, ref, onBeforeMount } from 'vue';
 import type { TableColumnType, TableProps } from 'ant-design-vue';
-import api from '@/api'
+import { message } from 'ant-design-vue';
+import api from '@/api';
 interface DataItem {
-  key: string;
-  name: string;
-  age: number;
+  id: number;
+  personName: string;
+  personID: string;
   address: string;
+  checkoperator: string;
+  checknote: string;
+  createtime: string;
+  reviewoperator: string;
+  reviewnote: string;
+  // verification:string;
+  alreadydelete: number;
 }
 
-
-
-const dataSource = ref()
+const dataSource = ref();
 const pager = ref({
   pageNum: 1,
   pageSize: 10,
-  total: 0
-})
+  total: 0,
+});
 
 onBeforeMount(() => {
-  getData()
-})
-
+  getData();
+});
+const onCopy = () => {
+  message.info('复制成功');
+};
 const getData = async () => {
-  await api.getUnempVeriData(pager.value).then((res:any) => {
-    pager.value.pageNum = res.page.pageNum
-    pager.value.pageSize = res.page.pageSize
-    pager.value.total = res.page.total
-    console.log('data=>', res)
-      dataSource.value = res.list
-  })
-}
-
-const data: DataItem[] = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sidney No. 1 Lake Park',
-  },
-  {
-    key: '4',
-    name: 'Jim Red',
-    age: 32,
-    address: 'London No. 2 Lake Park',
-  },
-];
+  await api.getUnempVeriData(pager.value).then((res: any) => {
+    pager.value.pageNum = res.page.pageNum;
+    pager.value.pageSize = res.page.pageSize;
+    pager.value.total = res.page.total;
+    console.log('data=>', res.rows);
+    dataSource.value = res.rows;
+  });
+};
 
 const filteredInfo = ref();
 const sortedInfo = ref();
-
-const columns = computed<TableColumnType[]>(() => {
-  const filtered = filteredInfo.value || {};
-  const sorted = sortedInfo.value || {};
-  return [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      filters: [
-        { text: 'Joe', value: 'Joe' },
-        { text: 'Jim', value: 'Jim' },
-      ],
-      filteredValue: filtered.name || null,
-      onFilter: (value: string, record: DataItem) => record.name.includes(value),
-      sorter: (a: DataItem, b: DataItem) => a.name.length - b.name.length,
-      sortOrder: sorted.columnKey === 'name' && sorted.order,
-      ellipsis: true,
-    },
-    {
-      title: 'Age',
-      dataIndex: 'age',
-      key: 'age',
-      sorter: (a: DataItem, b: DataItem) => a.age - b.age,
-      sortOrder: sorted.columnKey === 'age' && sorted.order,
-    },
-    {
-      title: 'Address',
-      dataIndex: 'address',
-      key: 'address',
-      filters: [
-        { text: 'London', value: 'London' },
-        { text: 'New York', value: 'New York' },
-      ],
-      filteredValue: filtered.address || null,
-      onFilter: (value: string, record: DataItem) => record.address.includes(value),
-      sorter: (a: DataItem, b: DataItem) => a.address.length - b.address.length,
-      sortOrder: sorted.columnKey === 'address' && sorted.order,
-      ellipsis: true,
-    },
-  ];
-});
+type DataItemKey = keyof DataItem;
+const dummyData: DataItem = {} as DataItem;
+const columns = [
+  {
+    title: 'ID',
+    dataIndex: 'id',
+    key: 'id',
+  },
+  {
+    title: '姓名',
+    dataIndex: 'personName',
+    key: 'personName',
+  },
+  {
+    title: '身份证号',
+    dataIndex: 'personID',
+    key: 'personID',
+  },
+  {
+    title: '地址',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: '初核',
+    dataIndex: 'checkoperator',
+    key: 'checkoperator',
+  },
+  {
+    title: '初核备注',
+    dataIndex: 'checknote',
+    key: 'checknote',
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createtime',
+    key: 'createtime',
+  },
+  {
+    title: '复核人',
+    dataIndex: 'reviewoperator',
+    key: 'reviewoperator',
+  },
+  {
+    title: '复核备注',
+    dataIndex: 'reviewnote',
+    key: 'reviewnote',
+  },
+  {
+    title: '已删除',
+    dataIndex: 'alreadydelete',
+    key: 'alreadydelete',
+  },
+  {
+    title: '操作',
+    // dataIndex: 'action',
+    key: 'action',
+  },
+];
+// const columns = computed<TableColumnType[]>(() => {
+//   const filtered = filteredInfo.value || {};
+//   const sorted = sortedInfo.value || {};
+//   return [
+//     {
+//       title: 'Name',
+//       dataIndex: 'name',
+//       key: 'name',
+//       filters: [
+//         { text: 'Joe', value: 'Joe' },
+//         { text: 'Jim', value: 'Jim' },
+//       ],
+//       filteredValue: filtered.name || null,
+//       onFilter: (value: string, record: DataItem) => record.name.includes(value),
+//       sorter: (a: DataItem, b: DataItem) => a.name.length - b.name.length,
+//       sortOrder: sorted.columnKey === 'name' && sorted.order,
+//       ellipsis: true,
+//     },
+//     {
+//       title: 'Age',
+//       dataIndex: 'age',
+//       key: 'age',
+//       sorter: (a: DataItem, b: DataItem) => a.age - b.age,
+//       sortOrder: sorted.columnKey === 'age' && sorted.order,
+//     },
+//     {
+//       title: 'Address',
+//       dataIndex: 'address',
+//       key: 'address',
+//       filters: [
+//         { text: 'London', value: 'London' },
+//         { text: 'New York', value: 'New York' },
+//       ],
+//       filteredValue: filtered.address || null,
+//       onFilter: (value: string, record: DataItem) => record.address.includes(value),
+//       sorter: (a: DataItem, b: DataItem) => a.address.length - b.address.length,
+//       sortOrder: sorted.columnKey === 'address' && sorted.order,
+//       ellipsis: true,
+//     },
+//   ];
+// });
 
 const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
   console.log('Various parameters', pagination, filters, sorter);

@@ -1,14 +1,17 @@
 <template>
   <div>
     <div class="table-operations">
-      <a-button @click="setAgeSort">Sort age</a-button>
+      <a-button @click="showAddDataModal" type="primary">添加</a-button>
+      <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk">
+        <ApplyFormView ref="formRef"/>
+      </a-modal>
       <a-button @click="clearFilters">Clear filters</a-button>
       <a-button @click="clearAll">Clear filters and sorters</a-button>
     </div>
     <a-table :columns="columns" :data-source="dataSource" @change="handleChange">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
-            <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
+          <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
         </template>
         <template v-if="column.key === 'checkoperator'">
           <a-tag>
@@ -40,6 +43,7 @@ import { computed, ref, onBeforeMount } from 'vue';
 import type { TableColumnType, TableProps } from 'ant-design-vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
+import ApplyFormView from './ApplyFormView.vue';
 interface DataItem {
   id: number;
   personName: string;
@@ -77,12 +81,27 @@ const getData = async () => {
   });
 };
 
-const deleteData = async (id:number) => {
-  await api.deleteUnempVeriData({id:id}).then((res: any) => {
-    getData()
+const deleteData = async (id: number) => {
+  await api.deleteUnempVeriData({ id: id }).then((res: any) => {
+    getData();
   });
 };
 
+// 增加数据弹窗
+const formRef = ref(null)
+const open = ref<boolean>(false);
+const confirmLoading = ref<boolean>(false);
+const showAddDataModal = async () => {
+  open.value = true
+
+};
+const handleOk = () => {
+  formRef.value.onSubmit()
+  confirmLoading.value = true;
+  open.value = false;
+  confirmLoading.value = false;
+  getData()
+}
 const filteredInfo = ref();
 const sortedInfo = ref();
 type DataItemKey = keyof DataItem;

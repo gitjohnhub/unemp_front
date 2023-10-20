@@ -22,16 +22,15 @@
     <a-form-item label="Activity form">
       <a-textarea v-model:value="formState.desc" />
     </a-form-item>
-    <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
+    <!-- <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
       <a-button type="primary" @click="onSubmit">Create</a-button>
       <a-button style="margin-left: 10px">Cancel</a-button>
-    </a-form-item>
+    </a-form-item> -->
   </a-form>
 </template>
 <script lang="ts" setup>
 import { reactive, toRaw } from 'vue';
 import type { UnwrapRef } from 'vue';
-
 interface FormState {
   name: string;
   delivery: boolean;
@@ -39,6 +38,8 @@ interface FormState {
   resource: string;
   desc: string;
 }
+
+
 const formState: UnwrapRef<FormState> = reactive({
   name: '',
   delivery: false,
@@ -47,8 +48,11 @@ const formState: UnwrapRef<FormState> = reactive({
   desc: '',
 });
 const onSubmit = () => {
-  console.log('submit!', toRaw(formState));
+  console.log('表单提交了');
 };
+defineExpose({
+  onSubmit
+})
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };
 </script>

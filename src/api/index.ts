@@ -21,5 +21,8 @@ export default {
   // 失业金数据
   getUnempVeriData(params: any){
     return GET('/unempVeriAll',params)
+  },
+  deleteUnempVeriData(params:any){
+    return POST('/deleteUnempVeriData',params)
   }
 }

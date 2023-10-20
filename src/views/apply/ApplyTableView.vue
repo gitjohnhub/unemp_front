@@ -26,10 +26,10 @@
           </a-tag>
         </template>
         <template v-if="column.key === 'action'">
-          <span>
-            <a-button danger>删除</a-button>
+          <a-space>
+            <a-button danger @click="deleteData(record.id)">删除</a-button>
             <a-button type="primary">编辑</a-button>
-          </span>
+          </a-space>
         </template>
       </template>
     </a-table>
@@ -77,6 +77,12 @@ const getData = async () => {
   });
 };
 
+const deleteData = async (id:number) => {
+  await api.deleteUnempVeriData({id:id}).then((res: any) => {
+    getData()
+  });
+};
+
 const filteredInfo = ref();
 const sortedInfo = ref();
 type DataItemKey = keyof DataItem;
@@ -96,11 +102,6 @@ const columns = [
     title: '身份证号',
     dataIndex: 'personID',
     key: 'personID',
-  },
-  {
-    title: '地址',
-    dataIndex: 'address',
-    key: 'address',
   },
   {
     title: '初核',
@@ -138,47 +139,6 @@ const columns = [
     key: 'action',
   },
 ];
-// const columns = computed<TableColumnType[]>(() => {
-//   const filtered = filteredInfo.value || {};
-//   const sorted = sortedInfo.value || {};
-//   return [
-//     {
-//       title: 'Name',
-//       dataIndex: 'name',
-//       key: 'name',
-//       filters: [
-//         { text: 'Joe', value: 'Joe' },
-//         { text: 'Jim', value: 'Jim' },
-//       ],
-//       filteredValue: filtered.name || null,
-//       onFilter: (value: string, record: DataItem) => record.name.includes(value),
-//       sorter: (a: DataItem, b: DataItem) => a.name.length - b.name.length,
-//       sortOrder: sorted.columnKey === 'name' && sorted.order,
-//       ellipsis: true,
-//     },
-//     {
-//       title: 'Age',
-//       dataIndex: 'age',
-//       key: 'age',
-//       sorter: (a: DataItem, b: DataItem) => a.age - b.age,
-//       sortOrder: sorted.columnKey === 'age' && sorted.order,
-//     },
-//     {
-//       title: 'Address',
-//       dataIndex: 'address',
-//       key: 'address',
-//       filters: [
-//         { text: 'London', value: 'London' },
-//         { text: 'New York', value: 'New York' },
-//       ],
-//       filteredValue: filtered.address || null,
-//       onFilter: (value: string, record: DataItem) => record.address.includes(value),
-//       sorter: (a: DataItem, b: DataItem) => a.address.length - b.address.length,
-//       sortOrder: sorted.columnKey === 'address' && sorted.order,
-//       ellipsis: true,
-//     },
-//   ];
-// });
 
 const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
   console.log('Various parameters', pagination, filters, sorter);

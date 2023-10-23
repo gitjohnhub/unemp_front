@@ -5,10 +5,10 @@
       <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleCancel">
         <ApplyFormView ref="formRef" />
       </a-modal>
-      <a-button @click="clearFilters">Clear filters</a-button>
-      <a-button @click="clearAll">Clear filters and sorters</a-button>
+      <!-- <a-button @click="clearFilters">Clear filters</a-button>
+      <a-button @click="clearAll">Clear filters and sorters</a-button> -->
     </div>
-    <a-table :columns="columns" :data-source="dataSource" @change="handleChange">
+    <a-table :columns="columns" :data-source="dataSource" @change="handleChange" @showSizeChange='onShowSizeChange' :pagination="pagination">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
           <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
@@ -53,22 +53,39 @@ import ApplyFormView from './ApplyFormView.vue';
 import { DataItem } from '@/types';
 
 const dataSource = ref();
+// 分页
 const pager = ref({
-  pageNum: 1,
+  current: 1,
   pageSize: 10,
   total: 0,
 });
 
+
+const handleChange = async (page: any) => {
+  pager.value = page
+  getData(pager.value)
+}
+const pagination = computed(()=>{
+  return {
+    ...pager.value,
+  change:handleChange
+  }
+})
+
+const onShowSizeChange = async (page:any) =>{
+  console.log('showsizechangepage=>',page)
+}
+
+
 onBeforeMount(() => {
-  getData();
+  getData(pager.value);
 });
 
-const getData = async () => {
-  await api.getUnempVeriData(pager.value).then((res: any) => {
-    pager.value.pageNum = res.page.pageNum;
-    pager.value.pageSize = res.page.pageSize;
-    pager.value.total = res.page.total;
-    console.log('data=>', res.rows);
+
+const getData = async (params?:any) => {
+  await api.getUnempVeriData(params).then((res: any) => {
+    pager.value = res.page
+    console.log('res.pager.value=>', pager.value.total);
     dataSource.value = res.rows;
   });
 };
@@ -159,24 +176,24 @@ const columns = [
   },
 ];
 
-const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
-  console.log('Various parameters', pagination, filters, sorter);
-  filteredInfo.value = filters;
-  sortedInfo.value = sorter;
-};
-const clearFilters = () => {
-  filteredInfo.value = null;
-};
-const clearAll = () => {
-  filteredInfo.value = null;
-  sortedInfo.value = null;
-};
-const setAgeSort = () => {
-  sortedInfo.value = {
-    order: 'descend',
-    columnKey: 'age',
-  };
-};
+// const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
+//   // console.log('Various parameters', pagination, filters, sorter);
+//   filteredInfo.value = filters;
+//   sortedInfo.value = sorter;
+// };
+// const clearFilters = () => {
+//   filteredInfo.value = null;
+// };
+// const clearAll = () => {
+//   filteredInfo.value = null;
+//   sortedInfo.value = null;
+// };
+// const setAgeSort = () => {
+//   sortedInfo.value = {
+//     order: 'descend',
+//     columnKey: 'age',
+//   };
+// };
 </script>
 <style scoped>
 .table-operations {

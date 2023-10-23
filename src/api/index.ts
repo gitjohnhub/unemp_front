@@ -15,8 +15,8 @@ export default {
   updateUser(params: any) {
     return POST('/users/update', params)
   },
-  getUsers() {
-    return GET('/users/getUsers')
+  getUsers(params?: any) {
+    return POST('/users/getUsers',params)
   },
   // 失业金数据
   getUnempVeriData(params: any){

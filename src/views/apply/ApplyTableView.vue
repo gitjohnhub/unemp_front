@@ -45,7 +45,6 @@
 </template>
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount } from 'vue';
-import type { TableColumnType, TableProps } from 'ant-design-vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import {pinyin} from 'pinyin-pro'
@@ -53,6 +52,7 @@ import ApplyFormView from './ApplyFormView.vue';
 import { DataItem } from '@/types';
 
 const dataSource = ref();
+const checkoperators = ref([])
 // 分页
 const pager = ref({
   current: 1,
@@ -78,10 +78,19 @@ const onShowSizeChange = async (page:any) =>{
 
 
 onBeforeMount(() => {
+  getUsers();
   getData(pager.value);
 });
 
+// 获取用户数据
+const getUsers = async (params?:any) => {
+  await api.getUsers(params).then((res: any) => {
+    console.log('user res=>', res);
+    checkoperators.value = res;
+  });
+};
 
+// 获取失业金数据
 const getData = async (params?:any) => {
   await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page

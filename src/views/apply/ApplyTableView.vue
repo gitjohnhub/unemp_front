@@ -2,20 +2,39 @@
   <div>
     <div class="table-operations">
       <a-button @click="showAddDataModal" type="primary">添加</a-button>
-      <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk" @cancel="handleCancel">
+      <a-modal
+        v-model:open="open"
+        title="Title"
+        :confirm-loading="confirmLoading"
+        @ok="handleOk"
+        @cancel="handleCancel"
+      >
         <ApplyFormView ref="formRef" />
       </a-modal>
+      <a-select
+        v-model:value="selectedOp"
+        mode="multiple"
+        placeholder="选择复核对象"
+        style="width: 30%"
+        :options="checkoperators"
+      ></a-select>
       <!-- <a-button @click="clearFilters">Clear filters</a-button>
       <a-button @click="clearAll">Clear filters and sorters</a-button> -->
     </div>
-    <a-table :columns="columns" :data-source="dataSource" @change="handleChange" @showSizeChange='onShowSizeChange' :pagination="pagination">
+    <a-table
+      :columns="columns"
+      :data-source="dataSource"
+      @change="handleChange"
+      @showSizeChange="onShowSizeChange"
+      :pagination="pagination"
+    >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
           <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
         </template>
         <template v-if="column.key === 'personName'">
           <a-tooltip :title="pinyin(record.personName)" color="#f50">
-          <a-typography-paragraph copyable>{{ record.personName }}</a-typography-paragraph>
+            <a-typography-paragraph copyable>{{ record.personName }}</a-typography-paragraph>
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
@@ -44,15 +63,20 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount } from 'vue';
+import { computed, ref, onBeforeMount,watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
-import {pinyin} from 'pinyin-pro'
+import { pinyin } from 'pinyin-pro';
 import ApplyFormView from './ApplyFormView.vue';
 import { DataItem } from '@/types';
 
 const dataSource = ref();
-const checkoperators = ref([])
+const checkoperators = ref<{ value: string }>();
+const selectedOp = ref<string[]>([]);
+watch(() => selectedOp.value, (newValue) => {
+  console.log("newValue=>",newValue)
+})
+
 // 分页
 const pager = ref({
   current: 1,
@@ -60,40 +84,39 @@ const pager = ref({
   total: 0,
 });
 
-
 const handleChange = async (page: any) => {
-  pager.value = page
-  getData(pager.value)
-}
-const pagination = computed(()=>{
+  pager.value = page;
+  getData();
+};
+const pagination = computed(() => {
   return {
     ...pager.value,
-  change:handleChange
-  }
-})
+    change: handleChange,
+  };
+});
 
-const onShowSizeChange = async (page:any) =>{
-  console.log('showsizechangepage=>',page)
-}
-
+const onShowSizeChange = async (page: any) => {
+  console.log('showsizechangepage=>', page);
+};
 
 onBeforeMount(() => {
   getUsers();
-  getData(pager.value);
+  getData();
 });
 
 // 获取用户数据
-const getUsers = async (params?:any) => {
+const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
-    console.log('user res=>', res);
-    checkoperators.value = res;
+    console.log('user res=>', res.rows.map(userInfo => ({value:userInfo.userName})));
+    checkoperators.value = res.rows.map(userInfo => ({value:userInfo.userName}));
+    console.log('checkop=>', checkoperators.value);
   });
 };
 
 // 获取失业金数据
-const getData = async (params?:any) => {
-  await api.getUnempVeriData(params).then((res: any) => {
-    pager.value = res.page
+const getData = async (params?: any) => {
+  await api.getUnempVeriData({...params,...pager.value}).then((res: any) => {
+    pager.value = res.page;
     console.log('res.pager.value=>', pager.value.total);
     dataSource.value = res.rows;
   });
@@ -113,21 +136,22 @@ const showAddDataModal = async () => {
   open.value = true;
 };
 const handleOk = () => {
-    formRef.value.onSubmit()
-    .then(()=>{
-        confirmLoading.value = true;
-        open.value = false;
-        confirmLoading.value = false;
-    }).catch(error=>{
-      message.info('数据格式错误，无法提交')
+  formRef.value
+    .onSubmit()
+    .then(() => {
+      confirmLoading.value = true;
+      open.value = false;
+      confirmLoading.value = false;
+    })
+    .catch((error) => {
+      message.info('数据格式错误，无法提交');
     });
-
 
   getData();
 };
-const handleCancel = ()=>{
-  formRef.value.resetForm()
-}
+const handleCancel = () => {
+  formRef.value.resetForm();
+};
 const filteredInfo = ref();
 const sortedInfo = ref();
 type DataItemKey = keyof DataItem;

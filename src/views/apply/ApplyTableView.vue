@@ -45,7 +45,7 @@
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
-          <a-tag>
+          <a-tag color="#87d068">
             {{ record.checkoperator }}
           </a-tag>
         </template>
@@ -84,6 +84,24 @@ const monthSelect = ref<Dayjs>()
 const checkoperators = ref<{ value: string }>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>()
+const colors = [
+  '#f50',
+  "#2db7f5",
+  "#87d068",
+  "#108ee9",
+  "#dd6236",
+  "#4a9d9c",
+]
+const userColors = ref()
+// const getColors = (user)=>{
+//   const findColor = userColors.value.filter(u => u.username === user)
+//   console.log('findColor=>',findColor)
+//   if (findColor.length !== 0){
+//     return findColor[0].color
+//   }else{
+//     return '#fff'
+//   }
+// }
 watch(() => selectedOp.value, (newValue) => {
   getData()
 })
@@ -129,7 +147,11 @@ onBeforeMount(() => {
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
     checkoperators.value = res.rows.map(userInfo => ({value:userInfo.userName}));
-    console.log('checkop=>', checkoperators.value);
+    userColors.value = res.rows.map(userInfo =>({
+      username:userInfo.userName,
+      color:colors[userInfo.id]
+    }))
+    console.log('checkop=>', userColors.value);
   });
 };
 

@@ -20,7 +20,10 @@ export default {
   },
   // 失业金数据
   getUnempVeriData(params: any){
-    return GET('/unempVeriAll',params)
+    return POST('/unempVeriAll',params)
+  },
+  addUnempVeriData(params: any){
+    return POST('/addUnempVeriData',params)
   },
   deleteUnempVeriData(params:any){
     return POST('/deleteUnempVeriData',params)

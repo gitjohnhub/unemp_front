@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="table-operations">
+      <a-space>
       <a-button @click="showAddDataModal" type="primary">添加</a-button>
       <a-modal
         v-model:open="open"
@@ -11,15 +12,21 @@
       >
         <ApplyFormView ref="formRef" />
       </a-modal>
+
       <a-select
         v-model:value="selectedOp"
         mode="multiple"
         placeholder="选择复核对象"
-        style="width: 30%"
+        style="width: 300px"
         :options="checkoperators"
       ></a-select>
-      <!-- <a-button @click="clearFilters">Clear filters</a-button>
-      <a-button @click="clearAll">Clear filters and sorters</a-button> -->
+      <a-date-picker v-model:value="monthSelect" picker="month" />
+
+
+    <a-tag color="#108ee9">{{ count }}</a-tag>
+    </a-space>
+
+
     </div>
     <a-table
       :columns="columns"
@@ -43,8 +50,8 @@
           </a-tag>
         </template>
         <template v-if="column.key === 'createtime'">
-          <a-tooltip :title="record.createtime.slice(11, 19)" color="#f50">
-            <a-tag> {{ record.createtime.slice(0, 10) }}</a-tag>
+          <a-tooltip :title="getCorrectTime(record.createtime)[1]" color="#f50">
+            <a-tag> {{getCorrectTime(record.createtime)[0]}}</a-tag>
           </a-tooltip>
         </template>
         <template v-if="column.key === 'alreadydelete'">
@@ -56,6 +63,7 @@
           <a-space>
             <a-button danger @click="deleteData(record.id)">删除</a-button>
             <a-button type="primary">编辑</a-button>
+            <a-button >复核</a-button>
           </a-space>
         </template>
       </template>
@@ -69,13 +77,26 @@ import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import ApplyFormView from './ApplyFormView.vue';
 import { DataItem } from '@/types';
-
+import { Dayjs } from 'dayjs';
+import 'dayjs/locale/zh-cn';
 const dataSource = ref();
+const monthSelect = ref<Dayjs>()
 const checkoperators = ref<{ value: string }>();
 const selectedOp = ref<string[]>([]);
+const count = ref<number>()
 watch(() => selectedOp.value, (newValue) => {
-  console.log("newValue=>",newValue)
+  getData()
 })
+watch(() => monthSelect.value, (newValue) => {
+  // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
+  getData()
+})
+// 通过月份获得月尾和月头的日期
+function getMonthRange(monthSelect) {
+  const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD')
+  const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD')
+  return [firstDay, lastDay]
+}
 
 // 分页
 const pager = ref({
@@ -104,10 +125,9 @@ onBeforeMount(() => {
   getData();
 });
 
-// 获取用户数据
+// 获取用户数据，构造用户选择列表
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
-    console.log('user res=>', res.rows.map(userInfo => ({value:userInfo.userName})));
     checkoperators.value = res.rows.map(userInfo => ({value:userInfo.userName}));
     console.log('checkop=>', checkoperators.value);
   });
@@ -115,12 +135,31 @@ const getUsers = async (params?: any) => {
 
 // 获取失业金数据
 const getData = async (params?: any) => {
-  await api.getUnempVeriData({...params,...pager.value}).then((res: any) => {
+  params = {
+    ...params,
+    ...pager.value,
+    checkoperators:selectedOp.value,
+  }
+  if (monthSelect.value){
+    params = {
+      ...params,
+      monthSelect:getMonthRange(monthSelect.value),
+    }
+  }
+  console.log("params=>",params)
+  await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
-    console.log('res.pager.value=>', pager.value.total);
+    count.value = pager.value.total;
+    console.log('res.pager.value=>', res);
     dataSource.value = res.rows;
+
   });
 };
+const getCorrectTime = (date:string)=>{
+    const originalDate = new Date(date);
+    const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
+    return [updatedDate.slice(0,10),updatedDate.slice(11,19)]
+}
 
 const deleteData = async (id: number) => {
   await api.deleteUnempVeriData({ id: id }).then((res: any) => {
@@ -140,11 +179,13 @@ const handleOk = () => {
     .onSubmit()
     .then(() => {
       confirmLoading.value = true;
+      getData()
       open.value = false;
       confirmLoading.value = false;
     })
-    .catch((error) => {
-      message.info('数据格式错误，无法提交');
+    .catch(error => {
+      console.log('error=>',error)
+      message.info('数据格式错误，无法提交=>',error);
     });
 
   getData();

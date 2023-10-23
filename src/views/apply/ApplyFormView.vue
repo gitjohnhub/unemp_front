@@ -32,7 +32,10 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
 import {editDataItem} from '@/types'
+import { useUserStore } from '@/stores';
+import api from '@/api/index'
 const formRef = ref(null)
+const checkoperator = useUserStore().userInfo.username
 const formState = ref<editDataItem>({
   personID: '',
   personName: '',
@@ -44,8 +47,10 @@ const onSubmit = () => {
   return formRef.value
     .validate()
     .then(() => {
-      console.log('表单提交了');
-      console.log(formState.value);
+      return api.addUnempVeriData({
+        ...formState.value,
+        checkoperator,
+      })
     })
     // .catch(error => {
     //   console.log('error', error);
@@ -60,7 +65,7 @@ const rules = {
   personID:[
     { required: true, message: '请输入身份证号', trigger: 'change' },
     { min: 18, max: 18, message: '请填写18位身份证', trigger: 'blur' },
-    {type:'number', message:'请检查格式', trigger: 'change' }
+    // {type:'number', message:'请检查格式', trigger: 'change' }
   ],
   personName:[
   { required: true, message: '请输入姓名', trigger: 'change' },

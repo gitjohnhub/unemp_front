@@ -1,31 +1,31 @@
 <template>
-  <a-form :model="formState" ref='formRef' :rules='rules' :label-col="labelCol" :wrapper-col="wrapperCol">
+  <a-form :model="editForm" ref='editableFormRef' :rules='rules' :label-col="labelCol" :wrapper-col="wrapperCol">
     <a-form-item label="身份证号" name="personID" has-feedback>
-      <a-input v-model:value="formState.personID">
+      <a-input v-model:value="editForm.personID">
         <template #suffix>
           <a-tag>{{ personIDCount }}</a-tag>
         </template>
         </a-input>
     </a-form-item>
     <a-form-item label="姓名"  name="personName" has-feedback>
-      <a-input v-model:value="formState.personName" />
+      <a-input v-model:value="editForm.personName" />
     </a-form-item>
     <a-form-item label="街镇" name="jiezhen" has-feedback >
       <a-select
       ref="select"
-      v-model:value="formState.jiezhen"
+      v-model:value="editForm.jiezhen"
       style="width: 120px"
       :options="jiezhens"
     ></a-select>
     </a-form-item>
     <a-form-item label="初核备注">
-      <a-textarea v-model:value="formState.checknote" />
+      <a-textarea v-model:value="editForm.checknote" />
     </a-form-item>
     <a-form-item label="复核备注">
-      <a-textarea v-model:value="formState.reviewnote" />
+      <a-textarea v-model:value="editForm.reviewnote" />
     </a-form-item>
     <a-form-item label="是否删除">
-      <a-radio-group v-model:value="formState.alreadydelete">
+      <a-radio-group v-model:value="editForm.alreadydelete">
         <a-radio :value=1>保留</a-radio>
         <a-radio :value=2>删除</a-radio>
       </a-radio-group>
@@ -38,27 +38,25 @@
 </template>
 <script lang="ts" setup>
 import { computed, ref } from 'vue';
-import {editDataItem,jiezhens} from '@/types'
-import { useUserStore } from '@/stores';
+import {DataItem,jiezhens} from '@/types'
 import api from '@/api/index'
-const formRef = ref(null)
-const checkoperator = useUserStore().userInfo.username
-const formState = ref<editDataItem>({
-  personID: '',
-  personName: '',
-  jiezhen:'',
-  checknote: '',
-  reviewnote: '',
-  alreadydelete:1,
-});
+const props = defineProps(['editForm'])
+console.log(props)
+const editableFormRef = ref(null)
+
+const editForm = ref(props.editForm)
+// const editForm = ref<editDataItem>({
+//   personID: '',
+//   personName: '',
+//   checknote: '',
+//   reviewnote: '',
+//   alreadydelete:1,
+// });
 const onSubmit = () => {
-  return formRef.value
+  return editableFormRef.value
     .validate()
     .then(() => {
-      return api.addUnempVeriData({
-        ...formState.value,
-        checkoperator,
-      })
+      return api.updateUnempVeriData(editForm.value)
     })
     // .catch(error => {
     //   console.log('error', error);
@@ -67,7 +65,7 @@ const onSubmit = () => {
 };
 
 const personIDCount = computed(()=>{
-  return formState.value.personID.length
+  return editForm.value.personID.length
 })
 const rules = {
   personID:[
@@ -77,19 +75,16 @@ const rules = {
   ],
   personName:[
   { required: true, message: '请输入姓名', trigger: 'change' },
-  ],
-  jiezhen:[
-  { required: true, message: '选择街镇', trigger: 'change' },
+
   ]
 }
-const resetForm = () => {
-  formRef.value.resetFields();
-};
+// const resetForm = () => {
+//   formRef.value.resetFields();
+// };
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };
 defineExpose({
   onSubmit,
-  resetForm
 })
 </script>
 

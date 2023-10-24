@@ -2,31 +2,28 @@
   <div>
     <div class="table-operations">
       <a-space>
-      <a-button @click="showAddDataModal" type="primary">添加</a-button>
-      <a-modal
-        v-model:open="open"
-        title="Title"
-        :confirm-loading="confirmLoading"
-        @ok="handleOk"
-        @cancel="handleCancel"
-      >
-        <ApplyFormView ref="formRef" />
-      </a-modal>
+        <a-button @click="showAddDataModal" type="primary">添加</a-button>
+        <a-modal
+          v-model:open="open"
+          title="Title"
+          :confirm-loading="confirmLoading"
+          @ok="handleOk"
+          @cancel="handleCancel"
+        >
+          <ApplyFormView ref="formRef" />
+        </a-modal>
 
-      <a-select
-        v-model:value="selectedOp"
-        mode="multiple"
-        placeholder="选择复核对象"
-        style="width: 300px"
-        :options="checkoperators"
-      ></a-select>
-      <a-date-picker v-model:value="monthSelect" picker="month" />
+        <a-select
+          v-model:value="selectedOp"
+          mode="multiple"
+          placeholder="选择复核对象"
+          style="width: 300px"
+          :options="checkoperators"
+        ></a-select>
+        <a-date-picker v-model:value="monthSelect" picker="month" />
 
-
-    <a-tag color="#108ee9">{{ count }}</a-tag>
-    </a-space>
-
-
+        <a-tag color="#108ee9">{{ count }}</a-tag>
+      </a-space>
     </div>
     <a-table
       :columns="columns"
@@ -37,11 +34,11 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
-          <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
+         <a-typography-paragraph copyable keyboard :class="{ deleted: record.alreadydelete == 2 }">{{ record.personID }}</a-typography-paragraph>
         </template>
         <template v-if="column.key === 'personName'">
           <a-tooltip :title="pinyin(record.personName)" color="#f50">
-            <a-typography-paragraph copyable>{{ record.personName }}</a-typography-paragraph>
+            <a-typography-paragraph copyable :class="{ deleted: record.alreadydelete == 2 }">{{ record.personName }}</a-typography-paragraph>
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
@@ -51,19 +48,27 @@
         </template>
         <template v-if="column.key === 'createtime'">
           <a-tooltip :title="getCorrectTime(record.createtime)[1]" color="#f50">
-            <a-tag> {{getCorrectTime(record.createtime)[0]}}</a-tag>
+            <a-tag> {{ getCorrectTime(record.createtime)[0] }}</a-tag>
           </a-tooltip>
         </template>
-        <template v-if="column.key === 'alreadydelete'">
+        <!-- <template v-if="column.key === 'alreadydelete'">
           <a-tag :color="record.alreadydelete == 1 ? 'success' : 'error'">
             {{ record.alreadydelete == 1 ? '存在' : '已删除' }}
           </a-tag>
-        </template>
+        </template> -->
         <template v-if="column.key === 'action'">
           <a-space>
-            <a-button danger @click="deleteData(record.id)">删除</a-button>
-            <a-button type="primary">编辑</a-button>
-            <a-button >复核</a-button>
+            <a-button danger @click="deleteData(record.id)" :disabled="record.alreadydelete == 2 ? true : false">删除</a-button>
+            <a-button type="primary"  @click="showEditModal(record)">编辑</a-button>
+            <!-- 编辑模态框 -->
+            <a-modal
+            v-model:visible="record.editVisible"
+              @ok="handleEditOk"
+              @cancel="handleEditCancel"
+            >
+              <ApplyEditFormView :editForm="record" ref="editFormRef" />
+            </a-modal>
+            <a-button @click="reviewData(record.id)">复核</a-button>
           </a-space>
         </template>
       </template>
@@ -71,28 +76,25 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount,watch } from 'vue';
+import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import ApplyFormView from './ApplyFormView.vue';
-import { DataItem } from '@/types';
+import ApplyEditFormView from './ApplyEditFormView.vue';
+import { DataItem,jiezhens } from '@/types';
 import { Dayjs } from 'dayjs';
+import { useUserStore } from '@/stores';
 import 'dayjs/locale/zh-cn';
 const dataSource = ref();
-const monthSelect = ref<Dayjs>()
+const userStore = useUserStore();
+const userInfo = userStore.userInfo;
+const monthSelect = ref<Dayjs>();
 const checkoperators = ref<{ value: string }>();
 const selectedOp = ref<string[]>([]);
-const count = ref<number>()
-const colors = [
-  '#f50',
-  "#2db7f5",
-  "#87d068",
-  "#108ee9",
-  "#dd6236",
-  "#4a9d9c",
-]
-const userColors = ref()
+const count = ref<number>();
+const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
+const userColors = ref();
 // const getColors = (user)=>{
 //   const findColor = userColors.value.filter(u => u.username === user)
 //   console.log('findColor=>',findColor)
@@ -102,18 +104,24 @@ const userColors = ref()
 //     return '#fff'
 //   }
 // }
-watch(() => selectedOp.value, (newValue) => {
-  getData()
-})
-watch(() => monthSelect.value, (newValue) => {
-  // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
-  getData()
-})
+watch(
+  () => selectedOp.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
+  () => monthSelect.value,
+  (newValue) => {
+    // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
+    getData();
+  }
+);
 // 通过月份获得月尾和月头的日期
 function getMonthRange(monthSelect) {
-  const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD')
-  const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD')
-  return [firstDay, lastDay]
+  const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD');
+  const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD');
+  return [firstDay, lastDay];
 }
 
 // 分页
@@ -146,11 +154,11 @@ onBeforeMount(() => {
 // 获取用户数据，构造用户选择列表
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
-    checkoperators.value = res.rows.map(userInfo => ({value:userInfo.userName}));
-    userColors.value = res.rows.map(userInfo =>({
-      username:userInfo.userName,
-      color:colors[userInfo.id]
-    }))
+    checkoperators.value = res.rows.map((userInfo) => ({ value: userInfo.userName }));
+    userColors.value = res.rows.map((userInfo) => ({
+      username: userInfo.userName,
+      color: colors[userInfo.id],
+    }));
     console.log('checkop=>', userColors.value);
   });
 };
@@ -160,65 +168,94 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    checkoperators:selectedOp.value,
-  }
-  if (monthSelect.value){
+    checkoperators: selectedOp.value,
+  };
+  if (monthSelect.value) {
     params = {
       ...params,
-      monthSelect:getMonthRange(monthSelect.value),
-    }
+      monthSelect: getMonthRange(monthSelect.value),
+    };
   }
-  console.log("params=>",params)
+  console.log('params=>', params);
   await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;
     console.log('res.pager.value=>', res);
     dataSource.value = res.rows;
-
   });
 };
-const getCorrectTime = (date:string)=>{
-    const originalDate = new Date(date);
-    const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
-    return [updatedDate.slice(0,10),updatedDate.slice(11,19)]
-}
+const getCorrectTime = (date: string) => {
+  const originalDate = new Date(date);
+  const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
+  return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
+};
 
 const deleteData = async (id: number) => {
-  await api.deleteUnempVeriData({ id: id }).then((res: any) => {
+  await api.updateUnempVeriData({ id: id, alreadydelete: 2 }).then((res: any) => {
     getData();
   });
+};
+const reviewData = async (id: number) => {
+  await api
+    .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '已审核' })
+    .then((res: any) => {
+      getData();
+    });
 };
 
 // 增加数据弹窗
 const formRef = ref(null);
+const editFormRef = ref(null);
 const open = ref<boolean>(false);
+const editOpen = ref<boolean>(false);
+
 const confirmLoading = ref<boolean>(false);
 const showAddDataModal = async () => {
   open.value = true;
 };
+
+const showEditModal = (record) => {
+      record.editVisible = true
+    }
+
 const handleOk = () => {
   formRef.value
     .onSubmit()
     .then(() => {
       confirmLoading.value = true;
-      getData()
+      getData();
       open.value = false;
       confirmLoading.value = false;
     })
-    .catch(error => {
-      console.log('error=>',error)
-      message.info('数据格式错误，无法提交=>',error);
+    .catch((error) => {
+      console.log('error=>', error);
+      message.info('数据格式错误，无法提交=>', error);
     });
 
   getData();
 };
+const handleEditOk = () => {
+  editFormRef.value
+    .onSubmit()
+    .then((res:any) => {
+      console.log('update res======>',res)
+      // message.info(res)
+      getData();
+      editOpen.value = false
+    })
+    .catch((error) => {
+      console.log('error=>', error);
+      message.info('数据格式错误，无法提交=>', error);
+    });
+
+  getData();
+};
+const handleEditCancel = () => {
+  editOpen.value = false
+};
 const handleCancel = () => {
   formRef.value.resetForm();
 };
-const filteredInfo = ref();
-const sortedInfo = ref();
-type DataItemKey = keyof DataItem;
-const dummyData: DataItem = {} as DataItem;
 const columns = [
   {
     title: 'ID',
@@ -234,6 +271,11 @@ const columns = [
     title: '身份证号',
     dataIndex: 'personID',
     key: 'personID',
+  },
+  {
+    title: '街镇',
+    dataIndex: 'jiezhen',
+    key: 'jiezhen',
   },
   {
     title: '初核',
@@ -259,11 +301,6 @@ const columns = [
     title: '复核备注',
     dataIndex: 'reviewnote',
     key: 'reviewnote',
-  },
-  {
-    title: '已删除',
-    dataIndex: 'alreadydelete',
-    key: 'alreadydelete',
   },
   {
     title: '操作',
@@ -292,6 +329,9 @@ const columns = [
 // };
 </script>
 <style scoped>
+.deleted {
+  text-decoration: line-through;
+}
 .table-operations {
   margin-bottom: 16px;
 }

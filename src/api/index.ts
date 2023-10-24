@@ -25,7 +25,7 @@ export default {
   addUnempVeriData(params: any){
     return POST('/addUnempVeriData',params)
   },
-  deleteUnempVeriData(params:any){
-    return POST('/deleteUnempVeriData',params)
+  updateUnempVeriData(params:any){
+    return POST('/updateUnempVeriData',params)
   }
 }

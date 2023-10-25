@@ -42,7 +42,7 @@
 
       <a-col :span="12">
         <a-space
-          v-for="(shiyeItem, index) in dynamicShiyeValidateForm.shiyeInfo"
+          v-for="(shiyeItem, index) in dynamicShiyeValidateForm.unempInfo"
           :key="shiyeItem.id"
           style="display: flex; margin-bottom: 8px"
           align="baseline"
@@ -77,10 +77,35 @@
     </a-form-item>
   </a-form>
   <!-- table -->
-  <a-table :columns="columns" :data-source="dataSource">
+  <a-row>
+    <a-space>
+
+    <a-tag color="#32D0BD">{{ state.selectedRowKeys.length }}/{{ count }}</a-tag>
+    <a-input v-model:value="filename" placeholder="输出的文件名" />
+
+    <XiechaExcelView :excelData="selectedRows" :filename="filename"></XiechaExcelView>
+  </a-space>
+
+  </a-row>
+
+  <a-table
+    :columns="columns"
+    :data-source="dataSource"
+    rowKey="id"
+    @change="handleChange"
+    @showSizeChange="onShowSizeChange"
+    :row-selection="{ selectedRowKeys: state.selectedRowKeys, onChange: onSelectChange }"
+    :pagination="pagination"
+  >
     <template #bodyCell="{ column, record }">
       <template v-if="column.key === 'personID'">
         <a-typography-paragraph copyable keyboard>{{ record.personID }}</a-typography-paragraph>
+      </template>
+      <template v-if="column.key === 'canbaoInfo'">
+        <a-typography-paragraph copyable>{{ handleInfo(record)[0] }}</a-typography-paragraph>
+      </template>
+      <template v-if="column.key === 'unempInfo'">
+        <a-typography-paragraph copyable>{{ handleInfo(record)[1] }}</a-typography-paragraph>
       </template>
       <template v-if="column.key === 'action'">
         <span>
@@ -93,36 +118,77 @@
 
 <script lang="ts" setup>
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons-vue';
-import { ref, onBeforeMount } from 'vue';
+import { ref, reactive, onBeforeMount, computed } from 'vue';
 import type { FormInstance } from 'ant-design-vue';
 import { message } from 'ant-design-vue';
 import api from '../../api/index';
 import { Xiecha } from '../../types/index';
+import XiechaExcelView from '@/components/XiechaExcelView.vue';
 onBeforeMount(() => {
-  // getData();
+  getData();
 });
+const count = ref<number>();
 const xiechaFormRef = ref<FormInstance>();
 const dataSource = ref();
+const selectedRows = ref();
+// table select 功能
+type Key = string | number;
+const state = reactive({
+  selectedRowKeys: [], // Check here to configure the default column
+});
+const filename = ref()
+const hasSelected = computed(() => state.selectedRowKeys.length > 0);
+const onSelectChange = (selectedRowKeys: Key[]) => {
+  selectedRows.value = dataSource.value.filter((item) => selectedRowKeys.includes(item.id));
+  console.log('selectedRows=====>: ', selectedRows.value);
+  state.selectedRowKeys = selectedRowKeys;
+};
+
 // 失业信息动态表单
 const dynamicShiyeValidateForm = ref({
-  shiyeInfo: [],
+  unempInfo: [],
 });
 const removeShiye = (item: any) => {
-  const index = dynamicShiyeValidateForm.value.shiyeInfo.indexOf(item);
+  const index = dynamicShiyeValidateForm.value.unempInfo.indexOf(item);
   if (index !== -1) {
-    dynamicShiyeValidateForm.value.shiyeInfo.splice(index, 1);
+    dynamicShiyeValidateForm.value.unempInfo.splice(index, 1);
   }
-  console.log(dynamicShiyeValidateForm.value);
 };
 const addShiye = () => {
-  dynamicShiyeValidateForm.value.shiyeInfo.push({
+  dynamicShiyeValidateForm.value.unempInfo.push({
     shiyeCategory: '',
     shiyeTime: '',
     id: Date.now(),
   });
-  console.log(dynamicShiyeValidateForm.value);
 };
 
+// 分页
+const pager = ref({
+  current: 1,
+  pageSize: 10,
+  total: 0,
+});
+
+const handleChange = async (page: any) => {
+  pager.value = page;
+  getData();
+};
+const pagination = computed(() => {
+  return {
+    ...pager.value,
+    change: handleChange,
+  };
+});
+const onShowSizeChange = async (page: any) => {
+  console.log('showsizechangepage=>', page);
+};
+
+const handleInfo = (record: any) => {
+  return [
+    record.canbaoInfo.map((item) => `${item.company} ${item.canbaoTime}`).join(', '),
+    record.unempInfo.map((item) => `${item.shiyeCategory} ${item.shiyeTime}`).join(', '),
+  ];
+};
 // 参保信息动态表单
 const dynamicValidateForm = ref({
   canbaoInfo: [],
@@ -133,7 +199,6 @@ const removeCanbao = (item: any) => {
   if (index !== -1) {
     dynamicValidateForm.value.canbaoInfo.splice(index, 1);
   }
-  console.log(dynamicValidateForm.value);
 };
 const addCanbao = () => {
   dynamicValidateForm.value.canbaoInfo.push({
@@ -141,29 +206,32 @@ const addCanbao = () => {
     canbaoTime: '',
     id: Date.now(),
   });
-  console.log(dynamicValidateForm.value);
 };
 
 const xiechaForm = ref<Xiecha>({
   personID: '',
   personName: '',
   canbaoInfo: {},
-  shiyeInfo: {},
+  unempInfo: {},
 });
-const getData = async () => {
+const getData = async (params?: any) => {
+  params = {
+    ...params,
+    ...pager.value,
+  };
   await api.getXiechaData().then((res: any) => {
-    console.log('generalWindowContact=>', res);
-    dataSource.value = res;
+    dataSource.value = res.rows;
+    pager.value = res.page;
+    count.value = pager.value.total;
   });
 };
 const handleAdd = async () => {
-  xiechaForm.value.canbaoInfo = dynamicValidateForm.value;
-  xiechaForm.value.shiyeInfo = dynamicShiyeValidateForm.value;
-  console.log('xiechaForm====>', xiechaForm.value);
-  // await api.addXiechaData(xiechaForm.value).then((res) => {
-  //   message.info(`${res}`);
-  // });
-  // getData();
+  xiechaForm.value.canbaoInfo = dynamicValidateForm.value.canbaoInfo;
+  xiechaForm.value.unempInfo = dynamicShiyeValidateForm.value.unempInfo;
+  await api.addXiechaData(xiechaForm.value).then((res) => {
+    message.info(`${res}`);
+  });
+  getData();
 };
 //弹出框编辑用户权限模块
 const editForm = ref();
@@ -179,7 +247,6 @@ const showModal = (record: Xiecha) => {
 const handleOk = async () => {
   modalText.value = 'The modal will be closed after two seconds';
   confirmLoading.value = true;
-  console.log(editForm.value);
   await api.updateXiechaData(editForm.value).then(() => {
     visible.value = false;
     message.info('提交成功');
@@ -191,6 +258,7 @@ const editColumn = (record: Xiecha) => {
   showModal(record);
 };
 const columns_original = [
+  { key: 'id', title: 'ID' },
   { key: 'personID', title: '身份证号' },
   { key: 'personName', title: '姓名' },
   { key: 'canbaoInfo', title: '参保信息' },

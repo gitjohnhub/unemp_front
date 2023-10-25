@@ -32,7 +32,7 @@ export type Xiecha = {
   personName: string
   personID: string
   canbaoInfo: Object
-  shiyeInfo: Object
+  unempInfo: Object
 
 
 }

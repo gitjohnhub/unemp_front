@@ -18,10 +18,7 @@
                 失业保险
               </span>
             </template>
-            <RouterLink to="/applyTable"><a-menu-item key="1">失业金</a-menu-item></RouterLink>
-            <RouterLink to="/applyTable"><a-menu-item key="2">延长失业金</a-menu-item></RouterLink>
-            <RouterLink to="/applyTable"><a-menu-item key="3">农民补助金</a-menu-item></RouterLink>
-            <RouterLink to="/applyTable"><a-menu-item key="4">跨省市转移</a-menu-item></RouterLink>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path">{{ link.title }}</a-menu-item></RouterLink>
           </a-sub-menu>
           <a-sub-menu key="sub2">
             <template #title>
@@ -60,30 +57,31 @@
   </a-layout>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref , onBeforeMount} from 'vue';
 import { UserOutlined, LaptopOutlined, NotificationOutlined } from '@ant-design/icons-vue';
 import  BreadCrumbView  from '@/components/BreadCrumbView.vue';
 import UserInfoBarView from '@/components/UserInfoBarView.vue';
-const selectedKeys1 = ref<string[]>(['2']);
+import router  from '@/router';
 const selectedKeys2 = ref<string[]>(['1']);
 const openKeys = ref<string[]>(['sub1']);
+const routerItems = ref()
+onBeforeMount(()=>{
+  routerItems.value =
+    router.getRoutes().filter(item=>{
+      return item.path !== '/' && item.path !== '/login'
+    }
+    )
+    .map(item=>{
+        return {path:item.path,title:item.meta.title}
+    })
+})
 </script>
 <style scoped>
-#components-layout-demo-top-side-2 .logo {
-  float: left;
-  width: 120px;
-  height: 31px;
-  margin: 16px 24px 16px 0;
-  background: rgba(255, 255, 255, 0.3);
-}
+
 .header{
   background-color: #fff;
 }
 
-.ant-row-rtl #components-layout-demo-top-side-2 .logo {
-  float: right;
-  margin: 16px 0 16px 24px;
-}
 
 .site-layout-background {
   background: #fff;

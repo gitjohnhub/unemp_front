@@ -27,6 +27,15 @@ const router = createRouter({
             requiresAuth: true,
           },
         },
+          {
+            path: '/xiechaTable',
+            name: 'xiechaTable',
+            component: ()=>import('@/views/xiecha/XiechaTableView.vue'),
+            meta: {
+              title: '协查',
+              requiresAuth: true,
+            },
+          },
       ],
     },
   ],

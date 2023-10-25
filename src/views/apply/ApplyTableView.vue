@@ -22,7 +22,11 @@
         ></a-select>
         <a-date-picker v-model:value="monthSelect" picker="month" />
 
+        <a-switch v-model:checked="checked" checked-children="显示已删除" un-checked-children="不显示删除" />
+
         <a-tag color="#108ee9">{{ count }}</a-tag>
+
+
       </a-space>
     </div>
     <a-table
@@ -82,7 +86,6 @@ import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import ApplyFormView from './ApplyFormView.vue';
 import ApplyEditFormView from './ApplyEditFormView.vue';
-import { DataItem,jiezhens } from '@/types';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import 'dayjs/locale/zh-cn';
@@ -95,6 +98,7 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
 const userColors = ref();
+const checked = ref(false)
 // const getColors = (user)=>{
 //   const findColor = userColors.value.filter(u => u.username === user)
 //   console.log('findColor=>',findColor)
@@ -114,6 +118,13 @@ watch(
   () => monthSelect.value,
   (newValue) => {
     // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
+    getData();
+  }
+);
+watch(
+  () => checked.value,
+  (newValue) => {
+    console.log(newValue)
     getData();
   }
 );
@@ -170,6 +181,12 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
   };
+  if (checked.value == false){
+    params.alreadydelete = 1
+    console.log('params=>',params)
+  }else{
+    params.alreadydelete = null
+  }
   if (monthSelect.value) {
     params = {
       ...params,

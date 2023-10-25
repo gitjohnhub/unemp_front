@@ -27,5 +27,16 @@ export default {
   },
   updateUnempVeriData(params:any){
     return POST('/updateUnempVeriData',params)
-  }
+  },
+
+  //失业金协查
+  getXiechaData(params?: any){
+    return POST('/getXiechaData',params)
+  },
+  addXiechaData(params?: any){
+    return POST('/addXiechaData',params)
+  },
+  updateXiechaData(params?:any){
+    return POST('/updateXiechaData',params)
+  },
 }

@@ -56,6 +56,7 @@ const onSubmit = () => {
   return editableFormRef.value
     .validate()
     .then(() => {
+      console.log(editForm.value)
       return api.updateUnempVeriData(editForm.value)
     })
     // .catch(error => {

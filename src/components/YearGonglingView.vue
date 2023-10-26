@@ -1,0 +1,103 @@
+<template>
+  <a-form
+    ref="formRef"
+    name="dynamic_form_nest_item"
+    :model="dynamicValidateForm"
+    @finish="onFinish"
+  >
+    <a-space
+      v-for="(year, index) in dynamicValidateForm.years"
+      :key="year.id"
+      style="display: flex; margin-bottom: 8px"
+      align="baseline"
+    >
+      <a-form-item
+        :name="['years', index, 'first']"
+        :rules="{
+          required: true,
+          message: 'Missing first name',
+        }"
+      >
+        <a-input v-model:value="year.first" placeholder="First year" />
+      </a-form-item>
+      <a-form-item
+        :name="['years', index, 'last']"
+        :rules="{
+          required: true,
+          message: 'Missing last name',
+        }"
+      >
+        <a-input v-model:value="year.last" placeholder="Last year" />
+      </a-form-item>
+      <MinusCircleOutlined @click="removeyear(year)" />
+    </a-space>
+    <a-form-item>
+      <a-button type="dashed" block @click="addyear">
+        <PlusOutlined />
+        增加工龄
+      </a-button>
+    </a-form-item>
+    <a-form-item>
+      <a-button type="primary" html-type="submit">计算</a-button>
+    </a-form-item>
+    <p v-for='result in results'>{{ result }}</p>
+  </a-form>
+</template>
+<script lang="ts" setup>
+import { reactive, ref } from 'vue';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons-vue';
+import type { FormInstance } from 'ant-design-vue';
+
+interface year {
+  first: string;
+  last: string;
+  id: number;
+}
+const formRef = ref<FormInstance>();
+const dynamicValidateForm = reactive<{ years: year[] }>({
+  years: [],
+});
+const removeyear = (item: year) => {
+  const index = dynamicValidateForm.years.indexOf(item);
+  if (index !== -1) {
+    dynamicValidateForm.years.splice(index, 1);
+  }
+};
+const addyear = () => {
+  dynamicValidateForm.years.push({
+    first: '',
+    last: '',
+    id: Date.now(),
+  });
+};
+const results = ref()
+const getDifferent = (arr)=>{
+  const result: string[] = [];
+
+  arr.forEach(item => {
+    const first = item.first;
+    const last = item.last;
+
+    if (/^\d{6}$/.test(first) && /^\d{6}$/.test(last)) {
+
+      const firstDate = new Date(first.slice(0, 4) + '/' + first.slice(4));
+      const lastDate = new Date(last.slice(0, 4) + '/' + last.slice(4));
+
+      const diff = (lastDate.getFullYear() - firstDate.getFullYear()) * 12 +
+                  (lastDate.getMonth() - firstDate.getMonth())+1;
+
+      result.push(`${diff}:${Math.floor(diff / 12)}年${diff % 12}月`);
+    }
+  });
+
+  return result;
+}
+
+
+const onFinish = values => {
+  // console.log('Received values of form:', values);
+  results.value =  getDifferent(dynamicValidateForm.years)
+  console.log('dynamicValidateForm.years:', getDifferent(dynamicValidateForm.years));
+};
+</script>
+

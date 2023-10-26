@@ -18,7 +18,7 @@
                 失业保险
               </span>
             </template>
-            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path">{{ link.title }}</a-menu-item></RouterLink>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="!link.path.startsWith('/contact')">{{ link.title }}</a-menu-item></RouterLink>
           </a-sub-menu>
           <a-sub-menu key="sub2">
             <template #title>
@@ -27,6 +27,7 @@
                 通讯录
               </span>
             </template>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/contact')">{{ link.title }}</a-menu-item></RouterLink>
             <a-menu-item key="5">街镇</a-menu-item>
             <a-menu-item key="6">办公室</a-menu-item>
             <a-menu-item key="7">失业保险科</a-menu-item>
@@ -39,6 +40,7 @@
                 工具箱
               </span>
             </template>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/tools')">{{ link.title }}</a-menu-item></RouterLink>
             <a-menu-item key="9">工龄计算器</a-menu-item>
             <a-menu-item key="10">身份证校验</a-menu-item>
             <a-menu-item key="11">查询</a-menu-item>
@@ -68,12 +70,13 @@ const routerItems = ref()
 onBeforeMount(()=>{
   routerItems.value =
     router.getRoutes().filter(item=>{
-      return item.path !== '/' && item.path !== '/login'
+      return item.path !== '/' && item.path !== '/login' && item.path !== '/contact' && item.path !== '/tools'
     }
     )
     .map(item=>{
         return {path:item.path,title:item.meta.title}
     })
+  console.log(routerItems.value)
 })
 </script>
 <style scoped>

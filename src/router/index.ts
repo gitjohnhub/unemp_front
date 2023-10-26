@@ -36,8 +36,38 @@ const router = createRouter({
               requiresAuth: true,
             },
           },
+          {
+            path:'/contact',
+            redirect:'/contact/unempContact',
+            children:[
+              {
+                path:'unempContact',
+                component:()=>import('@/views/contacts/UnempContactView.vue'),
+                meta: {
+                  title: '失业保险科通讯录',
+                  requiresAuth: true,
+                },
+              }
+            ]
+          },
+          {
+            path:'/tools',
+            redirect:'/tools/gongling',
+            children:[
+              {
+                path:'gongling',
+                component:()=>import('@/views/tools/ToolView.vue'),
+                meta: {
+                  title: '工具箱',
+                  requiresAuth: true,
+                },
+              }
+            ]
+          }
       ],
     },
+
+
   ],
 });
 

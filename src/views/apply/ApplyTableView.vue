@@ -22,7 +22,8 @@
         ></a-select>
         <a-date-picker v-model:value="monthSelect" picker="month" />
 
-        <a-switch v-model:checked="checked" checked-children="显示已删除" un-checked-children="不显示删除" />
+        <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
+        <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox>
 
         <a-tag color="#108ee9">{{ count }}</a-tag>
 
@@ -99,6 +100,7 @@ const count = ref<number>();
 const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
 const userColors = ref();
 const checked = ref(false)
+const reviewChecked = ref(false)
 // const getColors = (user)=>{
 //   const findColor = userColors.value.filter(u => u.username === user)
 //   console.log('findColor=>',findColor)
@@ -124,7 +126,12 @@ watch(
 watch(
   () => checked.value,
   (newValue) => {
-    console.log(newValue)
+    getData();
+  }
+);
+watch(
+  () => reviewChecked.value,
+  (newValue) => {
     getData();
   }
 );
@@ -170,7 +177,6 @@ const getUsers = async (params?: any) => {
       username: userInfo.userName,
       color: colors[userInfo.id],
     }));
-    console.log('checkop=>', userColors.value);
   });
 };
 
@@ -183,9 +189,15 @@ const getData = async (params?: any) => {
   };
   if (checked.value == false){
     params.alreadydelete = 1
-    console.log('params=>',params)
   }else{
     params.alreadydelete = null
+  }
+  if (reviewChecked.value == true){
+    params.verification = '0'
+    console.log('verification params=>',params)
+  }else{
+    params.verification = null
+    console.log('verification null params=>',params)
   }
   if (monthSelect.value) {
     params = {
@@ -193,11 +205,9 @@ const getData = async (params?: any) => {
       monthSelect: getMonthRange(monthSelect.value),
     };
   }
-  console.log('params=>', params);
   await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;
-    console.log('res.pager.value=>', res);
     dataSource.value = res.rows;
   });
 };
@@ -214,7 +224,7 @@ const deleteData = async (id: number) => {
 };
 const reviewData = async (id: number) => {
   await api
-    .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '已审核' })
+    .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '1' })
     .then((res: any) => {
       getData();
     });
@@ -314,6 +324,7 @@ const columns = [
     dataIndex: 'reviewoperator',
     key: 'reviewoperator',
   },
+
   {
     title: '复核备注',
     dataIndex: 'reviewnote',

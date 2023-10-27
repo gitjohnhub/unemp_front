@@ -5,7 +5,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
 import * as XLSX from 'xlsx';
 import * as fs from 'fs';
 XLSX.set_fs(fs);
@@ -19,7 +18,6 @@ const props = defineProps({
   filename:String
 });
 const exportExcel = async () => {
-  console.log('props===>', props.excelData);
   const result = props.excelData.map((item) => {
     const canbaoInfo =
       item.canbaoInfo

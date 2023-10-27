@@ -26,8 +26,7 @@
         <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox>
 
         <a-tag color="#108ee9">{{ count }}</a-tag>
-
-
+        <a-button @click="exportExcel"> 导出Excel </a-button>
       </a-space>
     </div>
     <a-table
@@ -39,11 +38,18 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
-         <a-typography-paragraph copyable keyboard :class="{ deleted: record.alreadydelete == 2 }">{{ record.personID }}</a-typography-paragraph>
+          <a-typography-paragraph
+            copyable
+            keyboard
+            :class="{ deleted: record.alreadydelete == 2 }"
+            >{{ record.personID }}</a-typography-paragraph
+          >
         </template>
         <template v-if="column.key === 'personName'">
           <a-tooltip :title="pinyin(record.personName)" color="#f50">
-            <a-typography-paragraph copyable :class="{ deleted: record.alreadydelete == 2 }">{{ record.personName }}</a-typography-paragraph>
+            <a-typography-paragraph copyable :class="{ deleted: record.alreadydelete == 2 }">{{
+              record.personName
+            }}</a-typography-paragraph>
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
@@ -63,11 +69,16 @@
         </template> -->
         <template v-if="column.key === 'action'">
           <a-space>
-            <a-button danger @click="deleteData(record.id)" :disabled="record.alreadydelete == 2 ? true : false">删除</a-button>
-            <a-button type="primary"  @click="showEditModal(record)">编辑</a-button>
+            <a-button
+              danger
+              @click="deleteData(record.id)"
+              :disabled="record.alreadydelete == 2 ? true : false"
+              >删除</a-button
+            >
+            <a-button type="primary" @click="showEditModal(record)">编辑</a-button>
             <!-- 编辑模态框 -->
             <a-modal
-            v-model:visible="record.editVisible"
+              v-model:visible="record.editVisible"
               @ok="handleEditOk"
               @cancel="handleEditCancel"
             >
@@ -85,6 +96,7 @@ import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
+import * as XLSX from 'xlsx';
 import ApplyFormView from './ApplyFormView.vue';
 import ApplyEditFormView from './ApplyEditFormView.vue';
 import { Dayjs } from 'dayjs';
@@ -99,8 +111,9 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
 const userColors = ref();
-const checked = ref(false)
-const reviewChecked = ref(false)
+const checked = ref(false);
+const reviewChecked = ref(false);
+const exportData = ref();
 // const getColors = (user)=>{
 //   const findColor = userColors.value.filter(u => u.username === user)
 //   console.log('findColor=>',findColor)
@@ -141,6 +154,45 @@ function getMonthRange(monthSelect) {
   const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD');
   return [firstDay, lastDay];
 }
+
+//数据导出功能
+const exportExcel = () => {
+  getData({ noindex: 1 }).then(() => {
+    console.log('noindexres', exportData.value);
+    const processedData = exportData.value.map((item) => {
+      const result = {
+        personName: item.personName,
+        personID: item.personID,
+        verification: item.verification,
+        alreadydelete: item.alreadydelete,
+        createtime: item.createtime,
+      };
+
+      return result;
+    });
+
+    // 列名映射
+    const columns = {
+      personName: '姓名',
+      personID: '身份证号',
+      verification: '已审核',
+      alreadydelete: '未删除',
+      createtime: '创建时间',
+    };
+
+    // 导出
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(processedData);
+    XLSX.utils.book_append_sheet(workbook, worksheet);
+    if (monthSelect.value){
+      XLSX.writeFile(workbook, `${monthSelect.value.toISOString().slice(0,10)}.xlsx`);
+    }else{
+      XLSX.writeFile(workbook, `${new Date().toISOString().slice(0,10)}_all.xlsx`);
+
+    }
+    // 写入文件
+  });
+};
 
 // 分页
 const pager = ref({
@@ -187,17 +239,17 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
   };
-  if (checked.value == false){
-    params.alreadydelete = 1
-  }else{
-    params.alreadydelete = null
+  if (checked.value == false) {
+    params.alreadydelete = 1;
+  } else {
+    params.alreadydelete = null;
   }
-  if (reviewChecked.value == true){
-    params.verification = '0'
-    console.log('verification params=>',params)
-  }else{
-    params.verification = null
-    console.log('verification null params=>',params)
+  if (reviewChecked.value == true) {
+    params.verification = '0';
+    console.log('verification params=>', params);
+  } else {
+    params.verification = null;
+    console.log('verification null params=>', params);
   }
   if (monthSelect.value) {
     params = {
@@ -205,7 +257,8 @@ const getData = async (params?: any) => {
       monthSelect: getMonthRange(monthSelect.value),
     };
   }
-  await api.getUnempVeriData(params).then((res: any) => {
+  return await api.getUnempVeriData(params).then((res: any) => {
+    exportData.value = res.rows;
     pager.value = res.page;
     count.value = pager.value.total;
     dataSource.value = res.rows;
@@ -242,8 +295,8 @@ const showAddDataModal = async () => {
 };
 
 const showEditModal = (record) => {
-      record.editVisible = true
-    }
+  record.editVisible = true;
+};
 
 const handleOk = () => {
   formRef.value
@@ -264,11 +317,11 @@ const handleOk = () => {
 const handleEditOk = () => {
   editFormRef.value
     .onSubmit()
-    .then((res:any) => {
-      console.log('update res======>',res)
+    .then((res: any) => {
+      console.log('update res======>', res);
       // message.info(res)
       getData();
-      editOpen.value = false
+      editOpen.value = false;
     })
     .catch((error) => {
       console.log('error=>', error);
@@ -278,7 +331,7 @@ const handleEditOk = () => {
   getData();
 };
 const handleEditCancel = () => {
-  editOpen.value = false
+  editOpen.value = false;
 };
 const handleCancel = () => {
   formRef.value.resetForm();

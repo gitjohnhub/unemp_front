@@ -63,6 +63,20 @@ const router = createRouter({
                 },
               }
             ]
+          },
+          {
+            path:'/management',
+            redirect:'/management/userManagement',
+            children:[
+              {
+                path:'userManagement',
+                component:()=>import('@/views/admin/userManagementView.vue'),
+                meta: {
+                  title: '用户管理',
+                  requiresAuth: true,
+                },
+              }
+            ]
           }
       ],
     },

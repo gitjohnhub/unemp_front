@@ -170,7 +170,9 @@ const pager = ref({
 });
 
 const handleChange = async (page: any) => {
+  console.log('change')
   pager.value = page;
+  console.log('change==>',pager.value)
   getData();
 };
 const pagination = computed(() => {
@@ -186,7 +188,6 @@ const onShowSizeChange = async (page: any) => {
 const handleInfo = (record: any) => {
   // const canbaoInfo = JSON.parse(record.canbaoInfo)
   // const unempInfo = JSON.parse(record.unempInfo)
-  console.log(record)
   return [
     record.canbaoInfo.map((item) => `${item.company} ${item.canbaoTime}`).join(', '),
     record.unempInfo.map((item) => `${item.shiyeCategory} ${item.shiyeTime}`).join(', '),
@@ -222,7 +223,7 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  await api.getXiechaData().then((res: any) => {
+  await api.getXiechaData(params).then((res: any) => {
     dataSource.value = res.rows.map(item=>{
       if (typeof item.canbaoInfo === 'string') {
         item.canbaoInfo = JSON.parse(item.canbaoInfo)

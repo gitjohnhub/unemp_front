@@ -58,6 +58,6 @@ const exportExcel = async () => {
   // };
   XLSX.utils.sheet_add_aoa(ws, result, { origin: 'A5' });
   XLSX.utils.book_append_sheet(workbook, ws, 'Sheet1');
-  XLSX.writeFile(workbook, `${props.filename}.xlsx`, { compression: true });
+  XLSX.writeFile(workbook, `${props.filename}——失业保险待遇领取疑点数据协查.xlsx`, { compression: true });
 };
 </script>

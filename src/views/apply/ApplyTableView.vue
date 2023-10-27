@@ -53,7 +53,7 @@
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
-          <a-tag color="#87d068">
+          <a-tag :color="getColors(record.checkoperator)">
             {{ record.checkoperator }}
           </a-tag>
         </template>
@@ -114,15 +114,14 @@ const userColors = ref();
 const checked = ref(false);
 const reviewChecked = ref(false);
 const exportData = ref();
-// const getColors = (user)=>{
-//   const findColor = userColors.value.filter(u => u.username === user)
-//   console.log('findColor=>',findColor)
-//   if (findColor.length !== 0){
-//     return findColor[0].color
-//   }else{
-//     return '#fff'
-//   }
-// }
+const getColors = (user) => {
+  const findColor = userColors.value.filter((u) => u.username === user);
+  if (findColor.length !== 0) {
+    return findColor[0].color;
+  } else {
+    return '#344D70';
+  }
+};
 watch(
   () => selectedOp.value,
   (newValue) => {
@@ -158,7 +157,6 @@ function getMonthRange(monthSelect) {
 //数据导出功能
 const exportExcel = () => {
   getData({ noindex: 1 }).then(() => {
-    console.log('noindexres', exportData.value);
     const processedData = exportData.value.map((item) => {
       const result = {
         personName: item.personName,
@@ -171,24 +169,14 @@ const exportExcel = () => {
       return result;
     });
 
-    // 列名映射
-    const columns = {
-      personName: '姓名',
-      personID: '身份证号',
-      verification: '已审核',
-      alreadydelete: '未删除',
-      createtime: '创建时间',
-    };
-
     // 导出
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.json_to_sheet(processedData);
     XLSX.utils.book_append_sheet(workbook, worksheet);
-    if (monthSelect.value){
-      XLSX.writeFile(workbook, `${monthSelect.value.toISOString().slice(0,10)}.xlsx`);
-    }else{
-      XLSX.writeFile(workbook, `${new Date().toISOString().slice(0,10)}_all.xlsx`);
-
+    if (monthSelect.value) {
+      XLSX.writeFile(workbook, `${monthSelect.value.toISOString().slice(0, 10)}.xlsx`);
+    } else {
+      XLSX.writeFile(workbook, `${new Date().toISOString().slice(0, 10)}_all.xlsx`);
     }
     // 写入文件
   });
@@ -225,10 +213,12 @@ onBeforeMount(() => {
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
     checkoperators.value = res.rows.map((userInfo) => ({ value: userInfo.userName }));
-    userColors.value = res.rows.map((userInfo) => ({
-      username: userInfo.userName,
-      color: colors[userInfo.id],
-    }));
+    userColors.value = res.rows.map((userInfo) => {
+      return {
+        username: userInfo.userName,
+        color: colors[userInfo.id],
+      };
+    });
   });
 };
 
@@ -246,10 +236,8 @@ const getData = async (params?: any) => {
   }
   if (reviewChecked.value == true) {
     params.verification = '0';
-    console.log('verification params=>', params);
   } else {
     params.verification = null;
-    console.log('verification null params=>', params);
   }
   if (monthSelect.value) {
     params = {
@@ -308,7 +296,6 @@ const handleOk = () => {
       confirmLoading.value = false;
     })
     .catch((error) => {
-      console.log('error=>', error);
       message.info('数据格式错误，无法提交=>', error);
     });
 
@@ -318,13 +305,11 @@ const handleEditOk = () => {
   editFormRef.value
     .onSubmit()
     .then((res: any) => {
-      console.log('update res======>', res);
       // message.info(res)
       getData();
       editOpen.value = false;
     })
     .catch((error) => {
-      console.log('error=>', error);
       message.info('数据格式错误，无法提交=>', error);
     });
 

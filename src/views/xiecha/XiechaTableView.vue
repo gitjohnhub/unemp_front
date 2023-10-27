@@ -184,6 +184,9 @@ const onShowSizeChange = async (page: any) => {
 };
 
 const handleInfo = (record: any) => {
+  // const canbaoInfo = JSON.parse(record.canbaoInfo)
+  // const unempInfo = JSON.parse(record.unempInfo)
+  console.log(record)
   return [
     record.canbaoInfo.map((item) => `${item.company} ${item.canbaoTime}`).join(', '),
     record.unempInfo.map((item) => `${item.shiyeCategory} ${item.shiyeTime}`).join(', '),
@@ -220,7 +223,15 @@ const getData = async (params?: any) => {
     ...pager.value,
   };
   await api.getXiechaData().then((res: any) => {
-    dataSource.value = res.rows;
+    dataSource.value = res.rows.map(item=>{
+      if (typeof item.canbaoInfo === 'string') {
+        item.canbaoInfo = JSON.parse(item.canbaoInfo)
+        item.unempInfo = JSON.parse(item.unempInfo)
+        return item
+      }else{
+        return item
+      }
+    });
     pager.value = res.page;
     count.value = pager.value.total;
   });

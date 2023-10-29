@@ -18,7 +18,7 @@
                 失业保险
               </span>
             </template>
-            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="!link.path.startsWith('/contact')">{{ link.title }}</a-menu-item></RouterLink>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="getPathPattern(link.path)">{{ link.title }}</a-menu-item></RouterLink>
           </a-sub-menu>
           <a-sub-menu key="sub2">
             <template #title>
@@ -68,9 +68,10 @@ const selectedKeys2 = ref<string[]>(['1']);
 const openKeys = ref<string[]>(['sub1']);
 const routerItems = ref()
 onBeforeMount(()=>{
+  const excludePaths = ['/', '/login', '/contact', '/tools', '/management'];
   routerItems.value =
     router.getRoutes().filter(item=>{
-      return item.path !== '/' && item.path !== '/login' && item.path !== '/contact' && item.path !== '/tools'
+      return !excludePaths.includes(item.path);
     }
     )
     .map(item=>{
@@ -78,6 +79,11 @@ onBeforeMount(()=>{
     })
   console.log(routerItems.value)
 })
+const getPathPattern = (path)=>{
+  const pattern = /^\/[a-zA-Z]+$/;
+  return pattern.test(path);
+
+}
 </script>
 <style scoped>
 

@@ -9,6 +9,12 @@ const router = createRouter({
       component: ()=>import('@/views/LoginView.vue'),
       meta: { title: '登陆' },
     },
+    // {
+    //   path: '/test',
+    //   name: 'test',
+    //   component: ()=>import('@/views/TestView.vue'),
+    //   meta: { title: '登陆' },
+    // },
     {
       path: '/',
       name: 'home',
@@ -70,7 +76,7 @@ const router = createRouter({
             children:[
               {
                 path:'userManagement',
-                component:()=>import('@/views/admin/userManagementView.vue'),
+                component:()=>import('@/views/admin/UserManagementView.vue'),
                 meta: {
                   title: '用户管理',
                   requiresAuth: true,

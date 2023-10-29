@@ -84,7 +84,7 @@
             >
               <ApplyEditFormView :editForm="record" ref="editFormRef" />
             </a-modal>
-            <a-button @click="reviewData(record.id)">复核</a-button>
+            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1">复核</a-button>
           </a-space>
         </template>
       </template>

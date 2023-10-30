@@ -39,6 +39,7 @@
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personID'">
           <a-typography-paragraph
+            :style="{ fontSize: '18px' }"
             copyable
             keyboard
             :class="{ deleted: record.alreadydelete == 2 }"
@@ -47,9 +48,12 @@
         </template>
         <template v-if="column.key === 'personName'">
           <a-tooltip :title="pinyin(record.personName)" color="#f50">
-            <a-typography-paragraph copyable :class="{ deleted: record.alreadydelete == 2 }">{{
-              record.personName
-            }}</a-typography-paragraph>
+            <a-typography-paragraph
+              :style="{ fontSize: '18px' }"
+              copyable
+              :class="{ deleted: record.alreadydelete == 2 }"
+              >{{ record.personName }}</a-typography-paragraph
+            >
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
@@ -63,13 +67,19 @@
           <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
             {{ record.reviewoperator }}
           </a-tag>
-          <span  v-if="record.reviewnote != null" v-html="`<br>${record.reviewnote}`"></span>
+          <span v-if="record.reviewnote != null" v-html="`<br>${record.reviewnote}`"></span>
         </template>
         <!-- createtime column -->
         <template v-if="column.key === 'createtime'">
-            <a-tag>
-              <span v-html="`${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]}<br>id:${record.id}`"></span>
-            </a-tag>
+          <a-tag>
+            <span
+              v-html="
+                `${getCorrectTime(record.createtime)[0]}<br>${
+                  getCorrectTime(record.createtime)[1]
+                }<br>id:${record.id}`
+              "
+            ></span>
+          </a-tag>
         </template>
         <!-- <template v-if="column.key === 'alreadydelete'">
           <a-tag :color="record.alreadydelete == 1 ? 'success' : 'error'">
@@ -93,7 +103,9 @@
             >
               <ApplyEditFormView :editForm="record" ref="editFormRef" />
             </a-modal>
-            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1">复核</a-button>
+            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1"
+              >复核</a-button
+            >
           </a-space>
         </template>
       </template>
@@ -217,19 +229,19 @@ const onShowSizeChange = async (page: any) => {
 onBeforeMount(() => {
   getUsers();
   getData();
-  if (userInfo.checkObject){
-    selectedOp.value = [...userInfo.checkObject.split(',')]
+  if (userInfo.checkObject) {
+    selectedOp.value = [...userInfo.checkObject.split(',')];
   }
 });
 
 // 获取用户数据，构造用户选择列表
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
-    console.log('users=====>',res)
-    checkoperators.value = res.rows.map(userInfo => {
-      return { value: userInfo.userName }
+    console.log('users=====>', res);
+    checkoperators.value = res.rows.map((userInfo) => {
+      return { value: userInfo.userName };
     });
-    userColors.value = res.rows.map((userInfo,index) => {
+    userColors.value = res.rows.map((userInfo, index) => {
       return {
         username: userInfo.userName,
         color: colors[index],

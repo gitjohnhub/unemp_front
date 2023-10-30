@@ -89,6 +89,7 @@
   </a-row>
 
   <a-table
+    :style="{fontSize: '16px'}"
     :columns="columns"
     :data-source="dataSource"
     rowKey="id"

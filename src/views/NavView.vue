@@ -28,10 +28,7 @@
               </span>
             </template>
             <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/contact')">{{ link.title }}</a-menu-item></RouterLink>
-            <a-menu-item key="5">街镇</a-menu-item>
-            <a-menu-item key="6">办公室</a-menu-item>
-            <a-menu-item key="7">失业保险科</a-menu-item>
-            <a-menu-item key="8">其他科室</a-menu-item>
+
           </a-sub-menu>
           <a-sub-menu key="sub3">
             <template #title>
@@ -41,9 +38,6 @@
               </span>
             </template>
             <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/tools')">{{ link.title }}</a-menu-item></RouterLink>
-            <a-menu-item key="9">工龄计算器</a-menu-item>
-            <a-menu-item key="10">身份证校验</a-menu-item>
-            <a-menu-item key="11">查询</a-menu-item>
           </a-sub-menu>
         </a-menu>
       </a-layout-sider>

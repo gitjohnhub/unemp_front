@@ -112,7 +112,7 @@ const count = ref<number>();
 const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
 const userColors = ref();
 const checked = ref(false);
-const reviewChecked = ref(false);
+const reviewChecked = ref(true);
 const exportData = ref();
 const getColors = (user) => {
   const findColor = userColors.value.filter((u) => u.username === user);
@@ -213,10 +213,10 @@ onBeforeMount(() => {
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
     checkoperators.value = res.rows.map((userInfo) => ({ value: userInfo.userName }));
-    userColors.value = res.rows.map((userInfo) => {
+    userColors.value = res.rows.map((userInfo,index) => {
       return {
         username: userInfo.userName,
-        color: colors[userInfo.id],
+        color: colors[index],
       };
     });
   });

@@ -1,7 +1,7 @@
 /**
  * api管理
  */
-import { POST, GET } from '../utils/request'
+import { POST } from '../utils/request'
 export default {
   /*
    * 用户管理模块
@@ -18,7 +18,7 @@ export default {
   getUsers(params?: any) {
     return POST('/users/getUsers',params)
   },
-  // 失业金数据
+  // 数据
   getUnempVeriData(params: any){
     return POST('/unempVeriAll',params)
   },
@@ -29,7 +29,7 @@ export default {
     return POST('/updateUnempVeriData',params)
   },
 
-  //失业金协查
+  //协查
   getXiechaData(params?: any){
     return POST('/getXiechaData',params)
   },
@@ -39,4 +39,16 @@ export default {
   updateXiechaData(params?:any){
     return POST('/updateXiechaData',params)
   },
+  // 通讯录
+  getContactData(params?: any){
+    return POST('/Contacts/getContactData',params)
+  },
+  addContactData(params?: any){
+    return POST('/Contacts/addContactData',params)
+  },
+  updateContactData(params?:any){
+    return POST('/Contacts/updateContactData',params)
+  },
+
+
 }

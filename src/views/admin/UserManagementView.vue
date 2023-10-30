@@ -39,12 +39,14 @@ import api from '@/api';
 interface FormState {
   username: string;
   password: string;
+  checkObject:string;
   role_id: number;
   status: number;
 }
 
 const formState = ref<FormState>({
   username: '',
+  checkObject:'',
   password: '',
   role_id: 1,
   status: 1,

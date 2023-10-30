@@ -108,6 +108,7 @@ const userInfo = userStore.userInfo;
 const monthSelect = ref<Dayjs>();
 const checkoperators = ref<{ value: string }>();
 const selectedOp = ref<string[]>([]);
+
 const count = ref<number>();
 const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
 const userColors = ref();
@@ -207,12 +208,16 @@ const onShowSizeChange = async (page: any) => {
 onBeforeMount(() => {
   getUsers();
   getData();
+  selectedOp.value = [...userInfo.checkObject.split(',')]
 });
 
 // 获取用户数据，构造用户选择列表
 const getUsers = async (params?: any) => {
   await api.getUsers(params).then((res: any) => {
-    checkoperators.value = res.rows.map((userInfo) => ({ value: userInfo.userName }));
+    console.log('users=====>',res)
+    checkoperators.value = res.rows.map(userInfo => {
+      return { value: userInfo.userName }
+    });
     userColors.value = res.rows.map((userInfo,index) => {
       return {
         username: userInfo.userName,

@@ -39,6 +39,16 @@
             </template>
             <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/tools')">{{ link.title }}</a-menu-item></RouterLink>
           </a-sub-menu>
+
+          <a-sub-menu key="sub4">
+            <template #title>
+              <span>
+                <notification-outlined />
+                用户管理
+              </span>
+            </template>
+            <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/management')">{{ link.title }}</a-menu-item></RouterLink>
+          </a-sub-menu>
         </a-menu>
       </a-layout-sider>
       <a-layout style="padding: 0 24px 24px">

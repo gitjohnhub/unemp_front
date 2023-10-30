@@ -94,7 +94,7 @@
               :disabled="record.alreadydelete == 2 ? true : false"
               >删除</a-button
             >
-            <a-button type="primary" @click="showEditModal(record)">编辑</a-button>
+            <a-button @click="showEditModal(record)">编辑</a-button>
             <!-- 编辑模态框 -->
             <a-modal
               v-model:visible="record.editVisible"
@@ -103,7 +103,7 @@
             >
               <ApplyEditFormView :editForm="record" ref="editFormRef" />
             </a-modal>
-            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1"
+            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1 || record.checkoperator == userInfo.username"  type="primary"
               >复核</a-button
             >
           </a-space>

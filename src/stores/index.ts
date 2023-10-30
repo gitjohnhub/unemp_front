@@ -8,6 +8,7 @@ export const useUserStore = defineStore('user', {
   actions:{
     saveUserInfo(userInfo:any){
       this.userInfo = userInfo;
+      console.log(this.userInfo)
       storage.setItem('userInfo',userInfo)
     },
     logout(){

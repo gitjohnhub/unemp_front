@@ -56,11 +56,20 @@
           <a-tag :color="getColors(record.checkoperator)">
             {{ record.checkoperator }}
           </a-tag>
+          <span v-html="`<br>${record.checknote}`"></span>
         </template>
+        <!--  reviewoperator column -->
+        <template v-if="column.key === 'reviewoperator'">
+          <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
+            {{ record.reviewoperator }}
+          </a-tag>
+          <span  v-if="record.reviewnote != null" v-html="`<br>${record.reviewnote}`"></span>
+        </template>
+        <!-- createtime column -->
         <template v-if="column.key === 'createtime'">
-          <a-tooltip :title="getCorrectTime(record.createtime)[1]" color="#f50">
-            <a-tag> {{ getCorrectTime(record.createtime)[0] }}</a-tag>
-          </a-tooltip>
+            <a-tag>
+              <span v-html="`${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]}<br>id:${record.id}`"></span>
+            </a-tag>
         </template>
         <!-- <template v-if="column.key === 'alreadydelete'">
           <a-tag :color="record.alreadydelete == 1 ? 'success' : 'error'">
@@ -327,11 +336,11 @@ const handleCancel = () => {
   formRef.value.resetForm();
 };
 const columns = [
-  {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
-  },
+  // {
+  //   title: 'ID',
+  //   dataIndex: 'id',
+  //   key: 'id',
+  // },
   {
     title: '姓名',
     dataIndex: 'personName',
@@ -352,11 +361,11 @@ const columns = [
     dataIndex: 'checkoperator',
     key: 'checkoperator',
   },
-  {
-    title: '初核备注',
-    dataIndex: 'checknote',
-    key: 'checknote',
-  },
+  // {
+  //   title: '初核备注',
+  //   dataIndex: 'checknote',
+  //   key: 'checknote',
+  // },
   {
     title: '创建时间',
     dataIndex: 'createtime',
@@ -368,11 +377,11 @@ const columns = [
     key: 'reviewoperator',
   },
 
-  {
-    title: '复核备注',
-    dataIndex: 'reviewnote',
-    key: 'reviewnote',
-  },
+  // {
+  //   title: '复核备注',
+  //   dataIndex: 'reviewnote',
+  //   key: 'reviewnote',
+  // },
   {
     title: '操作',
     // dataIndex: 'action',

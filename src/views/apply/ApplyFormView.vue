@@ -46,6 +46,7 @@ const checkoperator = useUserStore().userInfo.username
 const formState = ref<editDataItem>({
   personID: '',
   personName: '',
+  verification:'0',
   jiezhen:'',
   checknote: '',
   reviewnote: '',
@@ -58,6 +59,8 @@ const onSubmit = () => {
       return api.addUnempVeriData({
         ...formState.value,
         checkoperator,
+      }).then(()=>{
+        resetForm()
       })
     })
     // .catch(error => {

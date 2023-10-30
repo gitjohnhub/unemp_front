@@ -8,7 +8,7 @@ export interface DataItem {
   createtime: string;
   reviewoperator: string;
   reviewnote: string;
-  // verification:string;
+  verification:string;
   alreadydelete: number;
 }
 export type editDataItem = Omit<DataItem, 'id'|'checkoperator'|'reviewoperator'|'createtime'>

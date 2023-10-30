@@ -4,7 +4,7 @@
       :title="userInfo.username"
       class="site-page-header"
       :sub-title="userInfo.account"
-      :avatar="{ src: 'https://avatars1.githubusercontent.com/u/8186664?s=460&v=4' }"
+      :avatar="{ src: '' }"
     >
       <template #tags>
         <a-tag color="blue">{{userInfo.role_id}}</a-tag>

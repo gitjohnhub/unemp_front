@@ -7,11 +7,11 @@
       :avatar="{ src: '' }"
     >
       <template #tags>
-        <a-tag color="blue">{{userInfo.role_id}}</a-tag>
+        <a-tag color="blue">ID: {{userInfo.role_id}}</a-tag>
       </template>
       <template #extra>
-        <a-button key="3">Operation</a-button>
-        <a-button key="2">Operation</a-button>
+        <!-- <a-button key="3">Operation</a-button>
+        <a-button key="2">Operation</a-button> -->
         <a-button key="1" type="primary" danger @click="logout">登出</a-button>
       </template>
     </a-page-header>

@@ -217,7 +217,9 @@ const onShowSizeChange = async (page: any) => {
 onBeforeMount(() => {
   getUsers();
   getData();
-  selectedOp.value = [...userInfo.checkObject.split(',')]
+  if (userInfo.checkObject){
+    selectedOp.value = [...userInfo.checkObject.split(',')]
+  }
 });
 
 // 获取用户数据，构造用户选择列表

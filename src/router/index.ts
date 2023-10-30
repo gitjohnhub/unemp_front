@@ -29,7 +29,7 @@ const router = createRouter({
           name: 'applyTable',
           component: ()=>import('@/views/apply/ApplyTableView.vue'),
           meta: {
-            title: '失业金',
+            title: '失业金核定',
             requiresAuth: true,
           },
         },
@@ -38,7 +38,7 @@ const router = createRouter({
             name: 'xiechaTable',
             component: ()=>import('@/views/xiecha/XiechaTableView.vue'),
             meta: {
-              title: '协查',
+              title: '跨省市协查',
               requiresAuth: true,
             },
           },

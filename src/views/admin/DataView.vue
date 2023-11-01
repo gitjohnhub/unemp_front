@@ -12,8 +12,11 @@
             :precision="0"
             suffix="人次"
             class="demo-class"
-            :value-style="{ color: '#cf1322' }"
+            :value-style="{ color: '#2C824A' }"
           >
+          <template #prefix>
+              <div style="font-size: 10px;">初核: </div>
+            </template>
           </a-statistic>
         </a-card>
       </a-col>

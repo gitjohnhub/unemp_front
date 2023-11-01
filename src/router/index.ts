@@ -81,6 +81,14 @@ const router = createRouter({
                   title: '用户管理',
                   requiresAuth: true,
                 },
+              },
+              {
+                path:'dataManagement',
+                component:()=>import('@/views/admin/DataView.vue'),
+                meta: {
+                  title: '数据管理',
+                  requiresAuth: true,
+                },
               }
             ]
           }

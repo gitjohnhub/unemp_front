@@ -120,7 +120,7 @@
               @search="onSubmitRNote(record.id,record.reviewnote)"
             >
               <template #enterButton>
-                <a-button>提交复核备注</a-button>
+                <a-button type="dashed">提交复核备注</a-button>
               </template>
             </a-input-search>
           </a-row></a-space>

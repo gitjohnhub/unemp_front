@@ -25,7 +25,8 @@ export const jiezhens = [
   {value:'工业区'},
   {value:'真新街道'},
   {value:'新成街道'},
-  {value:'菊园新区'}
+  {value:'菊园新区'},
+  {value:'APP'}
 
 ]
 export type Xiecha = {

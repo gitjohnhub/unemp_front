@@ -7,7 +7,7 @@
     autocomplete="off"
   >
     <a-form-item
-      label="Username"
+      label="用户"
       name="username"
       :rules="[{ required: true, message: 'Please input your username!' }]"
     >
@@ -18,7 +18,7 @@
     </a-form-item>
 
     <a-form-item
-      label="Password"
+      label="密码"
       name="password"
       :rules="[{ required: true, message: 'Please input your password!' }]"
     >

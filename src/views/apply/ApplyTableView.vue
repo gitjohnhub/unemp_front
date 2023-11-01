@@ -18,7 +18,7 @@
           mode="multiple"
           placeholder="选择复核对象"
           style="width: 300px"
-          :options="checkoperators"
+          :options="userStore.checkoperators"
         ></a-select>
         <a-date-picker v-model:value="monthSelect" picker="month" />
 
@@ -87,6 +87,8 @@
           </a-tag>
         </template> -->
         <template v-if="column.key === 'action'">
+          <a-space direction="vertical">
+          <a-row>
           <a-space>
             <a-button
               danger
@@ -94,7 +96,7 @@
               :disabled="record.alreadydelete == 2 ? true : false"
               >删除</a-button
             >
-            <a-button @click="showEditModal(record)">编辑</a-button>
+            <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
             <!-- 编辑模态框 -->
             <a-modal
               v-model:visible="record.editVisible"
@@ -103,10 +105,25 @@
             >
               <ApplyEditFormView :editForm="record" ref="editFormRef" />
             </a-modal>
-            <a-button @click="reviewData(record.id)" :disabled="record.verification == 1 || record.checkoperator == userInfo.username"  type="primary"
+            <a-button
+              @click="reviewData(record.id)"
+              :disabled="record.verification == 1 || record.checkoperator == userInfo.username"
+              type="primary"
               >复核</a-button
+            >          </a-space>
+</a-row>
+            <a-row>
+            <a-input-search
+              v-model:value="record.reviewnote"
+              placeholder="复核备注"
+              size="medium"
+              @search="onSubmitRNote(record.id,record.reviewnote)"
             >
-          </a-space>
+              <template #enterButton>
+                <a-button>提交复核备注</a-button>
+              </template>
+            </a-input-search>
+          </a-row></a-space>
         </template>
       </template>
     </a-table>
@@ -122,22 +139,20 @@ import ApplyFormView from './ApplyFormView.vue';
 import ApplyEditFormView from './ApplyEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
+import {getMonthRange} from '@/utils/util'
 import 'dayjs/locale/zh-cn';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const monthSelect = ref<Dayjs>();
-const checkoperators = ref<{ value: string }>();
 const selectedOp = ref<string[]>([]);
 
 const count = ref<number>();
-const colors = ['#f50', '#2db7f5', '#87d068', '#108ee9', '#dd6236', '#4a9d9c'];
-const userColors = ref();
 const checked = ref(false);
 const reviewChecked = ref(true);
 const exportData = ref();
 const getColors = (user) => {
-  const findColor = userColors.value.filter((u) => u.username === user);
+  const findColor = userStore.userColors.filter((u) => u.username === user);
   if (findColor.length !== 0) {
     return findColor[0].color;
   } else {
@@ -169,13 +184,22 @@ watch(
     getData();
   }
 );
-// 通过月份获得月尾和月头的日期
-function getMonthRange(monthSelect) {
-  const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD');
-  const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD');
-  return [firstDay, lastDay];
-}
+// 提交复核备注
+const onSubmitRNote = (id,note)=>{
+  api.updateUnempVeriData({id:id,reviewnote:note}).then(res=>{
+    console.log(res)
+    getData()
+    message.info('添加复核备注成功')
 
+  }).catch(e=>{
+    console.log(e)
+    message.info('添加复核备注成功')
+
+
+  })
+  console.log(`${id} - ${note}`)
+
+}
 //数据导出功能
 const exportExcel = () => {
   getData({ noindex: 1 }).then(() => {
@@ -227,7 +251,7 @@ const onShowSizeChange = async (page: any) => {
 };
 
 onBeforeMount(() => {
-  getUsers();
+  userStore.getUsers();
   getData();
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(',')];
@@ -235,20 +259,20 @@ onBeforeMount(() => {
 });
 
 // 获取用户数据，构造用户选择列表
-const getUsers = async (params?: any) => {
-  await api.getUsers(params).then((res: any) => {
-    console.log('users=====>', res);
-    checkoperators.value = res.rows.map((userInfo) => {
-      return { value: userInfo.userName };
-    });
-    userColors.value = res.rows.map((userInfo, index) => {
-      return {
-        username: userInfo.userName,
-        color: colors[index],
-      };
-    });
-  });
-};
+// const getUsers = async (params?: any) => {
+//   await api.getUsers(params).then((res: any) => {
+//     console.log('users=====>', res);
+//     checkoperators.value = res.rows.map((userInfo) => {
+//       return { value: userInfo.userName };
+//     });
+//     userColors.value = res.rows.map((userInfo, index) => {
+//       return {
+//         username: userInfo.userName,
+//         color: colors[index],
+//       };
+//     });
+//   });
+// };
 
 // 获取失业金数据
 const getData = async (params?: any) => {

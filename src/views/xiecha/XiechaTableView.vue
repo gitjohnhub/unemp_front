@@ -3,15 +3,16 @@
   <a-form :model="xiechaForm" ref="xiechaFormRef" name="xiechaForm">
     <a-row :gutter="48">
       <a-col :span="12">
-        <a-form-item label="姓名">
-          <a-input v-model:value="xiechaForm.personName" placeholder="姓名"> </a-input>
-        </a-form-item>
-      </a-col>
-      <a-col :span="12">
         <a-form-item label="身份证号">
           <a-input v-model:value="xiechaForm.personID" placeholder="身份证号"> </a-input>
         </a-form-item>
       </a-col>
+      <a-col :span="12">
+        <a-form-item label="姓名">
+          <a-input v-model:value="xiechaForm.personName" placeholder="姓名"> </a-input>
+        </a-form-item>
+      </a-col>
+
     </a-row>
     <!-- Form文本 -->
 

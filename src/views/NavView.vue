@@ -44,7 +44,7 @@
             <template #title>
               <span>
                 <notification-outlined />
-                用户管理
+                管理
               </span>
             </template>
             <RouterLink v-for="link in routerItems" :to="link.path"><a-menu-item :key="link.path" v-if="link.path.startsWith('/management')">{{ link.title }}</a-menu-item></RouterLink>

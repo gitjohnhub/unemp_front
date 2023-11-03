@@ -16,7 +16,7 @@
         <a-select
           v-model:value="selectedOp"
           mode="multiple"
-          placeholder="选择复核对象"
+          placeholder="选择初核对象"
           style="width: 300px"
           :options="userStore.checkoperators"
         ></a-select>

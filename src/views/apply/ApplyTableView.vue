@@ -255,7 +255,7 @@ onBeforeMount(() => {
   userStore.getUsers();
   getData();
   if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(',')];
+    selectedOp.value = [...userInfo.checkObject.split(','),userInfo.username];
   }
 });
 
@@ -280,7 +280,7 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    checkoperators: [...selectedOp.value,userInfo.username],
+    checkoperators: selectedOp.value,
   };
   if (checked.value == false) {
     params.alreadydelete = 1;
@@ -400,22 +400,16 @@ const columns = [
     dataIndex: 'checkoperator',
     key: 'checkoperator',
   },
+  {
+    title: '复核',
+    dataIndex: 'reviewoperator',
+    key: 'reviewoperator',
+  },
   // {
   //   title: '初核备注',
   //   dataIndex: 'checknote',
   //   key: 'checknote',
   // },
-  {
-    title: '创建时间',
-    dataIndex: 'createtime',
-    key: 'createtime',
-  },
-  {
-    title: '复核人',
-    dataIndex: 'reviewoperator',
-    key: 'reviewoperator',
-  },
-
   // {
   //   title: '复核备注',
   //   dataIndex: 'reviewnote',
@@ -425,6 +419,11 @@ const columns = [
     title: '操作',
     // dataIndex: 'action',
     key: 'action',
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createtime',
+    key: 'createtime',
   },
 ];
 

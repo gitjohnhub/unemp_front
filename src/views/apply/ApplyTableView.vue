@@ -27,6 +27,7 @@
 
         <a-tag color="#108ee9">{{ count }}</a-tag>
         <a-button @click="exportExcel"> 导出Excel </a-button>
+        <a-button @click="getData"> 刷新数据 </a-button>
       </a-space>
     </div>
     <a-table
@@ -279,7 +280,7 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    checkoperators: selectedOp.value,
+    checkoperators: [...selectedOp.value,userInfo.username],
   };
   if (checked.value == false) {
     params.alreadydelete = 1;

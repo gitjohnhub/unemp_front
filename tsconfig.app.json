@@ -12,6 +12,7 @@
     "jsx": "react",
     "esModuleInterop": true
   },
+  "suppressImplicitAnyIndexErrors": true,
   "include": [
     "./src/**/*"
   ]

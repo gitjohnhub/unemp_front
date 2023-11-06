@@ -51,6 +51,7 @@ const getData = async (params?:any)=>{
   if (monthSelect.value) {
     params = {
       ...params,
+      alreadydelete:1,
       monthSelect: getMonthRange(monthSelect.value),
     };
   }

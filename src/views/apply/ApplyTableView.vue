@@ -23,7 +23,12 @@
         <a-date-picker v-model:value="monthSelect" picker="month" />
 
         <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
-        <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox>
+        <!-- <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox> -->
+        <a-radio-group v-model:value="reviewChecked">
+          <a-radio-button value="0">未复核</a-radio-button>
+          <a-radio-button value="1">已复核</a-radio-button>
+          <a-radio-button value="2">全部</a-radio-button>
+        </a-radio-group>
 
         <a-tag color="#108ee9">{{ count }}</a-tag>
         <a-button @click="exportExcel"> 导出Excel </a-button>
@@ -135,7 +140,6 @@
                 >
                   <ApplyEditFormView :editForm="record" ref="editFormRef" />
                 </a-modal>
-
               </a-space>
             </a-row>
             <a-row>
@@ -175,18 +179,20 @@ const monthSelect = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
-const reviewChecked = ref(true);
+const reviewChecked = ref(0);
 const exportData = ref();
 // 搜索相关
-const searchValue = ref()
-const onSearch = ()=>{
-  getData().then(res=>{
-    console.log(res)
-  }).catch(e=>{
-    console.log(e)
-    message.info('查询错误，联系管理员')
-  })
-}
+const searchValue = ref();
+const onSearch = () => {
+  getData()
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((e) => {
+      console.log(e);
+      message.info('查询错误，联系管理员');
+    });
+};
 const getColors = (user) => {
   const findColor = userStore.userColors.filter((u) => u.username === user);
   if (findColor.length !== 0) {
@@ -334,10 +340,13 @@ const getData = async (params?: any) => {
   } else {
     params.alreadydelete = null;
   }
-  if (reviewChecked.value == true) {
+  if (reviewChecked.value == 0) {
     params.verification = '0';
-  } else {
+  } else if (reviewChecked.value == 1) {
+    params.verification = '1';
+  }else {
     params.verification = null;
+
   }
   if (monthSelect.value) {
     params = {
@@ -345,12 +354,12 @@ const getData = async (params?: any) => {
       monthSelect: getMonthRange(monthSelect.value),
     };
   }
-  if (searchValue.value !== undefined && searchValue.value !== '' ){
-    console.log('searchValue===>',searchValue.value)
+  if (searchValue.value !== undefined && searchValue.value !== '') {
+    console.log('searchValue===>', searchValue.value);
     params = {
-      searchValue:searchValue.value,
-      current:1
-    }
+      searchValue: searchValue.value,
+      current: 1,
+    };
   }
   return await api.getUnempVeriData(params).then((res: any) => {
     exportData.value = res.rows;

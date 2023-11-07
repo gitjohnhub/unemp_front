@@ -28,6 +28,12 @@
         <a-tag color="#108ee9">{{ count }}</a-tag>
         <a-button @click="exportExcel"> 导出Excel </a-button>
         <a-button @click="getData"> 刷新数据 </a-button>
+        <a-input-search
+          v-model:value="searchValue"
+          placeholder="查询"
+          style="width: 200px"
+          @search="onSearch"
+        />
       </a-space>
     </div>
     <a-table
@@ -58,10 +64,27 @@
           </a-tooltip>
         </template>
         <template v-if="column.key === 'checkoperator'">
-          <a-tag :color="getColors(record.checkoperator)">
-            {{ record.checkoperator }}
-          </a-tag>
-          <span v-html="`<br>${record.checknote}`"></span>
+          <a-space direction="vertical">
+            <a-row>
+              <a-tag :color="getColors(record.checkoperator)">
+                {{ record.checkoperator }}
+              </a-tag>
+              <a-tag>{{ record.jiezhen }}</a-tag>
+            </a-row>
+
+            <a-input-search
+              v-model:value="record.checknote"
+              placeholder="初核备注"
+              size="medium"
+              @search="onSubmitNote(record.id, record.checknote)"
+            >
+              <template #enterButton>
+                <a-button type="dashed">修改初核备注</a-button>
+              </template>
+            </a-input-search>
+          </a-space>
+
+          <!-- <span v-html="`<br>${record.checknote}`"></span> -->
         </template>
         <!--  reviewoperator column -->
         <template v-if="column.key === 'reviewoperator'">
@@ -89,42 +112,45 @@
         </template> -->
         <template v-if="column.key === 'action'">
           <a-space direction="vertical">
-          <a-row>
-          <a-space>
-            <a-button
-              danger
-              @click="deleteData(record.id)"
-              :disabled="record.alreadydelete == 2 ? true : false"
-              >删除</a-button
-            >
-            <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
-            <!-- 编辑模态框 -->
-            <a-modal
-              v-model:visible="record.editVisible"
-              @ok="handleEditOk"
-              @cancel="handleEditCancel"
-            >
-              <ApplyEditFormView :editForm="record" ref="editFormRef" />
-            </a-modal>
-            <a-button
-              @click="reviewData(record.id)"
-              :disabled="record.verification == 1 || record.checkoperator == userInfo.username"
-              type="primary"
-              >复核</a-button
-            >          </a-space>
-</a-row>
             <a-row>
-            <a-input-search
-              v-model:value="record.reviewnote"
-              placeholder="复核备注"
-              size="medium"
-              @search="onSubmitRNote(record.id,record.reviewnote)"
-            >
-              <template #enterButton>
-                <a-button type="dashed">提交复核备注</a-button>
-              </template>
-            </a-input-search>
-          </a-row></a-space>
+              <a-space>
+                <a-button
+                  @click="reviewData(record.id)"
+                  :disabled="record.verification == 1 || record.checkoperator == userInfo.username"
+                  type="primary"
+                  >复核</a-button
+                >
+                <a-button
+                  danger
+                  @click="deleteData(record.id)"
+                  :disabled="record.alreadydelete == 2 ? true : false"
+                  >删除</a-button
+                >
+                <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
+                <!-- 编辑模态框 -->
+                <a-modal
+                  v-model:visible="record.editVisible"
+                  @ok="handleEditOk"
+                  @cancel="handleEditCancel"
+                >
+                  <ApplyEditFormView :editForm="record" ref="editFormRef" />
+                </a-modal>
+
+              </a-space>
+            </a-row>
+            <a-row>
+              <a-input-search
+                v-model:value="record.reviewnote"
+                placeholder="复核备注"
+                size="medium"
+                @search="onSubmitRNote(record.id, record.reviewnote)"
+              >
+                <template #enterButton>
+                  <a-button type="dashed">提交复核备注</a-button>
+                </template>
+              </a-input-search>
+            </a-row></a-space
+          >
         </template>
       </template>
     </a-table>
@@ -140,18 +166,27 @@ import ApplyFormView from './ApplyFormView.vue';
 import ApplyEditFormView from './ApplyEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
-import {getMonthRange} from '@/utils/util'
+import { getMonthRange } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const monthSelect = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
-
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref(true);
 const exportData = ref();
+// 搜索相关
+const searchValue = ref()
+const onSearch = ()=>{
+  getData().then(res=>{
+    console.log(res)
+  }).catch(e=>{
+    console.log(e)
+    message.info('查询错误，联系管理员')
+  })
+}
 const getColors = (user) => {
   const findColor = userStore.userColors.filter((u) => u.username === user);
   if (findColor.length !== 0) {
@@ -185,22 +220,33 @@ watch(
     getData();
   }
 );
+// 提交初核备注
+const onSubmitNote = (id, note) => {
+  api
+    .updateUnempVeriData({ id: id, checknote: note })
+    .then((res) => {
+      getData();
+      message.info('修改备注成功');
+    })
+    .catch((e) => {
+      console.log(e);
+      message.info('修改备注失败，请联系管理员');
+    });
+};
 // 提交复核备注
-const onSubmitRNote = (id,note)=>{
-  api.updateUnempVeriData({id:id,reviewnote:note}).then(res=>{
-    console.log(res)
-    getData()
-    message.info('添加复核备注成功')
-
-  }).catch(e=>{
-    console.log(e)
-    message.info('添加复核备注成功')
-
-
-  })
-  console.log(`${id} - ${note}`)
-
-}
+const onSubmitRNote = (id, note) => {
+  api
+    .updateUnempVeriData({ id: id, reviewnote: note })
+    .then((res) => {
+      console.log(res);
+      getData();
+      message.info('添加复核备注成功');
+    })
+    .catch((e) => {
+      console.log(e);
+      message.info('添加复核备注失败，请联系管理员');
+    });
+};
 //数据导出功能
 const exportExcel = () => {
   getData({ noindex: 1 }).then(() => {
@@ -253,10 +299,10 @@ const onShowSizeChange = async (page: any) => {
 
 onBeforeMount(() => {
   userStore.getUsers();
-  getData();
   if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(','),userInfo.username];
+    selectedOp.value = [...userInfo.checkObject.split(','), userInfo.username];
   }
+  getData();
 });
 
 // 获取用户数据，构造用户选择列表
@@ -282,6 +328,7 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
   };
+
   if (checked.value == false) {
     params.alreadydelete = 1;
   } else {
@@ -297,6 +344,13 @@ const getData = async (params?: any) => {
       ...params,
       monthSelect: getMonthRange(monthSelect.value),
     };
+  }
+  if (searchValue.value !== undefined && searchValue.value !== '' ){
+    console.log('searchValue===>',searchValue.value)
+    params = {
+      searchValue:searchValue.value,
+      current:1
+    }
   }
   return await api.getUnempVeriData(params).then((res: any) => {
     exportData.value = res.rows;
@@ -390,11 +444,11 @@ const columns = [
     dataIndex: 'personID',
     key: 'personID',
   },
-  {
-    title: '街镇',
-    dataIndex: 'jiezhen',
-    key: 'jiezhen',
-  },
+  // {
+  //   title: '街镇',
+  //   dataIndex: 'jiezhen',
+  //   key: 'jiezhen',
+  // },
   {
     title: '初核',
     dataIndex: 'checkoperator',

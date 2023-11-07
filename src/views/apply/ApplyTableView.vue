@@ -1,26 +1,43 @@
 <template>
   <div>
     <div class="table-operations">
-      <a-space>
-        <a-button @click="showAddDataModal" type="primary">添加</a-button>
-        <a-modal
-          v-model:open="open"
-          title="Title"
-          :confirm-loading="confirmLoading"
-          @ok="handleOk"
-          @cancel="handleCancel"
-        >
-          <ApplyFormView ref="formRef" />
-        </a-modal>
+      <a-space direction="vertical">
 
-        <a-select
-          v-model:value="selectedOp"
-          mode="multiple"
-          placeholder="选择初核对象"
-          style="width: 300px"
-          :options="userStore.checkoperators"
-        ></a-select>
-        <a-date-picker v-model:value="monthSelect" picker="month" />
+      <a-row>
+        <a-space>
+          <a-button @click="showAddDataModal" type="primary">添加</a-button>
+          <a-modal
+            v-model:open="open"
+            title="Title"
+            :confirm-loading="confirmLoading"
+            @ok="handleOk"
+            @cancel="handleCancel"
+          >
+            <ApplyFormView ref="formRef" />
+          </a-modal>
+
+          <a-select
+            v-model:value="selectedOp"
+            mode="multiple"
+            placeholder="选择初核对象"
+            style="width: 300px"
+            :options="userStore.checkoperators"
+          ></a-select>
+          <a-date-picker v-model:value="monthSelect" picker="month" />
+
+          <a-tag color="#108ee9">{{ count }}</a-tag>
+          <a-button @click="exportExcel"> 导出Excel </a-button>
+          <a-button @click="getData"> 刷新数据 </a-button>
+          <a-input-search
+            v-model:value="searchValue"
+            placeholder="查询"
+            style="width: 200px"
+            @search="onSearch"
+          />
+        </a-space>
+      </a-row>
+      <a-row>
+        <a-space>
 
         <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
         <!-- <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox> -->
@@ -29,17 +46,11 @@
           <a-radio-button value="1">已复核</a-radio-button>
           <a-radio-button value="2">全部</a-radio-button>
         </a-radio-group>
-
-        <a-tag color="#108ee9">{{ count }}</a-tag>
-        <a-button @click="exportExcel"> 导出Excel </a-button>
-        <a-button @click="getData"> 刷新数据 </a-button>
-        <a-input-search
-          v-model:value="searchValue"
-          placeholder="查询"
-          style="width: 200px"
-          @search="onSearch"
-        />
       </a-space>
+
+      </a-row>
+    </a-space>
+
     </div>
     <a-table
       :columns="columns"
@@ -179,7 +190,7 @@ const monthSelect = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
-const reviewChecked = ref(0);
+const reviewChecked = ref('0');
 const exportData = ref();
 // 搜索相关
 const searchValue = ref();
@@ -340,13 +351,12 @@ const getData = async (params?: any) => {
   } else {
     params.alreadydelete = null;
   }
-  if (reviewChecked.value == 0) {
+  if (reviewChecked.value == '0') {
     params.verification = '0';
-  } else if (reviewChecked.value == 1) {
+  } else if (reviewChecked.value == '1') {
     params.verification = '1';
-  }else {
+  } else {
     params.verification = null;
-
   }
   if (monthSelect.value) {
     params = {

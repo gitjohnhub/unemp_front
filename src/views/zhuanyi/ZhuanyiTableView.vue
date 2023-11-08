@@ -14,8 +14,8 @@
             >
               <ZhuanyiAddFormView ref="formRef" />
             </a-modal>
-            <a-date-picker v-model:value="payDate" />
-            <a-date-picker v-model:value="monthSelect" picker="month" />
+
+            <!-- <a-date-picker v-model:value="monthSelect" picker="month" /> -->
 
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="exportExcel"> 导出Excel </a-button>
@@ -30,6 +30,11 @@
         </a-row>
         <a-row>
           <a-space>
+            <a-date-picker v-model:value="payDate">
+              <template #suffixIcon>
+                <div>支付日期</div>
+              </template>
+            </a-date-picker>
             <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
             <a-radio-group v-model:value="status">
               <a-radio-button v-for="(status, index) in statusList" :value="index">{{
@@ -58,6 +63,7 @@
           >
         </template>
         <template v-if="column.key === 'personName'">
+          <a-space direction="vertical">
           <a-tooltip :title="pinyin(record.personName)" color="#f50">
             <a-typography-paragraph
               :style="{ fontSize: '18px' }"
@@ -66,6 +72,15 @@
               >{{ record.personName }}</a-typography-paragraph
             >
           </a-tooltip>
+          </a-space>
+        </template>
+        <template v-if="column.key === 'isOnlyTransferRelation'">
+          <a-space direction="vertical">
+          <a-tooltip :title="pinyin(record.isOnlyTransferRelation)" color="#f50">
+            <a-tag color="orange">{{ record.isOnlyTransferRelation }}</a-tag>
+          </a-tooltip>
+          <a-tag>{{ record.fromArea }}</a-tag>
+          </a-space>
         </template>
         <template v-if="column.key === 'checkoperator'">
           <a-space direction="vertical">
@@ -96,7 +111,11 @@
           <a-tag>
             {{ getStatus(record.status) }}
           </a-tag>
-          <a-tag>支付日期：{{ record.payDate }}</a-tag>
+          <a-progress :percent="getProgress(record.status)" size="small" />
+
+          <a-tag v-if="record.status !== '0' && record.status !== '1'"
+            >支付日期：{{ record.payDate }}</a-tag
+          >
         </template>
         <!-- createtime column -->
         <template v-if="column.key === 'createtime'">
@@ -186,10 +205,19 @@ const exportData = ref();
 const status = ref('0');
 // 搜索相关
 const searchValue = ref();
-const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消'];
+const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消', '全部'];
 const getStatus = (status: String) => {
   console.log(Number(status));
   return statusList[Number(status)];
+};
+const getProgress = (status: String) => {
+  const currentIndex = Number(status) + 1;
+  // 状态总数
+  const total = 4; // 不算 '全部'
+  // 百分比进度
+  const percent = (currentIndex / total) * 100;
+
+  return percent; // 33.33
 };
 const onSearch = () => {
   getData()
@@ -231,7 +259,7 @@ watch(
 watch(
   () => checked.value,
   (newValue) => {
-    console.log('checkedValue====>',newValue);
+    console.log('checkedValue====>', newValue);
     getData();
   }
 );
@@ -267,9 +295,13 @@ const exportExcel = () => {
       const result = {
         personName: item.personName,
         personID: item.personID,
-        verification: item.verification,
+        fromArea: item.fromArea,
+        isOnlyTransferRelationship: item.isOnlyTransferRelationship,
+        payDate: item.payDate,
+        note: item.note,
         isDeleted: item.isDeleted,
         createtime: item.createtime,
+        checkoperator: item.checkoperator,
       };
 
       return result;
@@ -330,7 +362,7 @@ const getData = async (params?: any) => {
   } else {
     params.isDeleted = 0;
   }
-  console.log('params===>',params)
+  console.log('params===>', params);
   if (status.value == '0') {
     params.status = '0';
   } else if (status.value == '1') {
@@ -341,8 +373,10 @@ const getData = async (params?: any) => {
     params.status = '3';
   } else if (status.value == '4') {
     params.status = '4';
-  } else {
+  } else if (status.value == '5') {
     params.status = '5';
+  } else {
+    params.status = null;
   }
   if (reviewChecked.value == '0') {
     params.verification = '0';
@@ -401,8 +435,8 @@ const payData = async (id: number) => {
       .then((res: any) => {
         getData();
       });
-  }else{
-    message.info('请选择支付日期')
+  } else {
+    message.info('请选择支付日期');
   }
 };
 const paySuccess = async (id: number) => {
@@ -479,20 +513,15 @@ const columns = [
     dataIndex: 'personID',
     key: 'personID',
   },
-  {
-    title: '备注',
-    dataIndex: 'note',
-    key: 'note',
-  },
   // {
-  //   title: '街镇',
-  //   dataIndex: 'jiezhen',
-  //   key: 'jiezhen',
+  //   title: '备注',
+  //   dataIndex: 'note',
+  //   key: 'note',
   // },
   {
-    title: '转入地',
-    dataIndex: 'fromArea',
-    key: 'fromArea',
+    title: '转出地\关系/金额',
+    dataIndex: 'isOnlyTransferRelation',
+    key: 'isOnlyTransferRelation',
   },
   {
     title: '操作员',

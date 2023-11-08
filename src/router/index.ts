@@ -43,6 +43,15 @@ const router = createRouter({
             },
           },
           {
+            path: '/zhuanyiTable',
+            name: 'zhuanyiTable',
+            component: ()=>import('@/views/zhuanyi/ZhuanyiHomeView.vue'),
+            meta: {
+              title: '跨省市转移',
+              requiresAuth: true,
+            },
+          },
+          {
             path:'/contact',
             redirect:'/contact/unempContact',
             children:[

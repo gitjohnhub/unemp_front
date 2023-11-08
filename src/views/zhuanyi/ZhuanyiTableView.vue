@@ -2,55 +2,43 @@
   <div>
     <div class="table-operations">
       <a-space direction="vertical">
+        <a-row>
+          <a-space>
+            <a-button @click="showAddDataModal" type="primary">添加</a-button>
+            <a-modal
+              v-model:open="open"
+              title="Title"
+              :confirm-loading="confirmLoading"
+              @ok="handleOk"
+              @cancel="handleCancel"
+            >
+              <ZhuanyiAddFormView ref="formRef" />
+            </a-modal>
+            <a-date-picker v-model:value="payDate" />
+            <a-date-picker v-model:value="monthSelect" picker="month" />
 
-      <a-row>
-        <a-space>
-          <a-button @click="showAddDataModal" type="primary">添加</a-button>
-          <a-modal
-            v-model:open="open"
-            title="Title"
-            :confirm-loading="confirmLoading"
-            @ok="handleOk"
-            @cancel="handleCancel"
-          >
-            <ApplyFormView ref="formRef" />
-          </a-modal>
-
-          <a-select
-            v-model:value="selectedOp"
-            mode="multiple"
-            placeholder="选择初核对象"
-            style="width: 300px"
-            :options="userStore.checkoperators"
-          ></a-select>
-          <a-date-picker v-model:value="monthSelect" picker="month" />
-
-          <a-tag color="#108ee9">{{ count }}</a-tag>
-          <a-button @click="exportExcel"> 导出Excel </a-button>
-          <a-button @click="getData"> 刷新数据 </a-button>
-          <a-input-search
-            v-model:value="searchValue"
-            placeholder="输入身份证号查询"
-            style="width: 200px"
-            @search="onSearch"
-          />
-        </a-space>
-      </a-row>
-      <a-row>
-        <a-space>
-
-        <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
-        <!-- <a-checkbox v-model:checked="reviewChecked">只显示待复核</a-checkbox> -->
-        <a-radio-group v-model:value="reviewChecked">
-          <a-radio-button value="0">未复核</a-radio-button>
-          <a-radio-button value="1">已复核</a-radio-button>
-          <a-radio-button value="2">全部</a-radio-button>
-        </a-radio-group>
+            <a-tag color="#108ee9">{{ count }}</a-tag>
+            <a-button @click="exportExcel"> 导出Excel </a-button>
+            <a-button @click="getData"> 刷新数据 </a-button>
+            <a-input-search
+              v-model:value="searchValue"
+              placeholder="查询"
+              style="width: 200px"
+              @search="onSearch"
+            />
+          </a-space>
+        </a-row>
+        <a-row>
+          <a-space>
+            <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
+            <a-radio-group v-model:value="status">
+              <a-radio-button v-for="(status, index) in statusList" :value="index">{{
+                status
+              }}</a-radio-button>
+            </a-radio-group>
+          </a-space>
+        </a-row>
       </a-space>
-
-      </a-row>
-    </a-space>
-
     </div>
     <a-table
       :columns="columns"
@@ -65,7 +53,7 @@
             :style="{ fontSize: '18px' }"
             copyable
             keyboard
-            :class="{ deleted: record.alreadydelete == 0 }"
+            :class="{ deleted: record.isDeleted == 0 }"
             >{{ record.personID }}</a-typography-paragraph
           >
         </template>
@@ -74,7 +62,7 @@
             <a-typography-paragraph
               :style="{ fontSize: '18px' }"
               copyable
-              :class="{ deleted: record.alreadydelete == 0 }"
+              :class="{ deleted: record.isDeleted == 2 }"
               >{{ record.personName }}</a-typography-paragraph
             >
           </a-tooltip>
@@ -85,29 +73,30 @@
               <a-tag :color="getColors(record.checkoperator)">
                 {{ record.checkoperator }}
               </a-tag>
-              <a-tag>{{ record.jiezhen }}</a-tag>
+              <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
+                {{ record.reviewoperator }}
+              </a-tag>
             </a-row>
 
             <a-input-search
-              v-model:value="record.checknote"
+              v-model:value="record.note"
               placeholder="初核备注"
               size="medium"
-              @search="onSubmitNote(record.id, record.checknote)"
+              @search="onSubmitNote(record.id, record.note)"
             >
               <template #enterButton>
-                <a-button type="dashed">修改初核备注</a-button>
+                <a-button type="dashed">修改备注</a-button>
               </template>
             </a-input-search>
           </a-space>
 
           <!-- <span v-html="`<br>${record.checknote}`"></span> -->
         </template>
-        <!--  reviewoperator column -->
-        <template v-if="column.key === 'reviewoperator'">
-          <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
-            {{ record.reviewoperator }}
+        <template v-if="column.key === 'status'">
+          <a-tag>
+            {{ getStatus(record.status) }}
           </a-tag>
-          <span v-if="record.reviewnote != null" v-html="`<br>${record.reviewnote}`"></span>
+          <a-tag>支付日期：{{ record.payDate }}</a-tag>
         </template>
         <!-- createtime column -->
         <template v-if="column.key === 'createtime'">
@@ -121,51 +110,51 @@
             ></span>
           </a-tag>
         </template>
-        <!-- <template v-if="column.key === 'alreadydelete'">
-          <a-tag :color="record.alreadydelete == 1 ? 'success' : 'error'">
-            {{ record.alreadydelete == 1 ? '存在' : '已删除' }}
-          </a-tag>
-        </template> -->
         <template v-if="column.key === 'action'">
           <a-space direction="vertical">
             <a-row>
               <a-space>
                 <a-button
                   @click="reviewData(record.id)"
-                  :disabled="record.verification == 1 || record.checkoperator == userInfo.username"
                   type="primary"
+                  :disabled="record.status !== '0'"
                   >复核</a-button
                 >
                 <a-button
                   danger
                   @click="deleteData(record.id)"
-                  :disabled="record.alreadydelete == 0 ? true : false"
+                  :disabled="record.isDeleted == 0 ? true : false"
                   >删除</a-button
                 >
-                <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
-                <!-- 编辑模态框 -->
-                <a-modal
-                  v-model:visible="record.editVisible"
-                  @ok="handleEditOk"
-                  @cancel="handleEditCancel"
-                >
-                  <ApplyEditFormView :editForm="record" ref="editFormRef" />
-                </a-modal>
               </a-space>
             </a-row>
             <a-row>
-              <a-input-search
-                v-model:value="record.reviewnote"
-                placeholder="复核备注"
-                size="medium"
-                @search="onSubmitRNote(record.id, record.reviewnote)"
-              >
-                <template #enterButton>
-                  <a-button type="dashed">提交复核备注</a-button>
-                </template>
-              </a-input-search>
-            </a-row></a-space
-          >
+              <a-space>
+                <a-button
+                  @click="payData(record.id)"
+                  type="primary"
+                  :disabled="record.status !== '1'"
+                  >支付</a-button
+                >
+                <a-button
+                  @click="paySuccess(record.id)"
+                  type="primary"
+                  :disabled="record.status !== '2'"
+                  >支付成功</a-button
+                >
+              </a-space>
+            </a-row>
+
+            <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
+            <!-- 编辑模态框 -->
+            <a-modal
+              v-model:visible="record.editVisible"
+              @ok="handleEditOk"
+              @cancel="handleEditCancel"
+            >
+              <ZhuanyiEditFormView :editForm="record" ref="editFormRef" />
+            </a-modal>
+          </a-space>
         </template>
       </template>
     </a-table>
@@ -177,23 +166,31 @@ import { message } from 'ant-design-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import * as XLSX from 'xlsx';
-import ApplyFormView from './ApplyFormView.vue';
-import ApplyEditFormView from './ApplyEditFormView.vue';
+import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';
+import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { getMonthRange } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
+import { stat } from 'fs';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const monthSelect = ref<Dayjs>();
+const payDate = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref('0');
 const exportData = ref();
+const status = ref('0');
 // 搜索相关
 const searchValue = ref();
+const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消'];
+const getStatus = (status: String) => {
+  console.log(Number(status));
+  return statusList[Number(status)];
+};
 const onSearch = () => {
   getData()
     .then((res) => {
@@ -226,7 +223,20 @@ watch(
   }
 );
 watch(
+  () => payDate.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
   () => checked.value,
+  (newValue) => {
+    console.log('checkedValue====>',newValue);
+    getData();
+  }
+);
+watch(
+  () => status.value,
   (newValue) => {
     getData();
   }
@@ -237,10 +247,10 @@ watch(
     getData();
   }
 );
-// 提交初核备注
+// 提交备注
 const onSubmitNote = (id, note) => {
   api
-    .updateUnempVeriData({ id: id, checknote: note })
+    .updateZhuanyiData({ id: id, note: note })
     .then((res) => {
       getData();
       message.info('修改备注成功');
@@ -248,20 +258,6 @@ const onSubmitNote = (id, note) => {
     .catch((e) => {
       console.log(e);
       message.info('修改备注失败，请联系管理员');
-    });
-};
-// 提交复核备注
-const onSubmitRNote = (id, note) => {
-  api
-    .updateUnempVeriData({ id: id, reviewnote: note })
-    .then((res) => {
-      console.log(res);
-      getData();
-      message.info('添加复核备注成功');
-    })
-    .catch((e) => {
-      console.log(e);
-      message.info('添加复核备注失败，请联系管理员');
     });
 };
 //数据导出功能
@@ -272,7 +268,7 @@ const exportExcel = () => {
         personName: item.personName,
         personID: item.personID,
         verification: item.verification,
-        alreadydelete: item.alreadydelete,
+        isDeleted: item.isDeleted,
         createtime: item.createtime,
       };
 
@@ -321,24 +317,7 @@ onBeforeMount(() => {
   }
   getData();
 });
-
-// 获取用户数据，构造用户选择列表
-// const getUsers = async (params?: any) => {
-//   await api.getUsers(params).then((res: any) => {
-//     console.log('users=====>', res);
-//     checkoperators.value = res.rows.map((userInfo) => {
-//       return { value: userInfo.userName };
-//     });
-//     userColors.value = res.rows.map((userInfo, index) => {
-//       return {
-//         username: userInfo.userName,
-//         color: colors[index],
-//       };
-//     });
-//   });
-// };
-
-// 获取失业金数据
+// 获取数据
 const getData = async (params?: any) => {
   params = {
     ...params,
@@ -347,9 +326,23 @@ const getData = async (params?: any) => {
   };
 
   if (checked.value == false) {
-    params.alreadydelete = 1;
+    params.isDeleted = 1;
   } else {
-    params.alreadydelete = 0;
+    params.isDeleted = 0;
+  }
+  console.log('params===>',params)
+  if (status.value == '0') {
+    params.status = '0';
+  } else if (status.value == '1') {
+    params.status = '1';
+  } else if (status.value == '2') {
+    params.status = '2';
+  } else if (status.value == '3') {
+    params.status = '3';
+  } else if (status.value == '4') {
+    params.status = '4';
+  } else {
+    params.status = '5';
   }
   if (reviewChecked.value == '0') {
     params.verification = '0';
@@ -371,7 +364,7 @@ const getData = async (params?: any) => {
       current: 1,
     };
   }
-  return await api.getUnempVeriData(params).then((res: any) => {
+  return await api.getZhuanyiData(params).then((res: any) => {
     exportData.value = res.rows;
     pager.value = res.page;
     count.value = pager.value.total;
@@ -385,13 +378,36 @@ const getCorrectTime = (date: string) => {
 };
 
 const deleteData = async (id: number) => {
-  await api.updateUnempVeriData({ id: id, alreadydelete: 0 }).then((res: any) => {
+  await api.updateZhuanyiData({ id: id, isDeleted: 0 }).then((res: any) => {
     getData();
   });
 };
 const reviewData = async (id: number) => {
   await api
-    .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '1' })
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '1' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const payData = async (id: number) => {
+  if (payDate.value) {
+    await api
+      .updateZhuanyiData({
+        id: id,
+        reviewoperator: userInfo.username,
+        status: '2',
+        payDate: payDate.value!.format('YYYY-MM-DD'),
+      })
+      .then((res: any) => {
+        getData();
+      });
+  }else{
+    message.info('请选择支付日期')
+  }
+};
+const paySuccess = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '3' })
     .then((res: any) => {
       getData();
     });
@@ -463,20 +479,30 @@ const columns = [
     dataIndex: 'personID',
     key: 'personID',
   },
+  {
+    title: '备注',
+    dataIndex: 'note',
+    key: 'note',
+  },
   // {
   //   title: '街镇',
   //   dataIndex: 'jiezhen',
   //   key: 'jiezhen',
   // },
   {
-    title: '初核',
+    title: '转入地',
+    dataIndex: 'fromArea',
+    key: 'fromArea',
+  },
+  {
+    title: '操作员',
     dataIndex: 'checkoperator',
     key: 'checkoperator',
   },
   {
-    title: '复核',
-    dataIndex: 'reviewoperator',
-    key: 'reviewoperator',
+    title: '进度',
+    dataIndex: 'status',
+    key: 'status',
   },
   // {
   //   title: '初核备注',
@@ -523,6 +549,7 @@ const columns = [
 .deleted {
   text-decoration: line-through;
 }
+
 .table-operations {
   margin-bottom: 16px;
 }

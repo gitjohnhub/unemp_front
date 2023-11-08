@@ -52,6 +52,7 @@
     </a-space>
 
     </div>
+    <a-spin :spinning="spinning" >
     <a-table
       :columns="columns"
       :data-source="dataSource"
@@ -169,6 +170,7 @@
         </template>
       </template>
     </a-table>
+  </a-spin>
   </div>
 </template>
 <script lang="ts" setup>
@@ -183,6 +185,7 @@ import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { getMonthRange } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
+import { parseArgs } from 'util';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -194,7 +197,9 @@ const reviewChecked = ref('0');
 const exportData = ref();
 // 搜索相关
 const searchValue = ref();
+const spinning = ref<boolean>(false);
 const onSearch = () => {
+  pager.value.current = 1
   getData()
     .then((res) => {
       console.log(res);
@@ -221,6 +226,7 @@ watch(
 watch(
   () => monthSelect.value,
   (newValue) => {
+    pager.value.current = 1
     // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
     getData();
   }
@@ -228,12 +234,15 @@ watch(
 watch(
   () => checked.value,
   (newValue) => {
+    pager.value.current = 1
+
     getData();
   }
 );
 watch(
   () => reviewChecked.value,
   (newValue) => {
+    pager.value.current = 1
     getData();
   }
 );
@@ -340,6 +349,7 @@ onBeforeMount(() => {
 
 // 获取失业金数据
 const getData = async (params?: any) => {
+  spinning.value = true
   params = {
     ...params,
     ...pager.value,
@@ -368,14 +378,18 @@ const getData = async (params?: any) => {
     console.log('searchValue===>', searchValue.value);
     params = {
       searchValue: searchValue.value,
-      current: 1,
+      ...pager.value
     };
+    console.log('params===>', params)
   }
   return await api.getUnempVeriData(params).then((res: any) => {
+    console.log(res)
     exportData.value = res.rows;
     pager.value = res.page;
     count.value = pager.value.total;
     dataSource.value = res.rows;
+  }).then(() => {
+    spinning.value = false
   });
 };
 const getCorrectTime = (date: string) => {
@@ -416,10 +430,8 @@ const handleOk = () => {
   formRef.value
     .onSubmit()
     .then(() => {
-      confirmLoading.value = true;
       getData();
       open.value = false;
-      confirmLoading.value = false;
     })
     .catch((error) => {
       message.info('数据格式错误，无法提交=>', error);

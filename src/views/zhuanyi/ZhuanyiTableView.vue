@@ -109,7 +109,7 @@
           <!-- <span v-html="`<br>${record.checknote}`"></span> -->
         </template>
         <template v-if="column.key === 'status'">
-          <a-tag>
+          <a-tag :color="colorList[Number(record.status)]">
             {{ getStatus(record.status) }}
           </a-tag>
           <a-progress :percent="getProgress(record.status)" size="small" />

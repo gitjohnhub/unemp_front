@@ -38,7 +38,7 @@ const router = createRouter({
             name: 'xiechaTable',
             component: ()=>import('@/views/xiecha/XiechaTableView.vue'),
             meta: {
-              title: '跨省市协查',
+              title: '外省市协查',
               requiresAuth: true,
             },
           },

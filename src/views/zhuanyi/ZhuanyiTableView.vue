@@ -45,6 +45,8 @@
         </a-row>
       </a-space>
     </div>
+    <a-spin :spinning="spinning" >
+
     <a-table
       :columns="columns"
       :data-source="dataSource"
@@ -92,7 +94,7 @@
                 {{ record.reviewoperator }}
               </a-tag>
             </a-row>
-
+            <a-tooltip :title="record.note" color="#f50">
             <a-input-search
               v-model:value="record.note"
               placeholder="初核备注"
@@ -103,6 +105,7 @@
                 <a-button type="dashed">修改备注</a-button>
               </template>
             </a-input-search>
+            </a-tooltip>
           </a-space>
 
           <!-- <span v-html="`<br>${record.checknote}`"></span> -->
@@ -164,6 +167,21 @@
               </a-space>
             </a-row>
 
+            <a-row>
+              <a-space>
+                <a-button
+                  @click="refuseData(record.id)"
+                  type="primary" danger
+                  >驳回</a-button
+                >
+                <a-button
+                  @click="cancelData(record.id)"
+                  type="primary" danger
+                  >取消</a-button
+                >
+              </a-space>
+            </a-row>
+
             <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
             <!-- 编辑模态框 -->
             <a-modal
@@ -177,6 +195,7 @@
         </template>
       </template>
     </a-table>
+    </a-spin>
   </div>
 </template>
 <script lang="ts" setup>
@@ -203,6 +222,9 @@ const checked = ref(false);
 const reviewChecked = ref('0');
 const exportData = ref();
 const status = ref('0');
+//加载数据动画
+const spinning = ref<boolean>(false);
+
 // 搜索相关
 const searchValue = ref();
 const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消', '全部'];
@@ -266,6 +288,7 @@ watch(
 watch(
   () => status.value,
   (newValue) => {
+    pager.value.current = 1
     getData();
   }
 );
@@ -351,6 +374,8 @@ onBeforeMount(() => {
 });
 // 获取数据
 const getData = async (params?: any) => {
+  spinning.value = true
+
   params = {
     ...params,
     ...pager.value,
@@ -403,6 +428,8 @@ const getData = async (params?: any) => {
     pager.value = res.page;
     count.value = pager.value.total;
     dataSource.value = res.rows;
+  }).then(() => {
+    spinning.value = false
   });
 };
 const getCorrectTime = (date: string) => {
@@ -419,6 +446,20 @@ const deleteData = async (id: number) => {
 const reviewData = async (id: number) => {
   await api
     .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '1' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const refuseData = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '4' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const cancelData = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '5' })
     .then((res: any) => {
       getData();
     });

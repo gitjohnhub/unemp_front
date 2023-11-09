@@ -18,11 +18,11 @@
             <!-- <a-date-picker v-model:value="monthSelect" picker="month" /> -->
 
             <a-tag color="#108ee9">{{ count }}</a-tag>
-            <a-button @click="exportExcel"> 导出Excel </a-button>
+            <!-- <a-button @click="exportExcel"> 导出Excel </a-button> -->
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-input-search
               v-model:value="searchValue"
-              placeholder="查询"
+              placeholder="输入身份证号查询"
               style="width: 200px"
               @search="onSearch"
             />
@@ -78,16 +78,14 @@
         </template>
         <template v-if="column.key === 'isOnlyTransferRelation'">
           <a-space direction="vertical">
-          <a-tooltip :title="pinyin(record.isOnlyTransferRelation)" color="#f50">
-            <a-tag color="orange">{{ record.isOnlyTransferRelation }}</a-tag>
-          </a-tooltip>
+            <a-tag :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0] ">{{ record.isOnlyTransferRelation }}</a-tag>
           <a-tag>{{ record.fromArea }}</a-tag>
           </a-space>
         </template>
         <template v-if="column.key === 'checkoperator'">
           <a-space direction="vertical">
             <a-row>
-              <a-tag :color="getColors(record.checkoperator)">
+              <a-tag>
                 {{ record.checkoperator }}
               </a-tag>
               <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
@@ -139,38 +137,38 @@
                 <a-button
                   @click="reviewData(record.id)"
                   type="primary"
-                  :disabled="record.status !== '0'"
+                  v-if="record.status == '0'"
                   >复核</a-button
                 >
                 <a-button
-                  danger
-                  @click="deleteData(record.id)"
-                  :disabled="record.isDeleted == 0 ? true : false"
-                  >删除</a-button
-                >
-              </a-space>
-            </a-row>
-            <a-row>
-              <a-space>
-                <a-button
                   @click="payData(record.id)"
                   type="primary"
-                  :disabled="record.status !== '1'"
+                  v-if="record.status == '1'"
                   >支付</a-button
                 >
                 <a-button
                   @click="paySuccess(record.id)"
                   type="primary"
-                  :disabled="record.status !== '2'"
+                  v-if="record.status == '2'"
                   >支付成功</a-button
+                >
+
+                <a-button
+                  danger
+                  @click="deleteData(record.id)"
+                  v-if="record.isDeleted == 1 ? true : false"
+                  >删除</a-button
                 >
               </a-space>
             </a-row>
+
+
 
             <a-row>
               <a-space>
                 <a-button
                   @click="refuseData(record.id)"
+                  v-if="record.status == '0' || record.status == '1'"
                   type="primary" danger
                   >驳回</a-button
                 >
@@ -228,6 +226,7 @@ const spinning = ref<boolean>(false);
 // 搜索相关
 const searchValue = ref();
 const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消', '全部'];
+const colorList = ['#25b1bf', '#acc2ef', '#3D5A80', '#2E8B57', '#c21d03', '#fd5732'];
 const getStatus = (status: String) => {
   console.log(Number(status));
   return statusList[Number(status)];

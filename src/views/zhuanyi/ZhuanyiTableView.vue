@@ -14,11 +14,7 @@
             >
               <ZhuanyiAddFormView ref="formRef" />
             </a-modal>
-
-            <!-- <a-date-picker v-model:value="monthSelect" picker="month" /> -->
-
             <a-tag color="#108ee9">{{ count }}</a-tag>
-            <!-- <a-button @click="exportExcel"> 导出Excel </a-button> -->
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-input-search
               v-model:value="searchValue"
@@ -30,169 +26,178 @@
         </a-row>
         <a-row>
           <a-space>
+            <h5>复核支付操作：</h5>
             <a-date-picker v-model:value="payDate">
               <template #suffixIcon>
                 <div>支付日期</div>
               </template>
             </a-date-picker>
             <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
+          </a-space>
+        </a-row>
+        <a-row>
+          <!-- 数据导出操作 -->
+
+          <a-space>
+            <h5>导出操作：</h5>
+            <a-date-picker v-model:value="monthSelect" />
             <a-radio-group v-model:value="status">
               <a-radio-button v-for="(status, index) in statusList" :value="index">{{
                 status
               }}</a-radio-button>
             </a-radio-group>
+            <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
+              导出Excel
+            </a-button>
           </a-space>
         </a-row>
       </a-space>
     </div>
-    <a-spin :spinning="spinning" >
-
-    <a-table
-      :columns="columns"
-      :data-source="dataSource"
-      @change="handleChange"
-      @showSizeChange="onShowSizeChange"
-      :pagination="pagination"
-    >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'personID'">
-          <a-typography-paragraph
-            :style="{ fontSize: '18px' }"
-            copyable
-            keyboard
-            :class="{ deleted: record.isDeleted == 0 }"
-            >{{ record.personID }}</a-typography-paragraph
-          >
-        </template>
-        <template v-if="column.key === 'personName'">
-          <a-space direction="vertical">
-          <a-tooltip :title="pinyin(record.personName)" color="#f50">
+    <a-spin :spinning="spinning">
+      <a-table
+        :columns="columns"
+        :data-source="dataSource"
+        @change="handleChange"
+        @showSizeChange="onShowSizeChange"
+        :pagination="pagination"
+      >
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'personID'">
             <a-typography-paragraph
               :style="{ fontSize: '18px' }"
               copyable
-              :class="{ deleted: record.isDeleted == 2 }"
-              >{{ record.personName }}</a-typography-paragraph
+              keyboard
+              :class="{ deleted: record.isDeleted == 0 }"
+              >{{ record.personID }}</a-typography-paragraph
             >
-          </a-tooltip>
-          </a-space>
-        </template>
-        <template v-if="column.key === 'isOnlyTransferRelation'">
-          <a-space direction="vertical">
-            <a-tag :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0] ">{{ record.isOnlyTransferRelation }}</a-tag>
-          <a-tag>{{ record.fromArea }}</a-tag>
-          </a-space>
-        </template>
-        <template v-if="column.key === 'checkoperator'">
-          <a-space direction="vertical">
-            <a-row>
-              <a-tag>
-                {{ record.checkoperator }}
-              </a-tag>
-              <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
-                {{ record.reviewoperator }}
-              </a-tag>
-            </a-row>
-            <a-tooltip :title="record.note" color="#f50">
-            <a-input-search
-              v-model:value="record.note"
-              placeholder="初核备注"
-              size="medium"
-              @search="onSubmitNote(record.id, record.note)"
+          </template>
+          <template v-if="column.key === 'personName'">
+            <a-space direction="vertical">
+              <a-tooltip :title="pinyin(record.personName)" color="#f50">
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                  >{{ record.personName }}</a-typography-paragraph
+                >
+              </a-tooltip>
+            </a-space>
+          </template>
+          <template v-if="column.key === 'isOnlyTransferRelation'">
+            <a-space direction="vertical">
+              <a-tag
+                :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]"
+                >{{ record.isOnlyTransferRelation }}</a-tag
+              >
+              <a-tag>{{ record.fromArea }}</a-tag>
+            </a-space>
+          </template>
+          <template v-if="column.key === 'checkoperator'">
+            <a-space direction="vertical">
+              <a-row>
+                <a-tag>
+                  {{ record.checkoperator }}
+                </a-tag>
+                <a-tag
+                  :color="getColors(record.reviewoperator)"
+                  v-if="record.reviewoperator != null"
+                >
+                  {{ record.reviewoperator }}
+                </a-tag>
+              </a-row>
+              <a-tooltip :title="record.note" color="#f50">
+                <a-input-search
+                  v-model:value="record.note"
+                  placeholder="初核备注"
+                  size="medium"
+                  @search="onSubmitNote(record.id, record.note)"
+                >
+                  <template #enterButton>
+                    <a-button type="dashed">修改备注</a-button>
+                  </template>
+                </a-input-search>
+              </a-tooltip>
+            </a-space>
+
+            <!-- <span v-html="`<br>${record.checknote}`"></span> -->
+          </template>
+          <template v-if="column.key === 'status'">
+            <a-tag :color="colorList[Number(record.status)]">
+              {{ getStatus(record.status) }}
+            </a-tag>
+            <a-progress :percent="getProgress(record.status)" size="small" />
+
+            <a-tag v-if="record.status !== '0' && record.status !== '1'"
+              >支付日期：{{ record.payDate }}</a-tag
             >
-              <template #enterButton>
-                <a-button type="dashed">修改备注</a-button>
-              </template>
-            </a-input-search>
-            </a-tooltip>
-          </a-space>
+          </template>
+          <!-- createtime column -->
+          <template v-if="column.key === 'createtime'">
+            <a-tag>
+              <span
+                v-html="
+                  `${getCorrectTime(record.createtime)[0]}<br>${
+                    getCorrectTime(record.createtime)[1]
+                  }<br>id:${record.id}`
+                "
+              ></span>
+            </a-tag>
+          </template>
+          <template v-if="column.key === 'action'">
+            <a-space direction="vertical">
+              <a-row>
+                <a-space>
+                  <a-button
+                    @click="reviewData(record.id)"
+                    type="primary"
+                    v-if="record.status == '0'"
+                    >复核</a-button
+                  >
+                  <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'"
+                    >支付</a-button
+                  >
+                  <a-button
+                    @click="paySuccess(record.id)"
+                    type="primary"
+                    v-if="record.status == '2'"
+                    >支付成功</a-button
+                  >
 
-          <!-- <span v-html="`<br>${record.checknote}`"></span> -->
+                  <a-button
+                    danger
+                    @click="deleteData(record.id)"
+                    v-if="record.isDeleted == 1 ? true : false"
+                    >删除</a-button
+                  >
+                </a-space>
+              </a-row>
+
+              <a-row>
+                <a-space>
+                  <a-button
+                    @click="refuseData(record.id)"
+                    v-if="record.status == '0' || record.status == '1'"
+                    type="primary"
+                    danger
+                    >驳回</a-button
+                  >
+                  <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
+                </a-space>
+              </a-row>
+
+              <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
+              <!-- 编辑模态框 -->
+              <a-modal
+                v-model:visible="record.editVisible"
+                @ok="handleEditOk"
+                @cancel="handleEditCancel"
+              >
+                <ZhuanyiEditFormView :editForm="record" ref="editFormRef" />
+              </a-modal>
+            </a-space>
+          </template>
         </template>
-        <template v-if="column.key === 'status'">
-          <a-tag :color="colorList[Number(record.status)]">
-            {{ getStatus(record.status) }}
-          </a-tag>
-          <a-progress :percent="getProgress(record.status)" size="small" />
-
-          <a-tag v-if="record.status !== '0' && record.status !== '1'"
-            >支付日期：{{ record.payDate }}</a-tag
-          >
-        </template>
-        <!-- createtime column -->
-        <template v-if="column.key === 'createtime'">
-          <a-tag>
-            <span
-              v-html="
-                `${getCorrectTime(record.createtime)[0]}<br>${
-                  getCorrectTime(record.createtime)[1]
-                }<br>id:${record.id}`
-              "
-            ></span>
-          </a-tag>
-        </template>
-        <template v-if="column.key === 'action'">
-          <a-space direction="vertical">
-            <a-row>
-              <a-space>
-                <a-button
-                  @click="reviewData(record.id)"
-                  type="primary"
-                  v-if="record.status == '0'"
-                  >复核</a-button
-                >
-                <a-button
-                  @click="payData(record.id)"
-                  type="primary"
-                  v-if="record.status == '1'"
-                  >支付</a-button
-                >
-                <a-button
-                  @click="paySuccess(record.id)"
-                  type="primary"
-                  v-if="record.status == '2'"
-                  >支付成功</a-button
-                >
-
-                <a-button
-                  danger
-                  @click="deleteData(record.id)"
-                  v-if="record.isDeleted == 1 ? true : false"
-                  >删除</a-button
-                >
-              </a-space>
-            </a-row>
-
-
-
-            <a-row>
-              <a-space>
-                <a-button
-                  @click="refuseData(record.id)"
-                  v-if="record.status == '0' || record.status == '1'"
-                  type="primary" danger
-                  >驳回</a-button
-                >
-                <a-button
-                  @click="cancelData(record.id)"
-                  type="primary" danger
-                  >取消</a-button
-                >
-              </a-space>
-            </a-row>
-
-            <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
-            <!-- 编辑模态框 -->
-            <a-modal
-              v-model:visible="record.editVisible"
-              @ok="handleEditOk"
-              @cancel="handleEditCancel"
-            >
-              <ZhuanyiEditFormView :editForm="record" ref="editFormRef" />
-            </a-modal>
-          </a-space>
-        </template>
-      </template>
-    </a-table>
+      </a-table>
     </a-spin>
   </div>
 </template>
@@ -207,6 +212,7 @@ import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { getMonthRange } from '@/utils/util';
+import Excel from 'exceljs';
 import 'dayjs/locale/zh-cn';
 import { stat } from 'fs';
 const dataSource = ref();
@@ -228,7 +234,6 @@ const searchValue = ref();
 const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消', '全部'];
 const colorList = ['#25b1bf', '#acc2ef', '#3D5A80', '#2E8B57', '#c21d03', '#fd5732'];
 const getStatus = (status: String) => {
-  console.log(Number(status));
   return statusList[Number(status)];
 };
 const getProgress = (status: String) => {
@@ -280,14 +285,13 @@ watch(
 watch(
   () => checked.value,
   (newValue) => {
-    console.log('checkedValue====>', newValue);
     getData();
   }
 );
 watch(
   () => status.value,
   (newValue) => {
-    pager.value.current = 1
+    pager.value.current = 1;
     getData();
   }
 );
@@ -312,33 +316,111 @@ const onSubmitNote = (id, note) => {
 };
 //数据导出功能
 const exportExcel = () => {
-  getData({ noindex: 1 }).then(() => {
-    const processedData = exportData.value.map((item) => {
-      const result = {
-        personName: item.personName,
-        personID: item.personID,
-        fromArea: item.fromArea,
-        isOnlyTransferRelationship: item.isOnlyTransferRelationship,
-        payDate: item.payDate,
-        note: item.note,
-        isDeleted: item.isDeleted,
-        createtime: item.createtime,
-        checkoperator: item.checkoperator,
-      };
+  checked.value = false;
+  // 写入文件
+  const workbook = new Excel.Workbook();
+  const worksheet = workbook.addWorksheet('Sheet1', {
+    pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1 },
+  });
+  worksheet.columns = [
+      { header: '序号', key: 'index', width: 5 },
+      { header: '姓名', key: 'name', width: 10 },
+      { header: '身份证', key: 'personID', width: 22 },
+      { header: '转入省市', key: 'fromArea', width: 18 },
+      { header: '转出日期', key: 'payDate', width: 12 },
+      { header: '享受期限', key: 'month', width: 12 },
+      { header: '核发标准', key: 'biaozhun', width: 34 },
+      { header: '转出金额', key: 'pay', width: 15 },
+    ];
+  // worksheet.addTable({
+  //   name: 'MyTable',
+  //   ref: 'A1',
+  //   headerRow: true,
+  //   totalsRow: true,
+  //   style: {
+  //     showRowStripes: true,
+  //   },
+  //   columns: [
+  //     { name: '序号' },
+  //     { name: '姓名' },
+  //     { name: '身份证' },
+  //     { name: '转入省市' },
+  //     { name: '转出日期' },
+  //     { name: '享受期限' },
+  //     { name: '核发标准' },
+  //     { name: '转出金额' },
+  //   ],
+  //   rows:[]
+  // });
 
-      return result;
+  const headers = [
+    '序号',
+    '姓名',
+    '身份证',
+    '转入省市',
+    '转出日期',
+    '享受期限（月）',
+    '核发标准',
+    '转出',
+  ];
+  worksheet.addRow(headers);
+  worksheet.mergeCells('A1:H1');
+  worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
+  worksheet.getRow(2).font = { size: 15, bold: true };
+
+
+  getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then(() => {
+    // const table = worksheet.getTable('MyTable');
+    exportData.value.map((item, index) => {
+      worksheet.addRow([
+        index + 1,
+        item.personName,
+        item.personID,
+        item.fromArea,
+        item.payDate,
+        item.createtime,
+        '2175.00/1-12月，1740.00/13-24月',
+        100,
+      ]);
+      // table.addRow([
+      //   index + 1,
+      //   item.personName,
+      //   item.personID,
+      //   item.fromArea,
+      //   item.payDate,
+      //   item.createtime,
+      //   '2175.00/1-12月，1740.00/13-24月',
+      //   100,
+      // ])
+      // table.commit()
     });
+    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 3}`;
+    console.log(`A1:H${exportData.value.length + 2}`);
+    worksheet.addRow(['合计', '', '', '', '', '', '', '']);
+    worksheet.addRow([
+      '',
+      '',
+      `打印人:${userInfo.username}`,
+      '',
+      `${monthSelect.value!.format('YYYY-MM-DD')}`,
+      '',
+      '',
+      '',
+    ]);
 
-    // 导出
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(processedData);
-    XLSX.utils.book_append_sheet(workbook, worksheet);
-    if (monthSelect.value) {
-      XLSX.writeFile(workbook, `${monthSelect.value.toISOString().slice(0, 10)}.xlsx`);
-    } else {
-      XLSX.writeFile(workbook, `${new Date().toISOString().slice(0, 10)}_all.xlsx`);
-    }
-    // 写入文件
+    // 导出 Excel 文件
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      // 将 buffer 下载为 Excel 文件
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'example.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    });
   });
 };
 
@@ -373,7 +455,7 @@ onBeforeMount(() => {
 });
 // 获取数据
 const getData = async (params?: any) => {
-  spinning.value = true
+  spinning.value = true;
 
   params = {
     ...params,
@@ -386,7 +468,6 @@ const getData = async (params?: any) => {
   } else {
     params.isDeleted = 0;
   }
-  console.log('params===>', params);
   if (status.value == '0') {
     params.status = '0';
   } else if (status.value == '1') {
@@ -412,24 +493,26 @@ const getData = async (params?: any) => {
   if (monthSelect.value) {
     params = {
       ...params,
-      monthSelect: getMonthRange(monthSelect.value),
+      payDate: monthSelect.value.format('YYYY-MM-DD'),
     };
   }
   if (searchValue.value !== undefined && searchValue.value !== '') {
-    console.log('searchValue===>', searchValue.value);
     params = {
       searchValue: searchValue.value,
       current: 1,
     };
   }
-  return await api.getZhuanyiData(params).then((res: any) => {
-    exportData.value = res.rows;
-    pager.value = res.page;
-    count.value = pager.value.total;
-    dataSource.value = res.rows;
-  }).then(() => {
-    spinning.value = false
-  });
+  return await api
+    .getZhuanyiData(params)
+    .then((res: any) => {
+      exportData.value = res.rows;
+      pager.value = res.page;
+      count.value = pager.value.total;
+      dataSource.value = res.rows;
+    })
+    .then(() => {
+      spinning.value = false;
+    });
 };
 const getCorrectTime = (date: string) => {
   const originalDate = new Date(date);

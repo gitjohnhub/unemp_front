@@ -85,10 +85,15 @@
           </template>
           <template v-if="column.key === 'isOnlyTransferRelation'">
             <a-space direction="vertical">
-              <a-tag
+              <a-row>
+                <a-tag
                 :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]"
                 >{{ record.isOnlyTransferRelation }}</a-tag
               >
+              <a-tag>{{ record.payMonth }}</a-tag>
+              </a-row>
+
+
               <a-tag>{{ record.fromArea }}</a-tag>
             </a-space>
           </template>
@@ -332,26 +337,6 @@ const exportExcel = () => {
       { header: '核发标准', key: 'biaozhun', width: 34 },
       { header: '转出金额', key: 'pay', width: 15 },
     ];
-  // worksheet.addTable({
-  //   name: 'MyTable',
-  //   ref: 'A1',
-  //   headerRow: true,
-  //   totalsRow: true,
-  //   style: {
-  //     showRowStripes: true,
-  //   },
-  //   columns: [
-  //     { name: '序号' },
-  //     { name: '姓名' },
-  //     { name: '身份证' },
-  //     { name: '转入省市' },
-  //     { name: '转出日期' },
-  //     { name: '享受期限' },
-  //     { name: '核发标准' },
-  //     { name: '转出金额' },
-  //   ],
-  //   rows:[]
-  // });
 
   const headers = [
     '序号',
@@ -361,16 +346,16 @@ const exportExcel = () => {
     '转出日期',
     '享受期限（月）',
     '核发标准',
-    '转出',
+    '转出金额',
   ];
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:H1');
   worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
   worksheet.getRow(2).font = { size: 15, bold: true };
+  worksheet.getRow(1).font = { size: 18, bold: true };
 
 
   getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then(() => {
-    // const table = worksheet.getTable('MyTable');
     exportData.value.map((item, index) => {
       worksheet.addRow([
         index + 1,
@@ -378,9 +363,9 @@ const exportExcel = () => {
         item.personID,
         item.fromArea,
         item.payDate,
-        item.createtime,
-        '2175.00/1-12月，1740.00/13-24月',
-        100,
+        item.payMonth,
+        Number(item.payMonth) < 12 ? '2175.00/1-12月' : '2175.00/1-12月，1740.00/13-24月',
+        CalPayMonth(item.payMonth),
       ]);
       // table.addRow([
       //   index + 1,
@@ -423,7 +408,17 @@ const exportExcel = () => {
     });
   });
 };
-
+// 计算核发标准
+const CalPayMonth = (payMonth)=>{
+  if(payMonth){
+    const numPayMonth = Number(payMonth)
+    if(numPayMonth <= 12 ){
+      return numPayMonth * 2175 * 1.5
+    }else{
+      return 12 * 2175 * 1.5 + (numPayMonth - 12 ) * 1740 * 1.5
+    }
+  }
+}
 // 分页
 const pager = ref({
   current: 1,

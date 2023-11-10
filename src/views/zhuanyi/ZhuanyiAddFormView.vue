@@ -19,6 +19,9 @@
     <a-form-item label="转入地" name="fromArea" has-feedback>
       <a-input v-model:value="formState.fromArea" />
     </a-form-item>
+    <a-form-item label="享受期限" name="payMonth" has-feedback>
+      <a-input v-model:value="formState.payMonth" />
+    </a-form-item>
     <a-form-item label="转关系" name="isOnlyTransferRelation" has-feedback>
       <a-select
         ref="select"
@@ -52,6 +55,7 @@ const formState = ref({
   reviewnote: '',
   note: '',
   isDeleted: 1,
+  payMonth: '',
 });
 const isOnlyTransferRelationOp = [
   {

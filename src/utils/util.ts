@@ -45,3 +45,13 @@ export function genWorkbook(headersWithWidth){
   }
 
 }
+export const colorList = [
+  '#25b1bf',
+  '#acc2ef',
+  '#3D5A80',
+  '#2E8B57',
+  '#c21d03',
+  '#fd5732',
+  '#fd5732',
+  '#fd5732',
+];

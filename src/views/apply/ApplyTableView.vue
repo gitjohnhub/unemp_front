@@ -185,7 +185,7 @@ import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { getMonthRange } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
-import { parseArgs } from 'util';
+import { colorList } from '@/utils/util';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -195,6 +195,7 @@ const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref('0');
 const exportData = ref();
+
 // 搜索相关
 const searchValue = ref();
 const spinning = ref<boolean>(false);
@@ -210,12 +211,7 @@ const onSearch = () => {
     });
 };
 const getColors = (user) => {
-  const findColor = userStore.userColors.filter((u) => u.username === user);
-  if (findColor.length !== 0) {
-    return findColor[0].color;
-  } else {
-    return '#344D70';
-  }
+  return colorList[userStore.checkoperators.map(item=>item.value).indexOf(user)]
 };
 watch(
   () => selectedOp.value,

@@ -169,8 +169,11 @@ import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';
 import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
-import Excel from 'exceljs';
+import { downloadLink } from '@/utils/util';
+import {genWorkbook} from '@/utils/util';
 import 'dayjs/locale/zh-cn';
+
+
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -291,23 +294,8 @@ const onSubmitNote = (id, note) => {
     });
 };
 //数据导出功能
-const exportExcel = () => {
-  checked.value = false;
-  // 写入文件
-  const workbook = new Excel.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1', {
-    pageSetup: {
-      orientation: 'landscape',
-      showGridLines: true,
-      fitToPage: true,
-      fitToWidth: 1,
-      fitToHeight: 1,
-      horizontalCentered: true,
-      verticalCentered: true,
-      paperSize: 9,
-    },
-  });
-  worksheet.columns = [
+const exportExcel = () => {  // 写入文件
+  const headersWithWidth = [
     { header: '序号', key: 'index', width: 6 },
     { header: '姓名', key: 'name', width: 10 },
     { header: '身份证', key: 'personID', width: 26 },
@@ -317,17 +305,7 @@ const exportExcel = () => {
     { header: '核发标准', key: 'biaozhun', width: 40 },
     { header: '转出金额', key: 'pay', width: 12 },
   ];
-
-  const headers = [
-    '序号',
-    '姓名',
-    '身份证',
-    '转入省市',
-    '转出日期',
-    '享受期限（月）',
-    '核发标准',
-    '转出金额',
-  ];
+  const {workbook,headers,worksheet} = genWorkbook(headersWithWidth)
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:H1');
   worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
@@ -374,20 +352,22 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    workbook.xlsx.writeBuffer().then((buffer) => {
-      // 将 buffer 下载为 Excel 文件
-      const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
+    downloadLink(workbook,`非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
         'YYYY-MM'
-      )}.xlsx`;
-      link.click();
-      window.URL.revokeObjectURL(url);
-    });
+      )}`)
+    // workbook.xlsx.writeBuffer().then((buffer) => {
+    //   const blob = new Blob([buffer], {
+    //     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    //   });
+    //   const url = window.URL.createObjectURL(blob);
+    //   const link = document.createElement('a');
+    //   link.href = url;
+    //   link.download = `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
+    //     'YYYY-MM'
+    //   )}.xlsx`;
+    //   link.click();
+    //   window.URL.revokeObjectURL(url);
+    // });
   });
 };
 // 计算核发标准

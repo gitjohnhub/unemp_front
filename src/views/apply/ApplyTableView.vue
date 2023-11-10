@@ -178,7 +178,7 @@ import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
-import * as XLSX from 'xlsx';
+import{genWorkbook,downloadLink} from '@/utils/util';
 import ApplyFormView from './ApplyFormView.vue';
 import ApplyEditFormView from './ApplyEditFormView.vue';
 import { Dayjs } from 'dayjs';
@@ -276,28 +276,30 @@ const onSubmitRNote = (id, note) => {
 //数据导出功能
 const exportExcel = () => {
   getData({ noindex: 1 }).then(() => {
-    const processedData = exportData.value.map((item) => {
-      const result = {
-        personName: item.personName,
-        personID: item.personID,
-        verification: item.verification,
-        alreadydelete: item.alreadydelete,
-        createtime: item.createtime,
-      };
-
-      return result;
+    const headersWithWidth = [
+    { header: '姓名', width: 12 },
+    { header: '身份证', width: 25 },
+    { header: '街镇', width: 25 },
+    { header: '提交时间',  width: 35 },
+  ];
+  const {workbook,headers,worksheet} = genWorkbook(headersWithWidth)
+  // worksheet.addRow(headers);
+    exportData.value.map((item) => {
+      worksheet.addRow([item.personName, item.personID,item.jiezhen,item.createtime.slice(0,10)]);
     });
+  worksheet.eachRow((row, rowNumber) => {
+      row.font = { size: 15 };
+      row.height = 20
+      row.eachCell((cell, colNumber) => {
+        cell.alignment = { vertical: 'middle', horizontal: 'center',wrapText:true };
+      });
+    });
+    worksheet.getRow(1).font = { size: 18, bold: true };
 
-    // 导出
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(processedData);
-    XLSX.utils.book_append_sheet(workbook, worksheet);
-    if (monthSelect.value) {
-      XLSX.writeFile(workbook, `${monthSelect.value.toISOString().slice(0, 10)}.xlsx`);
-    } else {
-      XLSX.writeFile(workbook, `${new Date().toISOString().slice(0, 10)}_all.xlsx`);
-    }
-    // 写入文件
+    // 导出 Excel 文件
+    downloadLink(workbook, `失业金申领_${monthSelect.value.format('YYYY-MM-DD')}`)
+
+
   });
 };
 

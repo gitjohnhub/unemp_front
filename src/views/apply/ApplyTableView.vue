@@ -277,6 +277,7 @@ const onSubmitRNote = (id, note) => {
 const exportExcel = () => {
   getData({ noindex: 1 }).then(() => {
     const headersWithWidth = [
+    { header: '序号', width: 10 },
     { header: '姓名', width: 12 },
     { header: '身份证', width: 25 },
     { header: '街镇', width: 25 },
@@ -284,8 +285,8 @@ const exportExcel = () => {
   ];
   const {workbook,headers,worksheet} = genWorkbook(headersWithWidth)
   // worksheet.addRow(headers);
-    exportData.value.map((item) => {
-      worksheet.addRow([item.personName, item.personID,item.jiezhen,item.createtime.slice(0,10)]);
+    exportData.value.map((item,index) => {
+      worksheet.addRow([index + 1,item.personName, item.personID,item.jiezhen,item.createtime.slice(0,10)]);
     });
   worksheet.eachRow((row, rowNumber) => {
       row.font = { size: 15 };
@@ -297,7 +298,12 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook, `失业金申领_${monthSelect.value.format('YYYY-MM-DD')}`)
+    if(monthSelect.value){
+      downloadLink(workbook, `失业金申领_${monthSelect.value.format('YYYY-MM-DD')}`)
+    }else{
+      downloadLink(workbook, `失业金申领_${new Date().toISOString().slice(0, 10)}`)
+
+    }
 
 
   });

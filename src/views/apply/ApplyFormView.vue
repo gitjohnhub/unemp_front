@@ -24,15 +24,11 @@
     <a-form-item label="复核备注">
       <a-textarea v-model:value="formState.reviewnote" />
     </a-form-item>
-    <a-form-item label="是否删除">
+    <!-- <a-form-item label="是否删除">
       <a-radio-group v-model:value="formState.alreadydelete">
         <a-radio :value=1>保留</a-radio>
         <a-radio :value=0>删除</a-radio>
       </a-radio-group>
-    </a-form-item>
-    <!-- <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
-      <a-button type="primary" @click="onSubmit">Create</a-button>
-      <a-button style="margin-left: 10px">Cancel</a-button>
     </a-form-item> -->
   </a-form>
 </template>

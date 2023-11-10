@@ -5,23 +5,14 @@
         <a-row>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
+            <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading"
+              @ok="handleOk" @cancel="handleCancel">
               <ZhuanyiAddFormView ref="formRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入身份证号查询"
-              style="width: 200px"
-              @search="onSearch"
-            />
+            <a-input-search v-model:value="searchValue" placeholder="输入身份证号查询" style="width: 200px"
+              @search="onSearch" />
           </a-space>
         </a-row>
         <a-row>
@@ -54,32 +45,20 @@
       </a-space>
     </div>
     <a-spin :spinning="spinning">
-      <a-table
-        :columns="columns"
-        :data-source="dataSource"
-        @change="handleChange"
-        @showSizeChange="onShowSizeChange"
-        :pagination="pagination"
-      >
+      <a-table :columns="columns" :data-source="dataSource" @change="handleChange"
+        @showSizeChange="onShowSizeChange" :pagination="pagination">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
-            <a-typography-paragraph
-              :style="{ fontSize: '18px' }"
-              copyable
-              keyboard
-              :class="{ deleted: record.isDeleted == 0 }"
-              >{{ record.personID }}</a-typography-paragraph
-            >
+            <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard
+              :class="{ deleted: record.isDeleted == 0 }">{{ record.personID
+              }}</a-typography-paragraph>
           </template>
           <template v-if="column.key === 'personName'">
             <a-space direction="vertical">
               <a-tooltip :title="pinyin(record.personName)" color="#f50">
-                <a-typography-paragraph
-                  :style="{ fontSize: '18px' }"
-                  copyable
-                  :class="{ deleted: record.isDeleted == 2 }"
-                  >{{ record.personName }}</a-typography-paragraph
-                >
+                <a-typography-paragraph :style="{ fontSize: '18px' }" copyable
+                  :class="{ deleted: record.isDeleted == 2 }">{{ record.personName
+                  }}</a-typography-paragraph>
               </a-tooltip>
             </a-space>
           </template>
@@ -87,12 +66,12 @@
             <a-space direction="vertical">
               <a-row>
                 <a-tag
-                :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]"
-                >{{ record.isOnlyTransferRelation }}</a-tag
-              >
-              <a-tag>{{ record.payMonth }}</a-tag>
+                  :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]">{{
+                    record.isOnlyTransferRelation }}</a-tag>
+                <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
+                  record.payMonth ? record.payMonth : '无数据'
+                }}</a-tag>
               </a-row>
-
 
               <a-tag>{{ record.fromArea }}</a-tag>
             </a-space>
@@ -103,20 +82,13 @@
                 <a-tag>
                   {{ record.checkoperator }}
                 </a-tag>
-                <a-tag
-                  :color="getColors(record.reviewoperator)"
-                  v-if="record.reviewoperator != null"
-                >
+                <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
                   {{ record.reviewoperator }}
                 </a-tag>
               </a-row>
               <a-tooltip :title="record.note" color="#f50">
-                <a-input-search
-                  v-model:value="record.note"
-                  placeholder="初核备注"
-                  size="medium"
-                  @search="onSubmitNote(record.id, record.note)"
-                >
+                <a-input-search v-model:value="record.note" placeholder="初核备注" size="medium"
+                  @search="onSubmitNote(record.id, record.note)">
                   <template #enterButton>
                     <a-button type="dashed">修改备注</a-button>
                   </template>
@@ -132,71 +104,53 @@
             </a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
 
-            <a-tag v-if="record.status !== '0' && record.status !== '1'"
-              >支付日期：{{ record.payDate }}</a-tag
-            >
+            <a-tag v-if="record.status !== '0' && record.status !== '1'">支付日期：{{ record.payDate
+            }}</a-tag>
           </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span
-                v-html="
-                  `${getCorrectTime(record.createtime)[0]}<br>${
-                    getCorrectTime(record.createtime)[1]
-                  }<br>id:${record.id}`
-                "
-              ></span>
+              <span v-html="`${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]
+                }<br>id:${record.id}`
+                "></span>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button
-                    @click="reviewData(record.id)"
-                    type="primary"
-                    v-if="record.status == '0'"
-                    >复核</a-button
-                  >
-                  <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'"
-                    >支付</a-button
-                  >
-                  <a-button
-                    @click="paySuccess(record.id)"
-                    type="primary"
-                    v-if="record.status == '2'"
-                    >支付成功</a-button
-                  >
+                  <a-button @click="reviewData(record.id)" type="primary"
+                    v-if="record.status == '0'">复核</a-button>
+                  <a-button @click="payData(record.id)" type="primary"
+                    v-if="record.status == '1'">支付</a-button>
+                  <a-button @click="paySuccess(record.id)" type="primary"
+                    v-if="record.status == '2'">支付成功</a-button>
+                    <a-button @click="recoveryFromFreezeData(record.id)" type="primary"
+                    v-if="record.status == '6'">恢复冻结</a-button>
 
-                  <a-button
-                    danger
-                    @click="deleteData(record.id)"
-                    v-if="record.isDeleted == 1 ? true : false"
-                    >删除</a-button
-                  >
+                  <a-button danger @click="deleteData(record.id)"
+                    v-if="record.isDeleted == 1 ? true : false">删除</a-button>
                 </a-space>
               </a-row>
 
               <a-row>
                 <a-space>
-                  <a-button
-                    @click="refuseData(record.id)"
-                    v-if="record.status == '0' || record.status == '1'"
-                    type="primary"
-                    danger
-                    >驳回</a-button
-                  >
+                  <a-button @click="refuseData(record.id)"
+                    v-if="record.status == '0' || record.status == '1'" type="primary"
+                    danger>驳回</a-button>
+                  <a-button @click="freezeData(record.id)" v-if="record.status == '1'" type="primary"
+                    danger>冻结</a-button>
+
                   <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
+                  <a-button @click="payFailData(record.id)" v-if="record.status == '2'" type="primary"
+                    danger>支付失败</a-button>
                 </a-space>
               </a-row>
 
               <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
               <!-- 编辑模态框 -->
-              <a-modal
-                v-model:visible="record.editVisible"
-                @ok="handleEditOk"
-                @cancel="handleEditCancel"
-              >
+              <a-modal v-model:visible="record.editVisible" @ok="handleEditOk"
+                @cancel="handleEditCancel">
                 <ZhuanyiEditFormView :editForm="record" ref="editFormRef" />
               </a-modal>
             </a-space>
@@ -211,15 +165,12 @@ import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
-import * as XLSX from 'xlsx';
 import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';
 import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
-import { getMonthRange } from '@/utils/util';
 import Excel from 'exceljs';
 import 'dayjs/locale/zh-cn';
-import { stat } from 'fs';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -236,8 +187,27 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const statusList = ['已初核', '已复核', '支付中', '已支付', '已驳回', '已取消', '全部'];
-const colorList = ['#25b1bf', '#acc2ef', '#3D5A80', '#2E8B57', '#c21d03', '#fd5732'];
+const statusList = [
+  '已初核',
+  '已复核',
+  '支付中',
+  '已支付',
+  '已驳回',
+  '已取消',
+  '未确认冻结',
+  '支付失败',
+  '全部',
+];
+const colorList = [
+  '#25b1bf',
+  '#acc2ef',
+  '#3D5A80',
+  '#2E8B57',
+  '#c21d03',
+  '#fd5732',
+  '#fd5732',
+  '#fd5732',
+];
 const getStatus = (status: String) => {
   return statusList[Number(status)];
 };
@@ -296,6 +266,7 @@ watch(
 watch(
   () => status.value,
   (newValue) => {
+    console.log(status.value);
     pager.value.current = 1;
     getData();
   }
@@ -325,18 +296,27 @@ const exportExcel = () => {
   // 写入文件
   const workbook = new Excel.Workbook();
   const worksheet = workbook.addWorksheet('Sheet1', {
-    pageSetup: { orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 1 },
+    pageSetup: {
+      orientation: 'landscape',
+      showGridLines: true,
+      fitToPage: true,
+      fitToWidth: 1,
+      fitToHeight: 1,
+      horizontalCentered: true,
+      verticalCentered: true,
+      paperSize: 9,
+    },
   });
   worksheet.columns = [
-      { header: '序号', key: 'index', width: 5 },
-      { header: '姓名', key: 'name', width: 10 },
-      { header: '身份证', key: 'personID', width: 22 },
-      { header: '转入省市', key: 'fromArea', width: 18 },
-      { header: '转出日期', key: 'payDate', width: 12 },
-      { header: '享受期限', key: 'month', width: 12 },
-      { header: '核发标准', key: 'biaozhun', width: 34 },
-      { header: '转出金额', key: 'pay', width: 15 },
-    ];
+    { header: '序号', key: 'index', width: 6 },
+    { header: '姓名', key: 'name', width: 10 },
+    { header: '身份证', key: 'personID', width: 26 },
+    { header: '转入省市', key: 'fromArea', width: 22 },
+    { header: '转出日期', key: 'payDate', width: 14 },
+    { header: '享受期限（月）', key: 'month', width: 18 },
+    { header: '核发标准', key: 'biaozhun', width: 40 },
+    { header: '转出金额', key: 'pay', width: 12 },
+  ];
 
   const headers = [
     '序号',
@@ -351,11 +331,10 @@ const exportExcel = () => {
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:H1');
   worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
-  worksheet.getRow(2).font = { size: 15, bold: true };
-  worksheet.getRow(1).font = { size: 18, bold: true };
+  worksheet.getCell('H1').alignment = { vertical: 'middle', horizontal: 'center' };
 
-
-  getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then(() => {
+  getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then((res) => {
+    let totalPayNum = 0;
     exportData.value.map((item, index) => {
       worksheet.addRow([
         index + 1,
@@ -367,21 +346,11 @@ const exportExcel = () => {
         Number(item.payMonth) < 12 ? '2175.00/1-12月' : '2175.00/1-12月，1740.00/13-24月',
         CalPayMonth(item.payMonth),
       ]);
-      // table.addRow([
-      //   index + 1,
-      //   item.personName,
-      //   item.personID,
-      //   item.fromArea,
-      //   item.payDate,
-      //   item.createtime,
-      //   '2175.00/1-12月，1740.00/13-24月',
-      //   100,
-      // ])
-      // table.commit()
+      totalPayNum = totalPayNum + CalPayMonth(item.payMonth);
     });
-    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 3}`;
+    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
     console.log(`A1:H${exportData.value.length + 2}`);
-    worksheet.addRow(['合计', '', '', '', '', '', '', '']);
+    worksheet.addRow(['合计', '', '', '', '', '', '', `${totalPayNum}`]);
     worksheet.addRow([
       '',
       '',
@@ -392,6 +361,17 @@ const exportExcel = () => {
       '',
       '',
     ]);
+    worksheet.eachRow((row, rowNumber) => {
+      row.font = { size: 15 };
+      row.eachCell((cell, colNumber) => {
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+    });
+    // for (let i = 1; i < exportData.value.length + 6; i++) {
+    //   worksheet.getRow(i).font = { size: 15 };
+    // }
+    worksheet.getRow(2).font = { size: 15, bold: true };
+    worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
     workbook.xlsx.writeBuffer().then((buffer) => {
@@ -402,23 +382,27 @@ const exportExcel = () => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'example.xlsx';
+      link.download = `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
+        'YYYY-MM'
+      )}.xlsx`;
       link.click();
       window.URL.revokeObjectURL(url);
     });
   });
 };
 // 计算核发标准
-const CalPayMonth = (payMonth)=>{
-  if(payMonth){
-    const numPayMonth = Number(payMonth)
-    if(numPayMonth <= 12 ){
-      return numPayMonth * 2175 * 1.5
-    }else{
-      return 12 * 2175 * 1.5 + (numPayMonth - 12 ) * 1740 * 1.5
+const CalPayMonth = (payMonth) => {
+  if (payMonth) {
+    const numPayMonth = Number(payMonth);
+    if (numPayMonth <= 12) {
+      return numPayMonth * 2175 * 1.5;
+    } else {
+      return 12 * 2175 * 1.5 + (numPayMonth - 12) * 1740 * 1.5;
     }
+  } else {
+    return 0;
   }
-}
+};
 // 分页
 const pager = ref({
   current: 1,
@@ -463,19 +447,12 @@ const getData = async (params?: any) => {
   } else {
     params.isDeleted = 0;
   }
-  if (status.value == '0') {
-    params.status = '0';
-  } else if (status.value == '1') {
-    params.status = '1';
-  } else if (status.value == '2') {
-    params.status = '2';
-  } else if (status.value == '3') {
-    params.status = '3';
-  } else if (status.value == '4') {
-    params.status = '4';
-  } else if (status.value == '5') {
-    params.status = '5';
+  if (Number(status.value) !== 8) {
+    console.log('!=8,', status.value);
+    params.status = status.value;
   } else {
+    console.log('=8,', status.value);
+
     params.status = null;
   }
   if (reviewChecked.value == '0') {
@@ -527,9 +504,30 @@ const reviewData = async (id: number) => {
       getData();
     });
 };
+const freezeData = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '6' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const payFailData = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '7' })
+    .then((res: any) => {
+      getData();
+    });
+};
 const refuseData = async (id: number) => {
   await api
     .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '4' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const recoveryFromFreezeData = async (id: number) => {
+  await api
+    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '1' })
     .then((res: any) => {
       getData();
     });
@@ -701,7 +699,7 @@ const columns = [
   margin-bottom: 16px;
 }
 
-.table-operations > button {
+.table-operations>button {
   margin-right: 8px;
 }
 </style>

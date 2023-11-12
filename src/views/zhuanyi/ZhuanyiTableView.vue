@@ -16,6 +16,7 @@
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
+            <a-divider type="vertical" />
             <a-input-search
               v-model:value="searchValue"
               placeholder="输入身份证号查询"
@@ -37,7 +38,6 @@
         </a-row>
         <a-row>
           <!-- 数据导出操作 -->
-
           <a-space>
             <h5>导出操作：</h5>
             <a-date-picker v-model:value="monthSelect" />

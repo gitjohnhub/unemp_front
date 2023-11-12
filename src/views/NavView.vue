@@ -81,7 +81,6 @@ onBeforeMount(()=>{
     .map(item=>{
         return {path:item.path,title:item.meta.title}
     })
-  console.log(routerItems.value)
 })
 const getPathPattern = (path)=>{
   const pattern = /^\/[a-zA-Z]+$/;

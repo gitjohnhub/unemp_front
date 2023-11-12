@@ -1,6 +1,6 @@
 <template>
   <!-- 数字识别 -->
-  <a-card style="width: 400px">
+  <a-card>
     <a-upload-dragger
       v-model:fileList="fileList"
       name="file"

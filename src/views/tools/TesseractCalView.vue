@@ -8,6 +8,8 @@
       :max-count="1"
       :customRequest="customRequest"
       @remove="handleRemove"
+      list-type="picture-card"
+      @preview="handlePreview"
     >
       <p class="ant-upload-drag-icon">
         <inbox-outlined></inbox-outlined>
@@ -15,6 +17,9 @@
       <p class="ant-upload-text">点击或拖放图片</p>
       <p class="ant-upload-hint">支持图片格式的文件</p>
     </a-upload-dragger>
+    <a-modal :open="previewVisible" :title="previewTitle" :footer="null" @cancel="handleCancel">
+      <img alt="example" style="width: 100%" :src="previewImage" />
+    </a-modal>
   </a-card>
   <!-- 工龄表单 -->
   <a-form
@@ -50,7 +55,7 @@
       <a-form-item>
         <a-input v-model:value="year.label" disabled></a-input>
       </a-form-item>
-      <a-form-item>
+      <a-form-item label="本次计算后已领取：">
         <a-input v-model:value="year.yilingqu"></a-input>
       </a-form-item>
       <a-form-item>
@@ -65,9 +70,11 @@
       </a-button>
     </a-form-item>
     <a-form-item>
-      <a-button type="primary" @click="onFinish">计算</a-button>
+      <a-space>
+        <a-button type="primary" @click="onFinish" v-if="dynamicValidateForm.years.length>0">修改后重新计算</a-button>
+        <a-tag v-if="totalYear"> {{ totalYear }}</a-tag>
+      </a-space>
     </a-form-item>
-    <p>{{ totalYear }}</p>
   </a-form>
 
   <!-- 缴费表单 -->
@@ -104,6 +111,7 @@
       </a-form-item>
     </a-space>
   </a-form>
+  <a-button @click="reCalCheck" v-if="dynamicCheckForm.checkValues.length > 0">重新计算结果</a-button>
 </template>
 <script lang="ts" setup>
 import { reactive, ref, watch } from 'vue';
@@ -111,13 +119,14 @@ import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons-vue';
 import type { FormInstance } from 'ant-design-vue';
 import { InboxOutlined } from '@ant-design/icons-vue';
 import Tesseract from 'tesseract.js';
+import type { UploadProps } from 'ant-design-vue';
 
 interface year {
   first: string;
   last: string;
   label: string;
   yilingqu: number;
-  isChecked:boolean;
+  isChecked: boolean;
   id: number;
 }
 interface checkValue {
@@ -168,8 +177,8 @@ const addyear = () => {
 const totalYear = ref();
 const calCheck = (index: number) => {
   const years = dynamicValidateForm.years[index];
-  const lastCheckedIndex = dynamicValidateForm.years.findIndex(item => item.isChecked === true);
-  console.log(`lastCheckedIndex===>${lastCheckedIndex}`)
+  const lastCheckedIndex = dynamicValidateForm.years.findIndex((item) => item.isChecked === true);
+  console.log(`lastCheckedIndex===>${lastCheckedIndex}`);
   if (dynamicCheckForm.checkValues.length === 0) {
     dynamicCheckForm.checkValues = [
       {
@@ -183,7 +192,8 @@ const calCheck = (index: number) => {
       },
     ];
   }
-  const lastCheckedFormElement = dynamicCheckForm.checkValues[dynamicCheckForm.checkValues.length - 1];
+  const lastCheckedFormElement =
+    dynamicCheckForm.checkValues[dynamicCheckForm.checkValues.length - 1];
 
   let xinzeng = lastCheckedFormElement.xinzeng;
   let leiji = lastCheckedFormElement.leiji;
@@ -198,12 +208,21 @@ const calCheck = (index: number) => {
     keheding = xinzeng + lastCheckedFormElement.remainingMonths;
     console.log(`keheding===>${keheding},${Math.floor(keheding / 12)}`);
 
-    kelingqu = Math.min(Math.floor(keheding / 12) * 2, 24) + Number(lastCheckedFormElement.remainingClaimMonths);
-    console.log(`kelingqu===>${kelingqu},${Math.floor(kelingqu / 12)}+${lastCheckedFormElement.kelingqu}`);
-    remainingMonths = keheding % 12
+    kelingqu =
+      Math.min(Math.floor(keheding / 12) * 2, 24) +
+      Number(lastCheckedFormElement.remainingClaimMonths);
+    console.log(
+      `kelingqu===>${kelingqu},${Math.floor(kelingqu / 12)}+${lastCheckedFormElement.kelingqu}`
+    );
+    remainingMonths = keheding % 12;
     remainingClaimMonths = kelingqu - Number(years.yilingqu);
-    console.log(`lastyears:${JSON.stringify(years)},计算years中第 ${i}个元素，上次剩余可领取${lastCheckedFormElement.remainingClaimMonths},上次剩余未核定的缴费月份为${lastCheckedFormElement.remainingMonths},新增${xinzeng},累计为${leiji},可领取为${kelingqu},已领取为${yilingqu},剩余可领取为${remainingClaimMonths},剩余累计为${remainingMonths}`)
-
+    console.log(
+      `lastyears:${JSON.stringify(years)},计算years中第 ${i}个元素，上次剩余可领取${
+        lastCheckedFormElement.remainingClaimMonths
+      },上次剩余未核定的缴费月份为${
+        lastCheckedFormElement.remainingMonths
+      },新增${xinzeng},累计为${leiji},可领取为${kelingqu},已领取为${yilingqu},剩余可领取为${remainingClaimMonths},剩余累计为${remainingMonths}`
+    );
   }
 
   dynamicCheckForm.checkValues.push({
@@ -215,9 +234,8 @@ const calCheck = (index: number) => {
     remainingMonths,
     id: Date.now(),
   });
-  for (let i = 0;i <= index ;i++){
+  for (let i = 0; i <= index; i++) {
     dynamicValidateForm.years[i].isChecked = true;
-
   }
 };
 
@@ -237,6 +255,9 @@ const getDifferent = (arr) => {
       totalYear.value += diff;
     }
   });
+  totalYear.value = `${totalYear.value} : ${Math.floor(totalYear.value / 12)}年${
+    totalYear.value % 12
+  }个月`;
 };
 
 const onFinish = (values) => {
@@ -246,9 +267,7 @@ const onFinish = (values) => {
   //   const months = Number(curr.split(':')[0]);
   //   return acc + months;
   // }, 0);
-  totalYear.value = `${totalYear.value} : ${Math.floor(totalYear.value / 12)}年${
-    totalYear.value % 12
-  }个月`;
+
 };
 
 //文字识别相关
@@ -320,7 +339,7 @@ function cal(dateStr: string): any {
       first: dates[i],
       last: dates[i + 1],
       yilingqu: 0,
-      isChecked:false,
+      isChecked: false,
       label: diff,
       id: Date.now(),
     });
@@ -366,4 +385,32 @@ function calculateMonthDifference(date1: Array<number>, date2: Array<number>) {
 }
 
 const recognitionResult = ref('');
+const reCalCheck = ()=>{
+  // TODO
+}
+
+// 文件预览
+const previewVisible = ref(false);
+const previewImage = ref('');
+const previewTitle = ref('');
+function getBase64(file: File) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = (error) => reject(error);
+  });
+}
+const handlePreview = async (file: UploadProps['fileList'][number]) => {
+  if (!file.url && !file.preview) {
+    file.preview = (await getBase64(file.originFileObj)) as string;
+  }
+  previewImage.value = file.url || file.preview;
+  previewVisible.value = true;
+  previewTitle.value = file.name || file.url.substring(file.url.lastIndexOf('/') + 1);
+};
+const handleCancel = () => {
+  previewVisible.value = false;
+  previewTitle.value = '';
+};
 </script>

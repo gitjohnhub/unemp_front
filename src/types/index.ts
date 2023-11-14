@@ -9,7 +9,6 @@ export interface DataItem {
   reviewoperator: string;
   reviewnote: string;
   verification:string;
-  alreadydelete: number;
 }
 export type editDataItem = Omit<DataItem, 'id'|'checkoperator'|'reviewoperator'|'createtime'>
 export const jiezhens = [

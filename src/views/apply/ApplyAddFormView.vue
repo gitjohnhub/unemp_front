@@ -24,12 +24,12 @@
     <a-form-item label="复核备注">
       <a-textarea v-model:value="formState.reviewnote" />
     </a-form-item>
-    <!-- <a-form-item label="是否删除">
-      <a-radio-group v-model:value="formState.alreadydelete">
-        <a-radio :value=1>保留</a-radio>
-        <a-radio :value=0>删除</a-radio>
+    <a-form-item label="选择未初核">
+      <a-radio-group v-model:value="formState.verification">
+        <a-radio value='0'>已初核</a-radio>
+        <a-radio value='2' >待初核</a-radio>
       </a-radio-group>
-    </a-form-item> -->
+    </a-form-item>
   </a-form>
 </template>
 <script lang="ts" setup>
@@ -42,16 +42,16 @@ const checkoperator = useUserStore().userInfo.username
 const formState = ref<editDataItem>({
   personID: '',
   personName: '',
-  verification:'0',
+  verification:"0",
   jiezhen:'',
   checknote: '',
   reviewnote: '',
-  alreadydelete:1,
 });
 const onSubmit = () => {
   return formRef.value
     .validate()
     .then(() => {
+      console.log(formState.value)
       return api.addUnempVeriData({
         ...formState.value,
         checkoperator,
@@ -59,10 +59,6 @@ const onSubmit = () => {
         resetForm()
       })
     })
-    // .catch(error => {
-    //   console.log('error', error);
-    //   // message.info('提交失败，格式不正确')
-    // });
 };
 
 const personIDCount = computed(()=>{
@@ -83,6 +79,13 @@ const rules = {
 }
 const resetForm = () => {
   formRef.value.resetFields();
+  formState.value.personID = ''
+  formState.value.personName = ''
+  formState.value.jiezhen = ''
+  formState.value.checknote = ''
+  formState.value.reviewnote = ''
+  formState.value.verification = '0'
+
 };
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };

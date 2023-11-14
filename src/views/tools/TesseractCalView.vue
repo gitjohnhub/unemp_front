@@ -241,12 +241,13 @@ const calCheck = (index: number) => {
 
 const getDifferent = (arr) => {
   totalYear.value = 0;
-  const result: string[] = [];
   arr.forEach((item) => {
-    const first = item.first;
-    const last = item.last;
+    let first = item.first;
+    let last = item.last;
 
     if (/^\d{8}$/.test(first) && /^\d{8}$/.test(last)) {
+      console.log('first',first)
+
       const diff = calculateMonthDifference(
         [first.slice(0, 4), first.slice(4, 6), first.slice(6)],
         [last.slice(0, 4), last.slice(4, 6), last.slice(6)]
@@ -254,6 +255,7 @@ const getDifferent = (arr) => {
       item.label = `${diff}:${Math.floor(diff / 12)}年${diff % 12}月`;
       totalYear.value += diff;
     }
+    console.log(`${first}-${last},total:${totalYear.value}`)
   });
   totalYear.value = `${totalYear.value} : ${Math.floor(totalYear.value / 12)}年${
     totalYear.value % 12
@@ -323,7 +325,15 @@ function cal(dateStr: string): any {
   const dates: string[] = dateStr.replace(/\s+/g, ' ').split(' ');
   const dateArray = [];
 
-  for (let i = 0; i < dates.length; i += 2) {
+  for (let i = 0; i < dates.length -1; i += 2) {
+    if (String(dates[i]).slice(0,2) == '18'){
+      console.log('找到一个识别错误的')
+      dates[i] = '19' + String(dates[i]).slice(2)
+    }
+    if (String(dates[i+1]).slice(0,2) == '18'){
+      dates[i+1] = '19' + String(dates[i+1]).slice(2)
+    }
+
     const firstDate = [
       parseInt(dates[i].slice(0, 4)),
       parseInt(dates[i].slice(4, 6)),
@@ -334,6 +344,8 @@ function cal(dateStr: string): any {
       parseInt(dates[i + 1].slice(4, 6)),
       parseInt(dates[i + 1].slice(6)),
     ];
+    //如果是18几几年说明识别错误，替换18年
+    console.log('firstDate====>',firstDate)
     const diff = calculateMonthDifference(firstDate, lastDate);
     dateArray.push({
       first: dates[i],

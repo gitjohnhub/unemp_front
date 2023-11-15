@@ -132,7 +132,7 @@
                 <a-space>
                   <a-button
                     @click="reviewData(record.id)"
-                    v-if="record.verification == '0' && record.checkoperator == userInfo.username"
+                    v-if="record.verification == '0' && record.checkoperator !== userInfo.username"
                     type="primary"
                     >复核</a-button
                   >

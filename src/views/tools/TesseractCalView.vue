@@ -55,11 +55,17 @@
       <a-form-item>
         <a-input v-model:value="year.label" disabled></a-input>
       </a-form-item>
+      <a-form-item>
+        <a-checkbox v-model:checked="year.isOnlyleiji">只算缴费</a-checkbox>
+      </a-form-item>
+      <a-form-item label="减去">
+        <a-input v-model:value="year.minusNum"></a-input>
+      </a-form-item>
       <a-form-item label="本次计算后已领取：">
         <a-input v-model:value="year.yilingqu"></a-input>
       </a-form-item>
       <a-form-item>
-        <a-button @click="calCheck(index)" :disabled="year.isChecked">计算本次缴费</a-button>
+        <a-button @click="calPayYear(index)" :disabled="year.isChecked">计算本次缴费</a-button>
       </a-form-item>
       <MinusCircleOutlined @click="removeyear(year)" />
     </a-space>
@@ -71,7 +77,9 @@
     </a-form-item>
     <a-form-item>
       <a-space>
-        <a-button type="primary" @click="onFinish" v-if="dynamicValidateForm.years.length>0">修改后重新计算</a-button>
+        <a-button type="primary" @click="onFinish" v-if="dynamicValidateForm.years.length > 0"
+          >修改后重新计算</a-button
+        >
         <a-tag v-if="totalYear"> {{ totalYear }}</a-tag>
       </a-space>
     </a-form-item>
@@ -111,7 +119,9 @@
       </a-form-item>
     </a-space>
   </a-form>
-  <a-button @click="reCalCheck" v-if="dynamicCheckForm.checkValues.length > 0">重新计算结果</a-button>
+  <a-button @click="recalPayYear" v-if="dynamicCheckForm.checkValues.length > 0"
+    >重新计算结果</a-button
+  >
 </template>
 <script lang="ts" setup>
 import { reactive, ref, watch } from 'vue';
@@ -124,10 +134,17 @@ import type { UploadProps } from 'ant-design-vue';
 interface year {
   first: string;
   last: string;
+  value:number;
   label: string;
   yilingqu: number;
+  serviceMonth:Array<string>;
   isChecked: boolean;
   id: number;
+  minusNum:number,
+  addNum:number,
+  isRecoginizeWrong: boolean;
+  isOnlyleiji: boolean;
+  note: '';
 }
 interface checkValue {
   // 新增年限，累计
@@ -148,12 +165,12 @@ const dynamicValidateForm = reactive<{ years: year[] }>({
 const dynamicCheckForm = reactive<{ checkValues: checkValue[] }>({
   checkValues: [],
 });
-// watch(
-//   () => dynamicValidateForm.years,
-//   (newValue, oldValue) => {
-//     console.log('dynamicValidateForm newValue===>', newValue);
-//   }
-// );
+watch(
+  () => dynamicValidateForm.years,
+  (newValue, oldValue) => {
+    console.log('dynamicValidateForm newValue===>', newValue);
+  }
+);
 const removeyear = (item: year) => {
   const index = dynamicValidateForm.years.indexOf(item);
   if (index !== -1) {
@@ -166,19 +183,24 @@ const addyear = () => {
     {
       first: '',
       last: '',
+      value:0,
       label: '',
+      serviceMonth:[],
       yilingqu: 0,
       isChecked: false,
       id: Date.now(),
+      isRecoginizeWrong: false,
+      minusNum:0,
+      addNum:0,
+      isOnlyleiji: false,
+      note: '',
     },
   ];
-  console.log('addYear===>', dynamicValidateForm.years);
 };
 const totalYear = ref();
-const calCheck = (index: number) => {
+const calPayYear = (index: number) => {
   const years = dynamicValidateForm.years[index];
   const lastCheckedIndex = dynamicValidateForm.years.findIndex((item) => item.isChecked === true);
-  console.log(`lastCheckedIndex===>${lastCheckedIndex}`);
   if (dynamicCheckForm.checkValues.length === 0) {
     dynamicCheckForm.checkValues = [
       {
@@ -206,14 +228,10 @@ const calCheck = (index: number) => {
     xinzeng = Number(years.label.split(':')[0]);
     leiji = xinzeng + lastCheckedFormElement.leiji;
     keheding = xinzeng + lastCheckedFormElement.remainingMonths;
-    console.log(`keheding===>${keheding},${Math.floor(keheding / 12)}`);
 
     kelingqu =
       Math.min(Math.floor(keheding / 12) * 2, 24) +
       Number(lastCheckedFormElement.remainingClaimMonths);
-    console.log(
-      `kelingqu===>${kelingqu},${Math.floor(kelingqu / 12)}+${lastCheckedFormElement.kelingqu}`
-    );
     remainingMonths = keheding % 12;
     remainingClaimMonths = kelingqu - Number(years.yilingqu);
     console.log(
@@ -239,15 +257,14 @@ const calCheck = (index: number) => {
   }
 };
 
-const getDifferent = (arr) => {
+const calServiceYear = (arr) => {
+  console.log('每次计算前的值',dynamicValidateForm.years)
   totalYear.value = 0;
   arr.forEach((item) => {
     let first = item.first;
     let last = item.last;
 
     if (/^\d{8}$/.test(first) && /^\d{8}$/.test(last)) {
-      console.log('first',first)
-
       const diff = calculateMonthDifference(
         [first.slice(0, 4), first.slice(4, 6), first.slice(6)],
         [last.slice(0, 4), last.slice(4, 6), last.slice(6)]
@@ -255,7 +272,6 @@ const getDifferent = (arr) => {
       item.label = `${diff}:${Math.floor(diff / 12)}年${diff % 12}月`;
       totalYear.value += diff;
     }
-    console.log(`${first}-${last},total:${totalYear.value}`)
   });
   totalYear.value = `${totalYear.value} : ${Math.floor(totalYear.value / 12)}年${
     totalYear.value % 12
@@ -263,16 +279,16 @@ const getDifferent = (arr) => {
 };
 
 const onFinish = (values) => {
-  getDifferent(dynamicValidateForm.years);
+  calServiceYear(dynamicValidateForm.years);
   // dynamicValidateForm.years.forEach((item, index) => (item.label = results.value[index]));
   // const total = results.value.reduce((acc, curr) => {
   //   const months = Number(curr.split(':')[0]);
   //   return acc + months;
   // }, 0);
-
 };
 
 //文字识别相关
+const fileList = ref([]);
 const customRequest = (options: any) => {
   dynamicCheckForm.checkValues = [];
   dynamicValidateForm.years = [];
@@ -291,7 +307,6 @@ const handleRemove = (file: File) => {
   const newFileList = fileList.value.slice();
   newFileList.splice(index, 1);
   fileList.value = newFileList;
-  recognitionResult.value = '';
 };
 function handleTesseract(file: File) {
   return new Promise((resolve, reject) => {
@@ -300,16 +315,11 @@ function handleTesseract(file: File) {
     reader.onload = async (e) => {
       try {
         const result = await Tesseract.recognize(e.target!.result).then((result) => {
-          recognitionResult.value = cal(result.data.text);
-          dynamicValidateForm.years = cal(result.data.text);
-          getDifferent(dynamicValidateForm.years);
-
-          // resolve(result.data.text)
-          // recognitionResult.value = result.data.text
+          dynamicValidateForm.years = fixRecoginizedData(result.data.text);
+          calServiceYear(dynamicValidateForm.years);
         });
         resolve(result);
       } catch (err) {
-        console.log(err);
         reject(err);
       }
     };
@@ -319,40 +329,61 @@ function handleTesseract(file: File) {
   });
 }
 
-const fileList = ref([]);
 
-function cal(dateStr: string): any {
+function getServiceMonths(dateArray) {
+  const startDate = new Date(
+    dateArray[0].slice(0, 4) + '-' + dateArray[0].slice(4, 6) + '-' + dateArray[0].slice(6, 8)
+  );
+  const endDate = new Date(
+    dateArray[1].slice(0, 4) + '-' + dateArray[0].slice(4, 6) + '-' + dateArray[0].slice(6, 8)
+  );
+  const monthsArray = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    const formattedMonth = `${year}${month.toString().padStart(2, '0')}`;
+    monthsArray.push(formattedMonth);
+
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+  return monthsArray;
+}
+// const firstDate = [
+//       parseInt(dates[i].slice(0, 4)),
+//       parseInt(dates[i].slice(4, 6)),
+//       parseInt(dates[i].slice(6)),
+//     ];
+//     const lastDate = [
+//       parseInt(dates[i + 1].slice(0, 4)),
+//       parseInt(dates[i + 1].slice(4, 6)),
+//       parseInt(dates[i + 1].slice(6)),
+//     ];
+//     const diff = calculateMonthDifference(firstDate, lastDate);
+function fixRecoginizedData(dateStr: string): any {
   const dates: string[] = dateStr.replace(/\s+/g, ' ').split(' ');
   const dateArray = [];
-
-  for (let i = 0; i < dates.length -1; i += 2) {
-    if (String(dates[i]).slice(0,2) == '18'){
-      console.log('找到一个识别错误的')
-      dates[i] = '19' + String(dates[i]).slice(2)
+  //如果是18几几年说明识别错误，替换18年
+  for (let i = 0; i < dates.length - 1; i += 2) {
+    if (String(dates[i]).slice(0, 2) == '18') {
+      dates[i] = '19' + String(dates[i]).slice(2);
     }
-    if (String(dates[i+1]).slice(0,2) == '18'){
-      dates[i+1] = '19' + String(dates[i+1]).slice(2)
+    if (String(dates[i + 1]).slice(0, 2) == '18') {
+      dates[i + 1] = '19' + String(dates[i + 1]).slice(2);
     }
 
-    const firstDate = [
-      parseInt(dates[i].slice(0, 4)),
-      parseInt(dates[i].slice(4, 6)),
-      parseInt(dates[i].slice(6)),
-    ];
-    const lastDate = [
-      parseInt(dates[i + 1].slice(0, 4)),
-      parseInt(dates[i + 1].slice(4, 6)),
-      parseInt(dates[i + 1].slice(6)),
-    ];
-    //如果是18几几年说明识别错误，替换18年
-    console.log('firstDate====>',firstDate)
-    const diff = calculateMonthDifference(firstDate, lastDate);
     dateArray.push({
       first: dates[i],
       last: dates[i + 1],
+      value:0,
       yilingqu: 0,
       isChecked: false,
-      label: diff,
+      isRecoginizeWrong: false,
+      isOnlyleiji: false,
+      note: '',
+      minusNum:0,
+      addNum:0,
+      label: '',
       id: Date.now(),
     });
   }
@@ -372,7 +403,6 @@ function calculateMonthDifference(date1: Array<number>, date2: Array<number>) {
   let adjustMonth2 = false;
 
   if (Number(year1) <= 1998 && Number(month1) < 10 && Number(day1) > 15) {
-    console.log('year1 > 1998 && day1 > 15', year1);
     adjustMonth1 = true;
   }
 
@@ -383,12 +413,10 @@ function calculateMonthDifference(date1: Array<number>, date2: Array<number>) {
   // 调整日期
   if (adjustMonth1) {
     d1.setMonth(d1.getMonth() + 1);
-    console.log('第一个日期已加上去1个月');
   }
 
   if (adjustMonth2) {
     d2.setMonth(d2.getMonth() - 1);
-    console.log('第二个日期已减去1个月');
   }
 
   // 计算月份差
@@ -396,10 +424,9 @@ function calculateMonthDifference(date1: Array<number>, date2: Array<number>) {
   return diffMonths;
 }
 
-const recognitionResult = ref('');
-const reCalCheck = ()=>{
+const recalPayYear = () => {
   // TODO
-}
+};
 
 // 文件预览
 const previewVisible = ref(false);
@@ -425,4 +452,20 @@ const handleCancel = () => {
   previewVisible.value = false;
   previewTitle.value = '';
 };
+//判断是否是一个日期
+const isDate = (str) => {
+  const date = new Date(str);
+  return date instanceof Date ;
+}
+// 查找重复的值
+function findDuplicates(currentServiceMonths, previousServiceMonths) {
+  const duplicates = [];
+
+  for (const value of currentServiceMonths) {
+    if (previousServiceMonths.includes(value)) {
+      duplicates.push(value);
+    }
+  }
+  return duplicates;
+}
 </script>

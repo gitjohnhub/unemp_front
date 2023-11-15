@@ -80,7 +80,7 @@
         <a-button type="primary" @click="onFinish" v-if="dynamicValidateForm.years.length > 0"
           >修改后重新计算</a-button
         >
-        <a-tag v-if="totalYear"> {{ totalYear }}</a-tag>
+        <a-tag v-if="totalYear.value != 0"> {{ totalYear.label }}</a-tag>
       </a-space>
     </a-form-item>
   </a-form>
@@ -134,16 +134,17 @@ import type { UploadProps } from 'ant-design-vue';
 interface year {
   first: string;
   last: string;
-  value:number;
+  value: number;
   label: string;
   yilingqu: number;
-  serviceMonth:Array<string>;
+  serviceMonth: Array<string>;
   isChecked: boolean;
   id: number;
-  minusNum:number,
-  addNum:number,
+  minusNum: number;
+  addNum: number;
   isRecoginizeWrong: boolean;
   isOnlyleiji: boolean;
+  serviceYears: Array<string>;
   note: '';
 }
 interface checkValue {
@@ -183,21 +184,22 @@ const addyear = () => {
     {
       first: '',
       last: '',
-      value:0,
+      value: 0,
       label: '',
-      serviceMonth:[],
+      serviceMonth: [],
       yilingqu: 0,
       isChecked: false,
       id: Date.now(),
       isRecoginizeWrong: false,
-      minusNum:0,
-      addNum:0,
+      minusNum: 0,
+      addNum: 0,
       isOnlyleiji: false,
       note: '',
+      serviceYears:[]
     },
   ];
 };
-const totalYear = ref();
+const totalYear = reactive({ value: 0, label: '' });
 const calPayYear = (index: number) => {
   const years = dynamicValidateForm.years[index];
   const lastCheckedIndex = dynamicValidateForm.years.findIndex((item) => item.isChecked === true);
@@ -258,8 +260,7 @@ const calPayYear = (index: number) => {
 };
 
 const calServiceYear = (arr) => {
-  console.log('每次计算前的值',dynamicValidateForm.years)
-  totalYear.value = 0;
+  console.log('每次计算前的值', dynamicValidateForm.years);
   arr.forEach((item) => {
     let first = item.first;
     let last = item.last;
@@ -269,22 +270,18 @@ const calServiceYear = (arr) => {
         [first.slice(0, 4), first.slice(4, 6), first.slice(6)],
         [last.slice(0, 4), last.slice(4, 6), last.slice(6)]
       );
-      item.label = `${diff}:${Math.floor(diff / 12)}年${diff % 12}月`;
+      item.label = `${Math.floor(diff / 12)}年${diff % 12}月`;
       totalYear.value += diff;
+      item.value = diff;
+      item.serviceYears = getServiceMonths([first,last])
     }
+
   });
-  totalYear.value = `${totalYear.value} : ${Math.floor(totalYear.value / 12)}年${
-    totalYear.value % 12
-  }个月`;
+  totalYear.label = `${Math.floor(totalYear.value / 12)}年${totalYear.value % 12}个月`;
 };
 
 const onFinish = (values) => {
   calServiceYear(dynamicValidateForm.years);
-  // dynamicValidateForm.years.forEach((item, index) => (item.label = results.value[index]));
-  // const total = results.value.reduce((acc, curr) => {
-  //   const months = Number(curr.split(':')[0]);
-  //   return acc + months;
-  // }, 0);
 };
 
 //文字识别相关
@@ -328,7 +325,6 @@ function handleTesseract(file: File) {
     };
   });
 }
-
 
 function getServiceMonths(dateArray) {
   const startDate = new Date(
@@ -375,15 +371,16 @@ function fixRecoginizedData(dateStr: string): any {
     dateArray.push({
       first: dates[i],
       last: dates[i + 1],
-      value:0,
+      value: 0,
       yilingqu: 0,
       isChecked: false,
       isRecoginizeWrong: false,
       isOnlyleiji: false,
       note: '',
-      minusNum:0,
-      addNum:0,
+      minusNum: 0,
+      addNum: 0,
       label: '',
+      serviceYears:[],
       id: Date.now(),
     });
   }
@@ -455,8 +452,8 @@ const handleCancel = () => {
 //判断是否是一个日期
 const isDate = (str) => {
   const date = new Date(str);
-  return date instanceof Date ;
-}
+  return date instanceof Date;
+};
 // 查找重复的值
 function findDuplicates(currentServiceMonths, previousServiceMonths) {
   const duplicates = [];

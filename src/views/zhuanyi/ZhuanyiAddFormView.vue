@@ -56,6 +56,7 @@ const formState = ref({
   note: '',
   isDeleted: 1,
   payMonth: '',
+  pay:''
 });
 const isOnlyTransferRelationOp = [
   {
@@ -72,6 +73,7 @@ watch(
   }
 );
 const onSubmit = () => {
+  formState.value.pay = CalPayMonth(formState.value.payMonth);
   return formRef.value.validate().then(() => {
     return api
       .addZhuanyiData({
@@ -104,6 +106,19 @@ const resetForm = () => {
 };
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };
+// 计算核发标准
+const CalPayMonth = (payMonth) => {
+  if (payMonth) {
+    const numPayMonth = Number(payMonth);
+    if (numPayMonth <= 12) {
+      return String(numPayMonth * 2175 * 1.5);
+    } else {
+      return String(12 * 2175 * 1.5 + (numPayMonth - 12) * 1740 * 1.5);
+    }
+  } else {
+    return '0';
+  }
+};
 defineExpose({
   onSubmit,
   resetForm,

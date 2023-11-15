@@ -23,6 +23,12 @@
               style="width: 200px"
               @search="onSearch"
             />
+            <a-input-search
+              v-model:value="payValue"
+              placeholder="输入金额"
+              style="width: 200px"
+              @search="onSearch"
+            />
           </a-space>
         </a-row>
         <a-row>
@@ -41,19 +47,18 @@
           <a-space>
             <h5>导出操作：</h5>
             <a-date-picker v-model:value="monthSelect" />
-            <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e" >
+            <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
               导出Excel
             </a-button>
-
           </a-space>
         </a-row>
         <a-row>
-          <a-radio-group v-model:value="status"  button-style="solid">
-              <a-radio-button v-for="(status, index) in statusCal" :value="index" :key="index"
-                >{{ status.label }}
-                <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
-              </a-radio-button>
-            </a-radio-group>
+          <a-radio-group v-model:value="status" button-style="solid">
+            <a-radio-button v-for="(status, index) in statusCal" :value="index" :key="index"
+              >{{ status.label }}
+              <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
+            </a-radio-button>
+          </a-radio-group>
         </a-row>
       </a-space>
     </div>
@@ -96,6 +101,9 @@
                 >
                 <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
                   record.payMonth ? record.payMonth : '无数据'
+                }}</a-tag>
+                <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
+                  record.pay ? record.pay : '无数据'
                 }}</a-tag>
               </a-row>
 
@@ -242,9 +250,8 @@ import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { downloadLink } from '@/utils/util';
-import {genWorkbook,colorList} from '@/utils/util';
+import { genWorkbook, colorList } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
-
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -257,13 +264,14 @@ const checked = ref(false);
 const reviewChecked = ref('0');
 const exportData = ref();
 const status = ref('0');
-const statusCal = ref([])
+const statusCal = ref([]);
 
 //加载数据动画
 const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
+const payValue = ref()
 const statusList = [
   '已初核',
   '已复核',
@@ -275,7 +283,6 @@ const statusList = [
   '支付失败',
   '全部',
 ];
-
 
 const getStatus = (status: String) => {
   return statusList[Number(status)];
@@ -291,9 +298,6 @@ const getProgress = (status: String) => {
 };
 const onSearch = () => {
   getData()
-    .then((res) => {
-      console.log(res);
-    })
     .catch((e) => {
       console.log(e);
       message.info('查询错误，联系管理员');
@@ -360,7 +364,8 @@ const onSubmitNote = (id, note) => {
     });
 };
 //数据导出功能
-const exportExcel = () => {  // 写入文件
+const exportExcel = () => {
+  // 写入文件
   const headersWithWidth = [
     { header: '序号', key: 'index', width: 6 },
     { header: '姓名', key: 'name', width: 10 },
@@ -371,7 +376,7 @@ const exportExcel = () => {  // 写入文件
     { header: '核发标准', key: 'biaozhun', width: 40 },
     { header: '转出金额', key: 'pay', width: 12 },
   ];
-  const {workbook,headers,worksheet} = genWorkbook(headersWithWidth)
+  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:H1');
   worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
@@ -418,9 +423,10 @@ const exportExcel = () => {  // 写入文件
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook,`非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
-        'YYYY-MM'
-      )}`)
+    downloadLink(
+      workbook,
+      `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format('YYYY-MM')}`
+    );
     // workbook.xlsx.writeBuffer().then((buffer) => {
     //   const blob = new Blob([buffer], {
     //     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -472,7 +478,6 @@ const onShowSizeChange = async (page: any) => {
 };
 
 onBeforeMount(() => {
-
   userStore.getUsers();
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(','), userInfo.username];
@@ -482,13 +487,13 @@ onBeforeMount(() => {
 // 获取数据
 const getData = async (params?: any) => {
   spinning.value = true;
-  api.getZhuanyiDataCal().then((res:any) => {
+  api.getZhuanyiDataCal().then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
-        count: res.find((item) =>  Number(item.status) === index) ?.count || 0,
-      }
-  })
+        count: res.find((item) => Number(item.status) === index)?.count || 0,
+      };
+    });
   });
 
   params = {
@@ -529,10 +534,17 @@ const getData = async (params?: any) => {
       current: 1,
     };
   }
+  if (payValue.value !== undefined && payValue.value !== '') {
+    params = {
+      pay: payValue.value,
+      current: 1,
+    };
+  }
   return await api
     .getZhuanyiData(params)
     .then((res: any) => {
       exportData.value = res.rows;
+      console.log(exportData.value);
       pager.value = res.page;
       count.value = pager.value.total;
       dataSource.value = res.rows;

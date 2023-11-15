@@ -166,6 +166,7 @@ const dynamicValidateForm = reactive<{ years: year[] }>({
 const dynamicCheckForm = reactive<{ checkValues: checkValue[] }>({
   checkValues: [],
 });
+const uniqueServiceMonthsSet = reactive(new Set());
 watch(
   () => dynamicValidateForm.years,
   (newValue, oldValue) => {
@@ -195,7 +196,7 @@ const addyear = () => {
       addNum: 0,
       isOnlyleiji: false,
       note: '',
-      serviceYears:[]
+      serviceYears: [],
     },
   ];
 };
@@ -273,11 +274,14 @@ const calServiceYear = (arr) => {
       item.label = `${Math.floor(diff / 12)}年${diff % 12}月`;
       totalYear.value += diff;
       item.value = diff;
-      item.serviceYears = getServiceMonths([first,last])
+      item.serviceYears = getServiceMonths([first, last]);
+      for (let i = 0; i < item.serviceYears.length; i++) {
+        uniqueServiceMonthsSet.add(item.serviceYears[i]);
+      }
     }
-
   });
   totalYear.label = `${Math.floor(totalYear.value / 12)}年${totalYear.value % 12}个月`;
+  console.log('每次计算后的值', uniqueServiceMonthsSet);
 };
 
 const onFinish = (values) => {
@@ -331,17 +335,29 @@ function getServiceMonths(dateArray) {
     dateArray[0].slice(0, 4) + '-' + dateArray[0].slice(4, 6) + '-' + dateArray[0].slice(6, 8)
   );
   const endDate = new Date(
-    dateArray[1].slice(0, 4) + '-' + dateArray[0].slice(4, 6) + '-' + dateArray[0].slice(6, 8)
+    dateArray[1].slice(0, 4) + '-' + dateArray[1].slice(4, 6) + '-' + dateArray[1].slice(6, 8)
   );
   const monthsArray = [];
   const currentDate = new Date(startDate);
+  console.log('endDate===>',endDate.getMonth())
+
   while (currentDate <= endDate) {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
+
     const formattedMonth = `${year}${month.toString().padStart(2, '0')}`;
     monthsArray.push(formattedMonth);
-
     currentDate.setMonth(currentDate.getMonth() + 1);
+
+    if (year == 2020){
+      console.log(endDate)
+
+      console.log(currentDate)
+      console.log(monthsArray)
+      console.log('after currentDate==>',currentDate.getMonth())
+
+    }
+
   }
   return monthsArray;
 }
@@ -380,7 +396,7 @@ function fixRecoginizedData(dateStr: string): any {
       minusNum: 0,
       addNum: 0,
       label: '',
-      serviceYears:[],
+      serviceYears: [],
       id: Date.now(),
     });
   }

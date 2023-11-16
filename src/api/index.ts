@@ -63,4 +63,18 @@ export default {
     return POST('/getZhuanyiDataCal', params);
   },
 
+    // yanchang
+    getYanchangData(params?: any) {
+      return POST('/getYanchangData', params);
+    },
+    addYanchangData(params?: any) {
+      return POST('/addYanchangData', params);
+    },
+    updateYanchangData(params?: any) {
+      return POST('/updateYanchangData', params);
+    },
+    getYanchangDataCal(params?: any) {
+      return POST('/getYanchangDataCal', params);
+    },
+
 };

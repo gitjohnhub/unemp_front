@@ -52,6 +52,15 @@ const router = createRouter({
             },
           },
           {
+            path: '/yanchangTable',
+            name: 'yanchangTable',
+            component: ()=>import('@/views/yanchang/YanchangHomeView.vue'),
+            meta: {
+              title: '延长失业金',
+              requiresAuth: true,
+            },
+          },
+          {
             path:'/contact',
             redirect:'/contact/unempContact',
             children:[

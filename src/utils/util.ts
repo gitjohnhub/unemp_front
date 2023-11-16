@@ -45,9 +45,9 @@ export function genWorkbook(headersWithWidth){
   }
 
 }
-export function calculateEndDate(startDate: string, months: number): String {
+export function calculateEndDate(startDate: string, months: String): string {
   const endDate = new Date(startDate);
-  endDate.setMonth(endDate.getMonth() + months);
+  endDate.setMonth(endDate.getMonth() + Number(months));
   endDate.setDate(0);
   return endDate.toISOString().slice(0,10);
 }

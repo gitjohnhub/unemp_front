@@ -45,6 +45,12 @@ export function genWorkbook(headersWithWidth){
   }
 
 }
+export function calculateEndDate(startDate: string, months: number): String {
+  const endDate = new Date(startDate);
+  endDate.setMonth(endDate.getMonth() + months);
+  endDate.setDate(0);
+  return endDate.toISOString().slice(0,10);
+}
 export const colorList = [
   '#25b1bf',
   '#acc2ef',

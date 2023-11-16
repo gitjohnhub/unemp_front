@@ -19,16 +19,12 @@
             <a-divider type="vertical" />
             <a-input-search
               v-model:value="searchValue"
-              placeholder="输入身份证号查询"
+              placeholder="输入姓名/身份证/金额"
               style="width: 200px"
               @search="onSearch"
             />
-            <a-input-search
-              v-model:value="payValue"
-              placeholder="输入金额"
-              style="width: 200px"
-              @search="onSearch"
-            />
+            <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
+
           </a-space>
         </a-row>
         <a-row>
@@ -271,7 +267,6 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const payValue = ref()
 const statusList = [
   '已初核',
   '已复核',
@@ -313,6 +308,12 @@ const getColors = (user) => {
 };
 watch(
   () => selectedOp.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
+  () => searchValue.value,
   (newValue) => {
     getData();
   }
@@ -531,12 +532,6 @@ const getData = async (params?: any) => {
   if (searchValue.value !== undefined && searchValue.value !== '') {
     params = {
       searchValue: searchValue.value,
-      current: 1,
-    };
-  }
-  if (payValue.value !== undefined && payValue.value !== '') {
-    params = {
-      pay: payValue.value,
       current: 1,
     };
   }

@@ -261,7 +261,6 @@ const calPayYear = (index: number) => {
 };
 
 const calServiceYear = (arr) => {
-  console.log('每次计算前的值', dynamicValidateForm.years);
   arr.forEach((item) => {
     let first = item.first;
     let last = item.last;
@@ -350,14 +349,14 @@ function getServiceMonths(dateArray) {
     currentDate.setMonth(currentDate.getMonth() + 1);
     currentDate.setDate(1)
 
-    if (year == 2020){
-      console.log(endDate)
+    // if (year == 2020){
+    //   console.log(endDate)
 
-      console.log(currentDate)
-      console.log(monthsArray)
-      console.log('after currentDate==>',currentDate.getMonth())
+    //   console.log(currentDate)
+    //   console.log(monthsArray)
+    //   console.log('after currentDate==>',currentDate.getMonth())
 
-    }
+    // }
 
   }
   return monthsArray;

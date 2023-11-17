@@ -60,6 +60,15 @@ const router = createRouter({
               requiresAuth: true,
             },
           },
+           {
+            path: '/nongbuTable',
+            name: 'nongbuTable',
+            component: ()=>import('@/views/nongbu/NongbuHomeView.vue'),
+            meta: {
+              title: '农民补助金',
+              requiresAuth: true,
+            },
+          },
           {
             path:'/contact',
             redirect:'/contact/unempContact',

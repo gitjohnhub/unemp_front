@@ -77,4 +77,18 @@ export default {
       return POST('/getYanchangDataCal', params);
     },
 
+      // Nongbu
+      getNongbuData(params?: any) {
+        return POST('/getNongbuData', params);
+      },
+      addNongbuData(params?: any) {
+        return POST('/addNongbuData', params);
+      },
+      updateNongbuData(params?: any) {
+        return POST('/updateNongbuData', params);
+      },
+      getNongbuDataCal(params?: any) {
+        return POST('/getNongbuDataCal', params);
+      },
+
 };

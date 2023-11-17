@@ -9,6 +9,8 @@ export const useUserStore = defineStore('user', {
     usersList: [],
     checkoperators:[],
     userColors:[],
+    systemBackColor:'',
+    systemFrontColor:'',
 
   }),
 

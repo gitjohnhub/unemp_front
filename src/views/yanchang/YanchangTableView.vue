@@ -30,7 +30,7 @@
           <!-- 数据导出操作 -->
           <a-space>
             <h5>导出操作：</h5>
-            <a-date-picker v-model:value="monthSelect" />
+            <a-range-picker v-model:value="monthSelect" />
             <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
               导出Excel
             </a-button>
@@ -76,11 +76,17 @@
               </a-tooltip>
             </a-space>
           </template>
-          <template v-if="column.key === 'checkoperator'">
+          <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
                 <a-tag>
+                  {{ record.jiezhen }}
+                </a-tag>
+                <a-tag>
                   {{ record.checkoperator }}
+                </a-tag>
+                <a-tag v-if="record.reviewoperator">
+                  {{ record.reviewoperator }}
                 </a-tag>
                 <a-tag v-if="record.reviewoperator != null">
                   {{ record.reviewoperator }}
@@ -188,7 +194,7 @@ const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const monthSelect = ref<Dayjs>();
 const payDate = ref<Dayjs>();
-const selectedOp = ref<string[]>([]);
+
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref('0');
@@ -221,12 +227,7 @@ const onSearch = () => {
     message.info('查询错误，联系管理员');
   });
 };
-watch(
-  () => selectedOp.value,
-  (newValue) => {
-    getData();
-  }
-);
+
 watch(
   () => searchValue.value,
   (newValue) => {
@@ -380,9 +381,6 @@ const onShowSizeChange = async (page: any) => {
 
 onBeforeMount(() => {
   userStore.getUsers();
-  if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(','), userInfo.username];
-  }
   getData();
 });
 // 获取数据
@@ -401,8 +399,10 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    checkoperators: selectedOp.value,
   };
+  if (monthSelect.value){
+    params.monthSelect = monthSelect.value
+  }
 
   if (Number(status.value) !== (statusList.length - 1)) {
     params.status = status.value;
@@ -539,6 +539,9 @@ const columnsOriginal = [
   },{
     key:'status',
     title:'进度'
+  },{
+    key:'createtime',
+    title:'提交时间'
   }
   ,{
     key:'action',

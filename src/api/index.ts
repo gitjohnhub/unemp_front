@@ -76,6 +76,9 @@ export default {
     getYanchangDataCal(params?: any) {
       return POST('/getYanchangDataCal', params);
     },
+    getYanchangByJiezhen(params?: any) {
+      return POST('/getYanchangByJiezhen', params);
+    },
 
       // Nongbu
       getNongbuData(params?: any) {

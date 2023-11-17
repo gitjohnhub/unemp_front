@@ -1,11 +1,11 @@
 <template>
-  <div style="background: #ececec; padding: 30px">
+  <div style="background: #F7EEDD; padding: 30px">
     <a-space direction="vertical">
     <a-date-picker v-model:value="monthSelect" picker="month" />
 
     <a-row :gutter="[16,16]">
       <a-col :span="6"  v-for="unempData in unempDatas">
-        <a-card>
+        <a-card style="background-color: #ede4d3;border-style: none;">
           <a-statistic
             :title="unempData.value"
             :value="unempData.count"

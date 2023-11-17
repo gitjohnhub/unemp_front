@@ -1,15 +1,15 @@
 <template>
   <a-layout>
-    <a-layout-header class="header">
+    <a-layout-header class="header" style="background-color: ##ede4d3;">
       <UserInfoBarView />
     </a-layout-header>
     <a-layout>
-      <a-layout-sider width="200" style="background: #fff">
+      <a-layout-sider width="200" style="background: ##ede4d3">
         <a-menu
           v-model:selectedKeys="selectedKeys2"
           v-model:openKeys="openKeys"
           mode="inline"
-          :style="{ height: '100%', borderRight: 0 }"
+          :style="{ height: '100%', borderRight: 0 ,background: '##ede4d3'}"
         >
           <a-sub-menu key="sub1">
             <template #title>
@@ -51,10 +51,10 @@
           </a-sub-menu>
         </a-menu>
       </a-layout-sider>
-      <a-layout style="padding: 0 24px 24px">
+      <a-layout style="padding: 0 24px 24px;background-color: ##ede4d3;">
         <BreadCrumbView />
         <a-layout-content
-          :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
+          :style="{ background: '##ede4d3', padding: '24px', margin: 0, minHeight: '280px' }"
         >
           <RouterView />
         </a-layout-content>

@@ -388,14 +388,15 @@ onBeforeMount(() => {
 // 获取数据
 const getData = async (params?: any) => {
   spinning.value = true;
-  // api.getYanchangDataCal().then((res: any) => {
-  //   statusCal.value = statusList.map((item, index) => {
-  //     return {
-  //       label: item,
-  //       count: res.find((item) => Number(item.status) === index)?.count || 0,
-  //     };
-  //   });
-  // });
+  api.getYanchangDataCal().then((res: any) => {
+    console.log(res)
+    statusCal.value = statusList.map((item, index) => {
+      return {
+        label: item,
+        count: res.find((item) => Number(item.status) === index)?.count || 0,
+      };
+    });
+  });
 
   params = {
     ...params,

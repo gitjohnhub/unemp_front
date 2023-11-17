@@ -187,7 +187,6 @@ import { useUserStore } from '@/stores';
 import { downloadLink } from '@/utils/util';
 import { genWorkbook, colorList } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
-import { title } from 'process';
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -287,74 +286,57 @@ const exportExcel = () => {
     { header: '序号', key: 'index', width: 6 },
     { header: '姓名', key: 'name', width: 10 },
     { header: '身份证', key: 'personID', width: 26 },
-    { header: '月数', key: 'payMonth', width: 22 },
-    { header: '起始日期', key: 'startDate', width: 14 },
+    { header: '月数', key: 'payMonth', width: 12 },
+    { header: '起始日期', key: 'startDate', width: 24 },
     { header: '终止日期', key: 'endDate', width: 18 },
-    { header: '街镇', key: 'jiezhen', width: 40 },
-    { header: '是否审批', key: 'status', width: 12 },
+    { header: '街镇', key: 'jiezhen', width: 24 },
+    { header: '是否审批', key: 'status', width: 22 },
   ];
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:H1');
-  worksheet.getCell('A1').value = '标题';
+  worksheet.getCell('A1').value = `${monthSelect.value[0].format('YYYY-mm')}_延长失业金`;
   worksheet.getCell('H1').alignment = { vertical: 'middle', horizontal: 'center' };
 
-  getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then((res) => {
-    let totalPayNum = 0;
+  getData({ noindex: 1 }).then((res) => {
     exportData.value.map((item, index) => {
       worksheet.addRow([
         index + 1,
         item.personName,
         item.personID,
-        item.fromArea,
-        item.payDate,
         item.payMonth,
-        Number(item.payMonth) < 12 ? '2175.00/1-12月' : '2175.00/1-12月，1740.00/13-24月',
+        item.startDate,
+        item.endDate,
+        item.jiezhen,
+        item.status == '1' ? '已审批' : '',
+        item.note,
       ]);
     });
     worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
-    console.log(`A1:H${exportData.value.length + 2}`);
-    worksheet.addRow(['合计', '', '', '', '', '', '', `${totalPayNum}`]);
-    worksheet.addRow([
-      '',
-      '',
-      `打印人:${userInfo.username}`,
-      '',
-      `${monthSelect.value!.format('YYYY-MM-DD')}`,
-      '',
-      '',
-      '',
-    ]);
+    // worksheet.addRow([
+    //   '',
+    //   '',
+    //   `打印人:${userInfo.username}`,
+    //   '',
+    //   `${monthSelect.value[0].format('YYYY-MM-DD')}`,
+    //   '',
+    //   '',
+    //   '',
+    // ]);
     worksheet.eachRow((row, rowNumber) => {
       row.font = { size: 15 };
       row.eachCell((cell, colNumber) => {
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
       });
     });
-    // for (let i = 1; i < exportData.value.length + 6; i++) {
-    //   worksheet.getRow(i).font = { size: 15 };
-    // }
     worksheet.getRow(2).font = { size: 15, bold: true };
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
     downloadLink(
       workbook,
-      `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format('YYYY-MM')}`
+      `延长失业金_${monthSelect.value[0].format('YYYY-MM')}`
     );
-    // workbook.xlsx.writeBuffer().then((buffer) => {
-    //   const blob = new Blob([buffer], {
-    //     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    //   });
-    //   const url = window.URL.createObjectURL(blob);
-    //   const link = document.createElement('a');
-    //   link.href = url;
-    //   link.download = `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
-    //     'YYYY-MM'
-    //   )}.xlsx`;
-    //   link.click();
-    //   window.URL.revokeObjectURL(url);
-    // });
   });
 };
 // 分页

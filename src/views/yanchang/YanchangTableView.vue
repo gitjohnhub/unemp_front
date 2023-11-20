@@ -38,7 +38,7 @@
         </a-row>
         <a-row>
           <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="index" :key="index"
+            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
               >{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>

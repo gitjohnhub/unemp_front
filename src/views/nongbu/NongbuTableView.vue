@@ -111,7 +111,7 @@
                     <WarningFilled />
                   </a-button>
 
-                  <a-button danger @click="deleteData(record.id)" v-if="record.status !== 4 ? true : false">删除</a-button>
+                  <a-button danger @click="deleteData(record.id)" v-if="record.status !== 4 ? true : false"><DeleteOutlined /></a-button>
                 </a-space>
               </a-row>
 
@@ -123,7 +123,7 @@
                 </a-space>
               </a-row>
 
-              <a-button @click="showEditModal(record)">编辑</a-button>
+              <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
               <!-- 编辑模态框 -->
               <a-modal v-model:visible="record.editVisible" @ok="handleEditOk" @cancel="handleEditCancel">
                 <a-form :model="editForm">
@@ -165,7 +165,7 @@
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount, watch, provide } from 'vue';
 import { message } from 'ant-design-vue';
-import { WarningFilled,CheckOutlined } from '@ant-design/icons-vue';
+import { WarningFilled,CheckOutlined,DeleteOutlined,EditOutlined} from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import NongbuAddFormView from './NongbuAddFormView.vue';

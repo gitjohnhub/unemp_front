@@ -48,6 +48,7 @@
     </div>
     <a-spin :spinning="spinning">
       <a-table
+        row-class-name="custom-row"
         :columns="columns"
         :data-source="dataSource"
         @change="handleChange"
@@ -67,6 +68,7 @@
           <template v-if="column.key === 'personName'">
             <a-space direction="vertical">
               <a-tooltip :title="pinyin(record.personName)" color="#f50">
+
                 <a-typography-paragraph
                   :style="{ fontSize: '18px' }"
                   copyable
@@ -79,6 +81,9 @@
           <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
+                <a-tag color="red">
+                  <WarningFilled v-if="record.wrongTag == 1"/>
+                </a-tag>
                 <a-tag>
                   {{ record.jiezhen }}
                 </a-tag>
@@ -108,6 +113,10 @@
 
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
           </template>
+          <template v-if="column.key === 'chengPayMonth'">
+            <a-tag>{{ record.chengPayMonth }}</a-tag>
+            <a-tag>{{ record.zhenPayMonth }}</a-tag>
+          </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
               {{ getStatus(record.status) }}
@@ -136,6 +145,7 @@
                     v-if="record.status == '0'"
                     >审批</a-button
                   >
+                  <a-button @click="tagWrong(record.id)" type="primary" danger><WarningFilled /></a-button>
 
                   <a-button
                     danger
@@ -159,14 +169,14 @@
                 </a-space>
               </a-row>
 
-              <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
+              <a-button @click="showEditModal(record)">编辑</a-button>
               <!-- 编辑模态框 -->
               <a-modal
                 v-model:visible="record.editVisible"
                 @ok="handleEditOk"
                 @cancel="handleEditCancel"
               >
-                <NongbuEditFormView :editForm="record" ref="editFormRef" />
+                <NongbuEditFormView  />
               </a-modal>
             </a-space>
           </template>
@@ -176,8 +186,9 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount, watch } from 'vue';
+import { computed, ref, onBeforeMount, watch,provide } from 'vue';
 import { message } from 'ant-design-vue';
+import { WarningFilled } from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import NongbuAddFormView from './NongbuAddFormView.vue';
@@ -187,6 +198,8 @@ import { useUserStore } from '@/stores';
 import { downloadLink } from '@/utils/util';
 import { genWorkbook, colorList } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
+const editForm = ref()
+
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -331,10 +344,7 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(
-      workbook,
-      `农民补助金_${monthSelect.value[0].format('YYYY-MM')}`
-    );
+    downloadLink(workbook, `农民补助金_${monthSelect.value[0].format('YYYY-MM')}`);
   });
 };
 // 分页
@@ -367,7 +377,7 @@ onBeforeMount(() => {
 const getData = async (params?: any) => {
   spinning.value = true;
   api.getNongbuDataCal().then((res: any) => {
-    console.log(res)
+    console.log(res);
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -380,11 +390,11 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  if (monthSelect.value){
-    params.monthSelect = monthSelect.value
+  if (monthSelect.value) {
+    params.monthSelect = monthSelect.value;
   }
 
-  if (Number(status.value) !== (statusList.length - 1)) {
+  if (Number(status.value) !== statusList.length - 1) {
     params.status = status.value;
   } else {
     params.status = null;
@@ -426,10 +436,22 @@ const reviewData = async (id: number) => {
       getData();
     });
 };
+const tagWrong = async (id: number) => {
+  await api
+    .updateNongbuData({ id: id, wrongTag: '1' })
+    .then((res: any) => {
+      getData();
+    });
+};
+
 
 const refuseData = async (id: number) => {
   await api
-    .updateNongbuData({ id: id, reviewoperator: userInfo.username, status: statusList.indexOf('已驳回') })
+    .updateNongbuData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: statusList.indexOf('已驳回'),
+    })
     .then((res: any) => {
       getData();
     });
@@ -437,7 +459,11 @@ const refuseData = async (id: number) => {
 
 const cancelData = async (id: number) => {
   await api
-    .updateNongbuData({ id: id, reviewoperator: userInfo.username, status: statusList.indexOf('已取消') })
+    .updateNongbuData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: statusList.indexOf('已取消'),
+    })
     .then((res: any) => {
       getData();
     });
@@ -455,6 +481,9 @@ const showAddDataModal = async () => {
 };
 
 const showEditModal = (record) => {
+  editForm.value = record
+
+  console.log('editFormFather=>',editForm.value )
   record.editVisible = true;
 };
 
@@ -473,9 +502,12 @@ const handleOk = () => {
 
   getData();
 };
+const onEditSubmit = ()=>{
+  console.log(editForm.value)
+}
 const handleEditOk = () => {
   editFormRef.value
-    .onSubmit()
+    .onEditSubmit()
     .then((res: any) => {
       // message.info(res)
       getData();
@@ -495,57 +527,53 @@ const handleCancel = () => {
 };
 const columnsOriginal = [
   {
-    key:'personName',
-    title:'姓名'
-  },{
-    key:'personID',
-    title:'身份证号'
-  }
-  ,{
-    key:'chengPayMonth',
-    title:'城保'
-  }  ,{
-    key:'zhenPayMonth',
-    title:'镇保'
-  },{
-    key:'startDate',
-    title:'开始时间'
-  },{
-    key:'endDate',
-    title:'结束时间'
-  },{
-    key:'jiezhen',
-    title:'街镇'
-  },{
-    key:'note',
-    title:'备注'
-  },{
-    key:'status',
-    title:'进度'
-  },{
-    key:'createtime',
-    title:'提交时间'
-  }
-  ,{
-    key:'action',
-    title:'操作'
-  }
-
-]
+    key: 'personName',
+    title: '姓名',
+  },
+  {
+    key: 'personID',
+    title: '身份证号',
+  },
+  {
+    key: 'chengPayMonth',
+    title: '城保/镇保',
+  },
+  {
+    key: 'jiezhen',
+    title: '街镇',
+  },
+  {
+    key: 'note',
+    title: '备注',
+  },
+  {
+    key: 'status',
+    title: '进度',
+  },
+  {
+    key: 'createtime',
+    title: '提交时间',
+  },
+  {
+    key: 'action',
+    title: '操作',
+  },
+];
 const columns = columnsOriginal.map((item) => {
   return {
-   ...item,
+    ...item,
     dataIndex: item.key,
     align: 'center',
   };
 });
-
 </script>
 <style scoped>
 .deleted {
   text-decoration: line-through;
 }
-
+.custom-row {
+  height: 20px; /* 设置行高度为 50px */
+}
 .table-operations {
   margin-bottom: 16px;
 }

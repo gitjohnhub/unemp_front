@@ -90,12 +90,12 @@ const getPathPattern = (path)=>{
 </script>
 <style scoped>
 
-/* .header{
+.header{
   background-color: #fff;
 }
 
 
 .site-layout-background {
   background: #fff;
-} */
+}
 </style>

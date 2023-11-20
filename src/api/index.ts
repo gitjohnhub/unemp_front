@@ -93,5 +93,9 @@ export default {
       getNongbuDataCal(params?: any) {
         return POST('/getNongbuDataCal', params);
       },
+      getNongbuCalByMonthAndJiezhen(params?:any){
+        return POST('/getNongbuCalByMonthAndJiezhen', params);
+
+      }
 
 };

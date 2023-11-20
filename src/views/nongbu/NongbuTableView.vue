@@ -502,8 +502,11 @@ const columnsOriginal = [
     title:'身份证号'
   }
   ,{
-    key:'payMonth',
-    title:'月数'
+    key:'chengPayMonth',
+    title:'城保'
+  }  ,{
+    key:'zhenPayMonth',
+    title:'镇保'
   },{
     key:'startDate',
     title:'开始时间'

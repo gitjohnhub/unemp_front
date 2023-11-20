@@ -14,14 +14,13 @@ const getPopupContainer = (el, dialogContext) =>{
 <template>
   <a-config-provider
     :theme="{
-      algorithm: theme.darkAlgorithm,
+      // algorithm: theme.darkAlgorithm,
       token: {
         colorPrimary: '#00b96b',
       },
     }"
     :getPopupContainer="getPopupContainer"
     :locale="zhCN"
-    style="background-color: black;"
 
   >
   <RouterView />

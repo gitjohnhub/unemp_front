@@ -4,7 +4,7 @@
       <a-space direction="vertical">
         <a-row>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary">添加</a-button>
+            <a-button @click="showAddDataModal" type="primary"><PlusCircleOutlined />添加</a-button>
             <a-modal
               v-model:open="open"
               title="Title"
@@ -34,7 +34,7 @@
         <a-row>
           <a-space>
             <a-range-picker v-model:value="monthSelect" />
-            <a-button @click="exportExcel" type="primary"> 导出Excel </a-button>
+            <a-button @click="exportExcel" type="primary"> <FileExcelOutlined />导出</a-button>
           </a-space>
         </a-row>
         <a-row>
@@ -139,14 +139,16 @@
                     @click="chuheData(record.id)"
                     v-if="record.verification == '2'"
                     type="primary"
-                    >已初核</a-button
+                    ><RedoOutlined /></a-button
                   >
+                  <a-tooltip title="删除">
                   <a-button
                     danger
                     @click="deleteData(record.id)"
+                    type="primary"
                     :disabled="record.verification == '3' ? true : false"
                     ><DeleteOutlined
-                  /></a-button>
+                  /></a-button></a-tooltip>
                   <!-- 编辑模态框 -->
                   <a-modal
                     v-model:visible="record.editVisible"
@@ -179,6 +181,7 @@
                       <a-form-item label="选择未初核">
                         <a-radio-group v-model:value="editForm.verification">
                           <a-radio value="0">已初核</a-radio>
+                          <!-- <a-radio value="1">已复核</a-radio> -->
                           <a-radio value="2">待初核</a-radio>
                         </a-radio-group>
                       </a-form-item>
@@ -211,7 +214,7 @@
 import ApplyAddFormView from './ApplyAddFormView.vue';
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import { WarningFilled, CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons-vue';
+import { FileExcelOutlined, CheckOutlined, DeleteOutlined, EditOutlined,PlusCircleOutlined,RedoOutlined } from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import { genWorkbook, downloadLink } from '@/utils/util';

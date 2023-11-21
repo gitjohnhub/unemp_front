@@ -110,6 +110,8 @@
                   <a-button @click="tagWrong(record.id)" type="primary" danger>
                     <WarningFilled />
                   </a-button>
+                  <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
+
 
                   <a-button danger @click="deleteData(record.id)" v-if="record.status !== 4 ? true : false"><DeleteOutlined /></a-button>
                 </a-space>
@@ -123,7 +125,6 @@
                 </a-space>
               </a-row>
 
-              <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
               <!-- 编辑模态框 -->
               <a-modal v-model:visible="record.editVisible" @ok="handleEditOk" @cancel="handleEditCancel">
                 <a-form :model="editForm">
@@ -480,7 +481,7 @@ const handleOk = () => {
 const handleEditOk = () => {
   api.updateNongbuData(editForm.value)
     .then((res: any) => {
-      message.info(res)
+      message.info('修改成功')
       editOpen.value = false;
       getData();
 

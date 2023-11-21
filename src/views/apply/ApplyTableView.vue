@@ -137,7 +137,7 @@
                     >复核</a-button
                   >
                   <a-button
-                    @click="reviewData(record.id)"
+                    @click="chuheData(record.id)"
                     v-if="record.verification == '2'"
                     type="primary"
                     >已初核</a-button
@@ -406,6 +406,13 @@ const deleteData = async (id: number) => {
 const reviewData = async (id: number) => {
   await api
     .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '1' })
+    .then((res: any) => {
+      getData();
+    });
+};
+const chuheData = async (id: number) => {
+  await api
+    .updateUnempVeriData({ id: id, verification: '0' })
     .then((res: any) => {
       getData();
     });

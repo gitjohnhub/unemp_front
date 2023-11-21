@@ -1,6 +1,110 @@
 <template>
-    <h1>转移</h1>
+  <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
+  <a-segmented v-model:value="selectedMonth" :options="months.slice(7)" />
+  <a-button type="primary" @click="getMonths()">刷新月份</a-button>
+  <a-table :columns="columns" :data-source="dataSource" bordered>
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.key === 'status'">
+        <a-tag>{{ statusList[Number(record.status)] }}</a-tag>
+      </template>
+      <template v-if="column.key === 'note'">
+        <a-tooltip :title="record.note" color="#f50">
+          {{ record.note }}
+        </a-tooltip>
+      </template>
+    </template>
+  </a-table>
 </template>
 <script setup lang="ts">
-
+import api from '@/api';
+import { ref, onBeforeMount, watch } from 'vue';
+const dataSource = ref();
+const months = ref(['']);
+const selectedMonth = ref('');
+const statusList = [
+  '已初核待复审',
+  '待对方确认',
+  '本次支付中',
+  '已支付',
+  '已驳回',
+  '已取消',
+  '长时间对方未确认',
+  '本次支付失败，下次支付',
+];
+watch(
+  () => selectedMonth.value,
+  () => {
+    getData();
+  }
+);
+onBeforeMount(() => {
+  console.log('zhuanyiExcel');
+  getMonths();
+});
+const getMonths = (params?: any) => {
+  api
+    .getZhuanyiAllDate()
+    .then((res: any) => {
+      console.log('res', res);
+      months.value = res;
+      console.log('months===>', months.value);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+const getData = (params?: any) => {
+  params = {
+    ...params,
+    noindex: 1,
+    searchDate: selectedMonth.value,
+  };
+  console.log(selectedMonth.value);
+  api.getZhuanyiData(params).then((res: any) => {
+    console.log(res);
+    dataSource.value = res.rows;
+  });
+};
+const columnsOriginal = [
+  {
+    key: 'personName',
+    title: '姓名',
+  },
+  {
+    key: 'personID',
+    title: '身份证号',
+  },
+  {
+    key: 'isOnlyTransferRelation',
+    title: '是否转移金额',
+  },
+  {
+    key: 'payDate',
+    title: '支付日期',
+  },
+  {
+    key: 'jiezhen',
+    title: '街镇',
+  },
+  {
+    key: 'note',
+    title: '备注',
+    ellipsis: true,
+  },
+  {
+    key: 'status',
+    title: '进度',
+  },
+  {
+    key: 'createtime',
+    title: '提交时间',
+  },
+];
+const columns = columnsOriginal.map((item) => {
+  return {
+    ...item,
+    dataIndex: item.key,
+    align: 'center',
+  };
+});
 </script>

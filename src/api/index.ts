@@ -62,40 +62,41 @@ export default {
   getZhuanyiDataCal(params?: any) {
     return POST('/getZhuanyiDataCal', params);
   },
+  getZhuanyiAllDate(params?: any) {
+    return POST('/getZhuanyiAllDate', params);
+  },
 
-    // yanchang
-    getYanchangData(params?: any) {
-      return POST('/getYanchangData', params);
-    },
-    addYanchangData(params?: any) {
-      return POST('/addYanchangData', params);
-    },
-    updateYanchangData(params?: any) {
-      return POST('/updateYanchangData', params);
-    },
-    getYanchangDataCal(params?: any) {
-      return POST('/getYanchangDataCal', params);
-    },
-    getYanchangByJiezhen(params?: any) {
-      return POST('/getYanchangByJiezhen', params);
-    },
+  // yanchang
+  getYanchangData(params?: any) {
+    return POST('/getYanchangData', params);
+  },
+  addYanchangData(params?: any) {
+    return POST('/addYanchangData', params);
+  },
+  updateYanchangData(params?: any) {
+    return POST('/updateYanchangData', params);
+  },
+  getYanchangDataCal(params?: any) {
+    return POST('/getYanchangDataCal', params);
+  },
+  getYanchangByJiezhen(params?: any) {
+    return POST('/getYanchangByJiezhen', params);
+  },
 
-      // Nongbu
-      getNongbuData(params?: any) {
-        return POST('/getNongbuData', params);
-      },
-      addNongbuData(params?: any) {
-        return POST('/addNongbuData', params);
-      },
-      updateNongbuData(params?: any) {
-        return POST('/updateNongbuData', params);
-      },
-      getNongbuDataCal(params?: any) {
-        return POST('/getNongbuDataCal', params);
-      },
-      getNongbuCalByMonthAndJiezhen(params?:any){
-        return POST('/getNongbuCalByMonthAndJiezhen', params);
-
-      }
-
+  // Nongbu
+  getNongbuData(params?: any) {
+    return POST('/getNongbuData', params);
+  },
+  addNongbuData(params?: any) {
+    return POST('/addNongbuData', params);
+  },
+  updateNongbuData(params?: any) {
+    return POST('/updateNongbuData', params);
+  },
+  getNongbuDataCal(params?: any) {
+    return POST('/getNongbuDataCal', params);
+  },
+  getNongbuCalByMonthAndJiezhen(params?: any) {
+    return POST('/getNongbuCalByMonthAndJiezhen', params);
+  },
 };

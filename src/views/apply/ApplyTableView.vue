@@ -33,11 +33,9 @@
         </a-row>
         <a-row>
           <a-space>
-
-          <a-range-picker v-model:value="monthSelect" />
+            <a-range-picker v-model:value="monthSelect" />
             <a-button @click="exportExcel" type="primary"> 导出Excel </a-button>
           </a-space>
-
         </a-row>
         <a-row>
           <a-space>
@@ -50,7 +48,6 @@
               </a-radio-button>
             </a-radio-group>
             <a-tag color="#108ee9">{{ count }}</a-tag>
-
           </a-space>
         </a-row>
       </a-space>
@@ -134,8 +131,10 @@
                     @click="reviewData(record.id)"
                     v-if="record.verification == '0' && record.checkoperator !== userInfo.username"
                     type="primary"
-                    >复核</a-button
-                  >
+                    ><CheckOutlined
+                  /></a-button>
+                  <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
+
                   <a-button
                     @click="chuheData(record.id)"
                     v-if="record.verification == '2'"
@@ -146,16 +145,44 @@
                     danger
                     @click="deleteData(record.id)"
                     :disabled="record.verification == '3' ? true : false"
-                    >删除</a-button
-                  >
-                  <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
+                    ><DeleteOutlined
+                  /></a-button>
                   <!-- 编辑模态框 -->
                   <a-modal
                     v-model:visible="record.editVisible"
                     @ok="handleEditOk"
                     @cancel="handleEditCancel"
                   >
-                    <ApplyEditFormView :editForm="record" ref="editFormRef" />
+                    <a-form :model="editForm">
+                      <a-form-item label="身份证号" name="personID" has-feedback>
+                        <a-input v-model:value="editForm.personID">
+
+                        </a-input>
+                      </a-form-item>
+                      <a-form-item label="姓名" name="personName" has-feedback>
+                        <a-input v-model:value="editForm.personName" />
+                      </a-form-item>
+                      <a-form-item label="街镇" name="jiezhen" has-feedback>
+                        <a-select
+                          ref="select"
+                          v-model:value="editForm.jiezhen"
+                          style="width: 120px"
+                          :options="jiezhens"
+                        ></a-select>
+                      </a-form-item>
+                      <a-form-item label="初核备注">
+                        <a-textarea v-model:value="editForm.checknote" />
+                      </a-form-item>
+                      <a-form-item label="复核备注">
+                        <a-textarea v-model:value="editForm.reviewnote" />
+                      </a-form-item>
+                      <a-form-item label="选择未初核">
+                        <a-radio-group v-model:value="editForm.verification">
+                          <a-radio value="0">已初核</a-radio>
+                          <a-radio value="2">待初核</a-radio>
+                        </a-radio-group>
+                      </a-form-item>
+                    </a-form>
                   </a-modal>
                 </a-space>
               </a-row>
@@ -182,9 +209,9 @@
 </template>
 <script lang="ts" setup>
 import ApplyAddFormView from './ApplyAddFormView.vue';
-import ApplyEditFormView from '@/views/apply/ApplyEditFormView.vue';
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
+import { WarningFilled, CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import { genWorkbook, downloadLink } from '@/utils/util';
@@ -192,6 +219,8 @@ import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import 'dayjs/locale/zh-cn';
 import { colorList } from '@/utils/util';
+import { editDataItem, jiezhens } from '@/types';
+
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -368,7 +397,7 @@ const getData = async (params?: any) => {
   }
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
-    console.log(params)
+    console.log(params);
   }
 
   if (searchValue.value !== undefined && searchValue.value !== '') {
@@ -411,11 +440,9 @@ const reviewData = async (id: number) => {
     });
 };
 const chuheData = async (id: number) => {
-  await api
-    .updateUnempVeriData({ id: id, verification: '0' })
-    .then((res: any) => {
-      getData();
-    });
+  await api.updateUnempVeriData({ id: id, verification: '0' }).then((res: any) => {
+    getData();
+  });
 };
 
 // 增加数据弹窗
@@ -428,8 +455,11 @@ const confirmLoading = ref<boolean>(false);
 const showAddDataModal = async () => {
   open.value = true;
 };
+//编辑数据弹窗
+const editForm = ref();
 
 const showEditModal = (record) => {
+  editForm.value = record;
   record.editVisible = true;
 };
 
@@ -447,18 +477,16 @@ const handleOk = () => {
   getData();
 };
 const handleEditOk = () => {
-  editFormRef.value
-    .onSubmit()
+  api
+    .updateUnempVeriData(editForm.value)
     .then((res: any) => {
-      // message.info(res)
-      getData();
+      message.info('修改成功');
       editOpen.value = false;
+      getData();
     })
     .catch((error) => {
       message.info('数据格式错误，无法提交=>', error);
     });
-
-  getData();
 };
 const handleEditCancel = () => {
   editOpen.value = false;

@@ -2,6 +2,7 @@
   <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
   <a-segmented v-model:value="selectedMonth" :options="months.slice(7)" />
   <a-button type="primary" @click="getMonths()">刷新月份</a-button>
+  <a-spin :spinning="spinning">
   <a-table :columns="columns" :data-source="dataSource" bordered>
     <template #bodyCell="{ column, record }">
       <template v-if="column.key === 'status'">
@@ -14,6 +15,7 @@
       </template>
     </template>
   </a-table>
+  </a-spin>
 </template>
 <script setup lang="ts">
 import api from '@/api';
@@ -21,6 +23,8 @@ import { ref, onBeforeMount, watch } from 'vue';
 const dataSource = ref();
 const months = ref(['']);
 const selectedMonth = ref('');
+const spinning = ref<boolean>(false);
+
 const statusList = [
   '已初核待复审',
   '待对方确认',

@@ -165,7 +165,7 @@
                     @click="reviewData(record.id)"
                     type="primary"
                     v-if="record.status == '0'"
-                    >复核</a-button
+                    ><CheckOutlined /></a-button
                   >
                   <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'"
                     >支付</a-button
@@ -187,7 +187,7 @@
                     danger
                     @click="deleteData(record.id)"
                     v-if="record.isDeleted == 1 ? true : false"
-                    >删除</a-button
+                    ><DeleteOutlined /></a-button
                   >
                 </a-space>
               </a-row>
@@ -239,6 +239,8 @@
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
+import { WarningFilled,CheckOutlined,DeleteOutlined,EditOutlined} from '@ant-design/icons-vue';
+
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';

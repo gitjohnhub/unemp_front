@@ -5,8 +5,7 @@
 
 <script setup lang="ts">
 import { onBeforeMount, ref, watch } from 'vue';
-import { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
+import dayjs,{Dayjs} from 'dayjs';
 import api from '@/api';
 import 'dayjs/locale/zh-cn';
 
@@ -20,6 +19,7 @@ watch(
   }
 );
 onBeforeMount(() => {
+  monthSelect.value= dayjs(new Date());
   getData();
 });
 const getData = (params?: any) => {

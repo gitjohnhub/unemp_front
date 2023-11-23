@@ -1,7 +1,7 @@
 <template>
   <a-space>
-    <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
-    <a-segmented v-model:value="selectedMonth" :options="months.slice(6)" />
+    <a-segmented v-model:value="monthSelect" :options="months.slice(0, 6)" />
+    <a-segmented v-model:value="monthSelect" :options="months.slice(6)" />
     <a-button type="primary" @click="getMonths">刷新月份</a-button>
     <a-button type="primary" @click="exportExcel">导出Excel</a-button>
     <a-radio-group v-model:value="isCustomOrder" button-style="solid">
@@ -88,7 +88,7 @@ import {
 } from '@ant-design/icons-vue';
 const dataSource = ref();
 const months = ref(['']);
-const selectedMonth = ref('');
+const monthSelect = ref('');
 const spinning = ref<boolean>(false);
 const order = ref({
   sortColumn: 'jiezhen',
@@ -114,7 +114,7 @@ watch(
 );
 const statusList = ['已登记', '已审批', '已取消', '全部'];
 watch(
-  () => selectedMonth.value,
+  () => monthSelect.value,
   () => {
     getData();
   }
@@ -139,9 +139,11 @@ const getData = (params?: any) => {
   params = {
     ...params,
     noindex: 1,
-    searchDate: selectedMonth.value,
     customOrder: order.value,
   };
+  if (monthSelect.value){
+    params.monthSelect =  monthSelect.value
+  }
   return api.getNongbuData(params).then((res: any) => {
     dataSource.value = res.rows;
     return res.rows;
@@ -205,7 +207,7 @@ const exportExcel = () => {
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:I1');
-  worksheet.getCell('A1').value = `${selectedMonth.value.slice(0,10)}_农民补助金`;
+  worksheet.getCell('A1').value = `${monthSelect.value.slice(0,10)}_农民补助金`;
   worksheet.getCell('I1').alignment = { vertical: 'middle', horizontal: 'center' };
 
   getData({ noindex: 1 }).then((rows: any) => {
@@ -245,7 +247,7 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook, `农民补助金_${selectedMonth.value.slice(0,10)}`);
+    downloadLink(workbook, `农民补助金_${monthSelect.value.slice(0,10)}`);
   });
 };
 </script>

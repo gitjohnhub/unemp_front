@@ -30,7 +30,7 @@
           <!-- 数据导出操作 -->
           <a-space>
             <h5>导出操作：</h5>
-            <a-range-picker v-model:value="monthSelect" />
+            <a-range-picker v-model:value="monthRangeSelect" />
             <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
               导出Excel
             </a-button>
@@ -248,7 +248,7 @@ const editForm = ref();
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
-const monthSelect = ref<Dayjs>();
+const monthRangeSelect = ref<Dayjs>();
 const payDate = ref<Dayjs>();
 
 const count = ref<number>();
@@ -291,7 +291,7 @@ watch(
   }
 );
 watch(
-  () => monthSelect.value,
+  () => monthRangeSelect.value,
   (newValue) => {
     // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
     getData();
@@ -353,7 +353,7 @@ const exportExcel = () => {
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:I1');
-  worksheet.getCell('A1').value = `${monthSelect.value[0].format('YYYY-MM-dd')}-${monthSelect.value[1].format('YYYY-MM-dd')}_农民补助金`;
+  worksheet.getCell('A1').value = `${monthRangeSelect.value[0].format('YYYY-MM-dd')}-${monthRangeSelect.value[1].format('YYYY-MM-dd')}_农民补助金`;
   worksheet.getCell('I1').alignment = { vertical: 'middle', horizontal: 'center' };
 
   getData({ noindex: 1 }).then((res) => {
@@ -376,7 +376,7 @@ const exportExcel = () => {
     //   '',
     //   `打印人:${userInfo.username}`,
     //   '',
-    //   `${monthSelect.value[0].format('YYYY-MM-DD')}`,
+    //   `${monthRangeSelect.value[0].format('YYYY-MM-DD')}`,
     //   '',
     //   '',
     //   '',
@@ -391,7 +391,7 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook, `农民补助金_${monthSelect.value[0].format('YYYY-MM')}`);
+    downloadLink(workbook, `农民补助金_${monthRangeSelect.value[0].format('YYYY-MM')}`);
   });
 };
 // 分页
@@ -437,8 +437,8 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  if (monthSelect.value) {
-    params.monthSelect = monthSelect.value;
+  if (monthRangeSelect.value) {
+    params.monthRangeSelect = monthRangeSelect.value;
   }
 
   if (Number(status.value) !== statusList.length - 1) {

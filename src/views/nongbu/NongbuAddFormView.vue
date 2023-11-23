@@ -49,7 +49,9 @@ const formState = ref({
   status: '0',
   note: '',
   jiezhen: '',
-  wrongTag:'0'
+  wrongTag:'0',
+  repeatTimes:'0',
+  originalFile:'0'
 });
 
 watch(

@@ -1,9 +1,12 @@
 <template>
   <a-tabs v-model:activeKey="activeKey">
-    <a-tab-pane key="1" tab="表视图">
+    <a-tab-pane key="1" tab="登记视图">
       <NongbuTableView />
     </a-tab-pane>
-    <a-tab-pane key="2" tab="统计视图">
+    <a-tab-pane key="2" tab="表视图">
+      <NongbuExcelView />
+    </a-tab-pane>
+    <a-tab-pane key="3" tab="统计视图">
       <NongbuDataView />
     </a-tab-pane>
   </a-tabs>
@@ -12,6 +15,7 @@
 import { ref } from 'vue';
 import NongbuTableView from '@/views/nongbu/NongbuTableView.vue';
 import NongbuDataView from '@/views/nongbu/NongbuDataView.vue';
+import NongbuExcelView from '@/views/nongbu/NongbuExcelView.vue';
 
 const activeKey = ref('1');
 

@@ -102,6 +102,7 @@ onBeforeMount(() => {
 const getData = (params?: any) => {
   params = {
     ...params,
+    status:'1'
   };
   if (year.value) {
     params.year = year.value.format('YYYY');

@@ -5,14 +5,24 @@
         <a-row>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk"
-              @cancel="handleCancel">
+            <a-modal
+              v-model:open="open"
+              title="Title"
+              :confirm-loading="confirmLoading"
+              @ok="handleOk"
+              @cancel="handleCancel"
+            >
               <NongbuAddFormView ref="formRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-divider type="vertical" />
-            <a-input-search v-model:value="searchValue" placeholder="输入姓名/身份证" style="width: 200px" @search="onSearch" />
+            <a-input-search
+              v-model:value="searchValue"
+              placeholder="输入姓名/身份证"
+              style="width: 200px"
+              @search="onSearch"
+            />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
         </a-row>
@@ -28,7 +38,8 @@
         </a-row>
         <a-row>
           <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index">{{ status.label }}
+            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
+              >{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
           </a-radio-group>
@@ -36,27 +47,42 @@
       </a-space>
     </div>
     <a-spin :spinning="spinning">
-      <a-table row-class-name="custom-row" :columns="columns" :data-source="dataSource" @change="handleChange"
-        @showSizeChange="onShowSizeChange" :pagination="pagination">
+      <a-table
+        row-class-name="custom-row"
+        :columns="columns"
+        :data-source="dataSource"
+        @change="handleChange"
+        @showSizeChange="onShowSizeChange"
+        :pagination="pagination"
+      >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
-            <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard
-              :class="{ deleted: record.status == 4 }">{{ record.personID }}</a-typography-paragraph>
+            <a-typography-paragraph
+              :style="{ fontSize: '18px' }"
+              copyable
+              keyboard
+              :class="{ deleted: record.status == 4 }"
+              >{{ record.personID }}</a-typography-paragraph
+            >
           </template>
           <template v-if="column.key === 'personName'">
             <a-space direction="vertical">
               <a-tooltip :title="pinyin(record.personName)" color="#f50">
-
-                <a-typography-paragraph :style="{ fontSize: '18px' }" copyable
-                  :class="{ deleted: record.isDeleted == 2 }">{{ record.personName }}</a-typography-paragraph>
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                >
+                  {{ record.personName }}
+                </a-typography-paragraph>
               </a-tooltip>
             </a-space>
           </template>
           <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
-                <a-tag color="red"  v-if="record.wrongTag == 1" >
-                  <WarningFilled/>
+                <a-tag color="red" v-if="record.wrongTag == 1">
+                  <WarningFilled />
                 </a-tag>
                 <a-tag>
                   {{ record.jiezhen }}
@@ -71,14 +97,18 @@
                   {{ record.reviewoperator }}
                 </a-tag>
               </a-row>
-              <a-tooltip :title="record.note" color="#f50">
-                <a-input-search v-model:value="record.note" placeholder="备注" size="medium"
-                  @search="onSubmitNote(record.id, record.note)">
+              <!-- <a-tooltip :title="record.note" color="#f50">
+                <a-input-search
+                  v-model:value="record.note"
+                  placeholder="备注"
+                  size="medium"
+                  @search="onSubmitNote(record.id, record.note)"
+                >
                   <template #enterButton>
                     <a-button type="dashed">修改备注</a-button>
                   </template>
                 </a-input-search>
-              </a-tooltip>
+              </a-tooltip> -->
             </a-space>
 
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
@@ -93,51 +123,78 @@
             </a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
           </template>
+          <template v-if="column.key === 'note'">
+            <a-row>
+              <a-tag color="red" v-if="record.originalFile !== '0'"><FilePdfOutlined /></a-tag>
+              <a-tag v-if="record.repeatTimes !== '0'">{{ record.repeatTimes }}</a-tag>
+            </a-row>
+            <a-row>
+              {{ record.note }}
+            </a-row>
+
+          </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span v-html="
-                `${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]
-                }<br>id:${record.id}`
-              "></span>
+              <span
+                v-html="
+                  `${getCorrectTime(record.createtime)[0]}<br>${
+                    getCorrectTime(record.createtime)[1]
+                  }<br>id:${record.id}`
+                "
+              ></span>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button @click="reviewData(record.id)" type="primary" v-if="record.status == '0'"><CheckOutlined /></a-button>
-                  <a-button @click="tagWrong(record.id)" type="primary" danger>
+                  <a-button @click="tagWrong(record.id,getData)" type="primary" danger>
                     <WarningFilled />
                   </a-button>
                   <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
-
-
-                  <a-button danger @click="deleteData(record.id)" v-if="record.status !== 4 ? true : false"><DeleteOutlined /></a-button>
+                  <a-button @click="tagOriginalFile(record.id, getData)" type="primary" danger>
+                    <FilePdfOutlined />
+                  </a-button>
                 </a-space>
               </a-row>
-
               <a-row>
                 <a-space>
-                  <a-button @click="refuseData(record.id)" v-if="record.status == '0' || record.status == '1'"
-                    type="primary" danger>驳回</a-button>
-                  <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
+                  <a-button
+                    @click="reviewData(record.id)"
+                    type="primary"
+                    v-if="record.status == '0'"
+                    ><CheckOutlined
+                  /></a-button>
+                  <a-button @click="addRepeat(record.id, record.repeatTimes)" type="primary" danger
+                    ><PlusCircleOutlined />
+                  </a-button>
+                  <a-button @click="cancelData(record.id)" type="primary" danger
+                    ><DeleteOutlined
+                  /></a-button>
                 </a-space>
               </a-row>
 
               <!-- 编辑模态框 -->
-              <a-modal v-model:visible="record.editVisible" @ok="handleEditOk" @cancel="handleEditCancel">
+              <a-modal
+                v-model:visible="record.editVisible"
+                @ok="handleEditOk"
+                @cancel="handleEditCancel"
+              >
                 <a-form :model="editForm">
                   <a-form-item label="身份证号" name="personID" has-feedback>
-                    <a-input v-model:value="editForm.personID">
-                    </a-input>
+                    <a-input v-model:value="editForm.personID"> </a-input>
                   </a-form-item>
                   <a-form-item label="姓名" name="personName" has-feedback>
                     <a-input v-model:value="editForm.personName" />
                   </a-form-item>
                   <a-form-item label="街镇" name="jiezhen">
-                    <a-select ref="select" v-model:value="editForm.jiezhen" style="width: 120px"
-                      :options="jiezhens"></a-select>
+                    <a-select
+                      ref="select"
+                      v-model:value="editForm.jiezhen"
+                      style="width: 120px"
+                      :options="jiezhens"
+                    ></a-select>
                   </a-form-item>
                   <a-form-item label="城保" name="chengPayMonth">
                     <a-input v-model:value="editForm.chengPayMonth" />
@@ -148,10 +205,13 @@
                   <a-form-item label="备注">
                     <a-textarea v-model:value="editForm.note" />
                   </a-form-item>
+                  <a-form-item label="重复次数">
+                    <a-input type="number" v-model:value="editForm.repeatTimes" />
+                  </a-form-item>
                   <a-form-item label="是否错核">
                     <a-radio-group v-model:value="editForm.wrongTag">
-                      <a-radio value='1'>标记错核</a-radio>
-                      <a-radio value='0'>未错核</a-radio>
+                      <a-radio value="1">标记错核</a-radio>
+                      <a-radio value="0">未错核</a-radio>
                     </a-radio-group>
                   </a-form-item>
                 </a-form>
@@ -164,20 +224,26 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount, watch, provide } from 'vue';
+import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import { WarningFilled,CheckOutlined,DeleteOutlined,EditOutlined} from '@ant-design/icons-vue';
+import {
+  WarningFilled,
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import NongbuAddFormView from './NongbuAddFormView.vue';
 import { Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
-import { downloadLink } from '@/utils/util';
-import { genWorkbook, colorList } from '@/utils/util';
+import { genWorkbook, colorList,downloadLink } from '@/utils/util';
 import { jiezhens } from '@/types';
 import 'dayjs/locale/zh-cn';
-const editForm = ref()
-
+import { tagOriginalFile ,tagWrong} from '@/views/nongbu/utils';
+const editForm = ref();
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -197,7 +263,7 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const statusList = ['已登记', '已审批', '已驳回', '已取消', '已删除', '全部'];
+const statusList = ['已登记', '已审批', '已取消', '全部'];
 
 const getStatus = (status: String) => {
   return statusList[Number(status)];
@@ -277,16 +343,18 @@ const exportExcel = () => {
     { header: '序号', key: 'index', width: 6 },
     { header: '姓名', key: 'name', width: 10 },
     { header: '身份证', key: 'personID', width: 26 },
-    { header: '镇保', key: 'startDate', width: 24 },
-    { header: '城保', key: 'endDate', width: 18 },
-    { header: '街镇', key: 'jiezhen', width: 24 },
+    { header: '镇保', key: 'chengPayMonth', width: 24 },
+    { header: '城保', key: 'zhenPayMonth', width: 18 },
+    { header: '街镇', key: 'originalFile', width: 24 },
+    { header: '收到原件', key: 'jiezhen', width: 24 },
     { header: '是否审批', key: 'status', width: 22 },
+    { header: '备注', key: 'note', width: 22 },
   ];
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
-  worksheet.mergeCells('A1:H1');
-  worksheet.getCell('A1').value = `${monthSelect.value[0].format('YYYY-mm')}_延长失业金`;
-  worksheet.getCell('H1').alignment = { vertical: 'middle', horizontal: 'center' };
+  worksheet.mergeCells('A1:I1');
+  worksheet.getCell('A1').value = `${monthSelect.value[0].format('YYYY-MM-dd')}-${monthSelect.value[1].format('YYYY-MM-dd')}_农民补助金`;
+  worksheet.getCell('I1').alignment = { vertical: 'middle', horizontal: 'center' };
 
   getData({ noindex: 1 }).then((res) => {
     exportData.value.map((item, index) => {
@@ -297,11 +365,12 @@ const exportExcel = () => {
         item.chengPayMonth,
         item.zhenPayMonth,
         item.jiezhen,
+        item.originalFile === '1'? '已收到' : '未收到',
         item.status == '1' ? '已审批' : '',
         item.note,
       ]);
     });
-    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
+    worksheet.pageSetup.printArea = `A1:I${exportData.value.length + 4}`;
     // worksheet.addRow([
     //   '',
     //   '',
@@ -402,11 +471,11 @@ const getCorrectTime = (date: string) => {
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
 
-const deleteData = async (id: number) => {
-  await api.updateNongbuData({ id: id, status: statusList.indexOf('已删除') }).then((res: any) => {
-    getData();
-  });
-};
+// const deleteData = async (id: number) => {
+//   await api.updateNongbuData({ id: id, status: statusList.indexOf('已删除') }).then((res: any) => {
+//     getData();
+//   });
+// };
 const reviewData = async (id: number) => {
   await api
     .updateNongbuData({ id: id, reviewoperator: userInfo.username, status: '1' })
@@ -414,25 +483,23 @@ const reviewData = async (id: number) => {
       getData();
     });
 };
-const tagWrong = async (id: number) => {
-  await api
-    .updateNongbuData({ id: id, wrongTag: '1' })
-    .then((res: any) => {
-      getData();
-    });
-};
 
-
-const refuseData = async (id: number) => {
+const addRepeat = async (id: number, repeatTimes: string) => {
+  if (repeatTimes === '0') {
+    repeatTimes = '1';
+  } else {
+    repeatTimes = (Number(repeatTimes) + 1).toString();
+  }
   await api
     .updateNongbuData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: statusList.indexOf('已驳回'),
+      id,
+      repeatTimes,
     })
     .then((res: any) => {
+      message.info('增加重复成功');
       getData();
     });
+  console.log(id);
 };
 
 const cancelData = async (id: number) => {
@@ -458,7 +525,7 @@ const showAddDataModal = async () => {
 };
 
 const showEditModal = (record) => {
-  editForm.value = record
+  editForm.value = record;
   record.editVisible = true;
 };
 
@@ -479,17 +546,16 @@ const handleOk = () => {
 };
 
 const handleEditOk = () => {
-  api.updateNongbuData(editForm.value)
+  api
+    .updateNongbuData(editForm.value)
     .then((res: any) => {
-      message.info('修改成功')
+      message.info('修改成功');
       editOpen.value = false;
       getData();
-
     })
     .catch((error) => {
       message.info('数据格式错误，无法提交=>', error);
     });
-
 };
 const handleEditCancel = () => {
   editOpen.value = false;
@@ -553,7 +619,7 @@ const columns = columnsOriginal.map((item) => {
   margin-bottom: 16px;
 }
 
-.table-operations>button {
+.table-operations > button {
   margin-right: 8px;
 }
 </style>

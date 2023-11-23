@@ -62,14 +62,14 @@ const wrongPA = computed(() => {
       const wronyIndexData = dataSourceWithWrongTag.value.filter((item) => {
         return item.jiezhen == dataSource.value[i].jiezhen;
       });
-      let errorRate = 0;
+      let errorRate = '';
       if (wronyIndexData.length != 0) {
-        errorRate = wronyIndexData[0].total / dataSource.value[i].total;
+        errorRate = (wronyIndexData[0].total / dataSource.value[i].total).toFixed(1);
       } else {
-        errorRate = 0 / dataSource.value[i].total;
+        errorRate = '0';
       }
       errorRateArray.push({
-        errorRate:`${errorRate*100}%`,
+        errorRate:`${Number(errorRate)*100}%`,
         jiezhen:dataSource.value[i].jiezhen
       }
         );

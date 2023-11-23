@@ -4,11 +4,11 @@
       <a-space>
         <a-button type="primary" @click="getMonths">刷新月份</a-button>
         <a-button type="primary" @click="exportExcel">导出Excel</a-button>
-        <a-radio-group v-model:value="isCustomOrder" button-style="solid">
+        <a-radio-group v-model:value="isCustomOrder">
           <a-radio-button value="0">按街镇排序</a-radio-button>
           <a-radio-button value="1">按时间排序</a-radio-button>
         </a-radio-group>
-        <a-switch v-model:checked="cancelUnempSwitch" />
+        <a-switch v-model:checked="cancelUnempSwitch" />只显示取消失业登记
       </a-space>
     </a-row>
     <a-row>
@@ -74,7 +74,7 @@
               <FilePdfOutlined />
             </a-button>
             <a-button @click="tagCancelUnemp(record.id, getData)" type="primary" danger>
-              取消失业登记
+              <StopOutlined />
             </a-button>
           </a-space>
         </template>

@@ -81,7 +81,7 @@
           <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
-                <a-tag color="red" v-if="record.wrongTag == 1">
+                <a-tag color="red" v-if="record.wrongTag == '1'">
                   <WarningFilled />
                 </a-tag>
                 <a-tag>
@@ -89,9 +89,6 @@
                 </a-tag>
                 <a-tag>
                   {{ record.checkoperator }}
-                </a-tag>
-                <a-tag v-if="record.reviewoperator">
-                  {{ record.reviewoperator }}
                 </a-tag>
                 <a-tag v-if="record.reviewoperator != null">
                   {{ record.reviewoperator }}

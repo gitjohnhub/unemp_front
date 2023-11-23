@@ -51,7 +51,8 @@ const formState = ref({
   jiezhen: '',
   wrongTag:'0',
   repeatTimes:'0',
-  originalFile:'0'
+  originalFile:'0',
+  cancelUnemp:'0'
 });
 
 watch(

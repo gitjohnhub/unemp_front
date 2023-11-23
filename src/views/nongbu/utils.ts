@@ -9,3 +9,8 @@ export const tagWrong = async (id: number,getData:any) => {
     getData();
   });
 };
+export const tagCancelUnemp = async (id: number,getData:any) => {
+  await api.updateNongbuData({ id: id, cancelUnemp: '1' }).then((res: any) => {
+    getData();
+  });
+};

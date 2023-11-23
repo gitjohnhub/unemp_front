@@ -8,6 +8,7 @@
           <a-radio-button value="0">按街镇排序</a-radio-button>
           <a-radio-button value="1">按时间排序</a-radio-button>
         </a-radio-group>
+        <a-switch v-model:checked="cancelUnempSwitch" />
       </a-space>
     </a-row>
     <a-row>
@@ -54,6 +55,7 @@
               </a-tag>
               <a-tag color="red" v-if="record.originalFile !== '0'"><FilePdfOutlined /></a-tag>
               <a-tag v-if="record.repeatTimes !== '0'">{{ record.repeatTimes }}</a-tag>
+              <a-tag color="red" v-if="record.cancelUnemp !== '0'"><StopOutlined /></a-tag>
             </a-row>
             <a-row>
               {{ record.note }}
@@ -71,6 +73,9 @@
             <a-button @click="tagOriginalFile(record.id, getData)" type="primary" danger>
               <FilePdfOutlined />
             </a-button>
+            <a-button @click="tagCancelUnemp(record.id, getData)" type="primary" danger>
+              取消失业登记
+            </a-button>
           </a-space>
         </template>
       </template>
@@ -80,7 +85,7 @@
 <script setup lang="ts">
 import api from '@/api';
 import { ref, onBeforeMount, watch } from 'vue';
-import { tagOriginalFile, tagWrong } from './utils';
+import { tagOriginalFile, tagWrong, tagCancelUnemp } from './utils';
 import { genWorkbook, downloadLink } from '@/utils/util';
 
 import {
@@ -88,13 +93,28 @@ import {
   CheckOutlined,
   DeleteOutlined,
   EditOutlined,
-  PlusCircleOutlined,
+  StopOutlined,
   FilePdfOutlined,
 } from '@ant-design/icons-vue';
 const dataSource = ref();
 const months = ref(['']);
 const monthSelect = ref('');
 const spinning = ref<boolean>(false);
+//失业选择
+const cancelUnemp = ref();
+const cancelUnempSwitch = ref(false);
+watch(
+  () => cancelUnempSwitch.value,
+  () => {
+    if (cancelUnempSwitch.value) {
+      cancelUnemp.value = '1';
+    } else {
+      cancelUnemp.value = '';
+    }
+    getData();
+  }
+);
+// 排序选择
 const order = ref({
   sortColumn: 'jiezhen',
   sortRule: 'DESC',
@@ -143,6 +163,7 @@ const getMonths = (params?: any) => {
 const getData = (params?: any) => {
   params = {
     ...params,
+    cancelUnemp:cancelUnemp.value,
     noindex: 1,
     customOrder: order.value,
   };

@@ -3,18 +3,29 @@
   <a-segmented v-model:value="selectedMonth" :options="months.slice(7)" />
   <a-button type="primary" @click="getMonths()">刷新月份</a-button>
   <a-spin :spinning="spinning">
-  <a-table :columns="columns" :data-source="dataSource" bordered>
-    <template #bodyCell="{ column, record }">
-      <template v-if="column.key === 'status'">
-        <a-tag>{{ statusList[Number(record.status)] }}</a-tag>
+    <a-table :columns="columns" :data-source="dataSource" bordered>
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'status'">
+          <a-tag>{{ statusList[Number(record.status)] }}</a-tag>
+        </template>
+        <template v-if="column.key === 'note'">
+          <a-tooltip color="#87d068">
+            <template #title>
+              <a-timeline mode="alternate">
+                <a-timeline-item>
+                    <p>初审人：{{ record.checkoperator }}</p>
+                    <p>{{ record.createtime.slice(0,10) }}</p>
+                    <p>{{ record.note }}</p>
+                </a-timeline-item>
+                <a-timeline-item>复审人:{{ record.reviewoperator }}</a-timeline-item>
+              </a-timeline>
+
+            </template>
+            {{ record.note }}
+          </a-tooltip>
+        </template>
       </template>
-      <template v-if="column.key === 'note'">
-        <a-tooltip :title="record.note" color="#f50">
-          {{ record.note }}
-        </a-tooltip>
-      </template>
-    </template>
-  </a-table>
+    </a-table>
   </a-spin>
 </template>
 <script setup lang="ts">

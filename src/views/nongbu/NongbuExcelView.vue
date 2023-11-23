@@ -1,13 +1,19 @@
 <template>
-  <a-space>
-    <a-segmented v-model:value="monthSelect" :options="months.slice(0, 6)" />
-    <a-segmented v-model:value="monthSelect" :options="months.slice(6)" />
-    <a-button type="primary" @click="getMonths">刷新月份</a-button>
-    <a-button type="primary" @click="exportExcel">导出Excel</a-button>
-    <a-radio-group v-model:value="isCustomOrder" button-style="solid">
-      <a-radio-button value="0">按街镇排序</a-radio-button>
-      <a-radio-button value="1">按时间排序</a-radio-button>
-    </a-radio-group>
+  <a-space direction="vertical">
+    <a-row>
+      <a-space>
+        <a-button type="primary" @click="getMonths">刷新月份</a-button>
+        <a-button type="primary" @click="exportExcel">导出Excel</a-button>
+        <a-radio-group v-model:value="isCustomOrder" button-style="solid">
+          <a-radio-button value="0">按街镇排序</a-radio-button>
+          <a-radio-button value="1">按时间排序</a-radio-button>
+        </a-radio-group>
+      </a-space>
+    </a-row>
+    <a-row>
+      <a-segmented v-model:value="monthSelect" :options="months.slice(0, 6)" />
+      <a-segmented v-model:value="monthSelect" :options="months.slice(6)" />
+    </a-row>
   </a-space>
 
   <a-spin :spinning="spinning">
@@ -48,7 +54,6 @@
               </a-tag>
               <a-tag color="red" v-if="record.originalFile !== '0'"><FilePdfOutlined /></a-tag>
               <a-tag v-if="record.repeatTimes !== '0'">{{ record.repeatTimes }}</a-tag>
-
             </a-row>
             <a-row>
               {{ record.note }}
@@ -141,8 +146,8 @@ const getData = (params?: any) => {
     noindex: 1,
     customOrder: order.value,
   };
-  if (monthSelect.value){
-    params.monthSelect =  monthSelect.value
+  if (monthSelect.value) {
+    params.monthSelect = monthSelect.value;
   }
   return api.getNongbuData(params).then((res: any) => {
     dataSource.value = res.rows;
@@ -207,11 +212,11 @@ const exportExcel = () => {
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
   worksheet.mergeCells('A1:I1');
-  worksheet.getCell('A1').value = `${monthSelect.value.slice(0,10)}_农民补助金`;
+  worksheet.getCell('A1').value = `${monthSelect.value.slice(0, 10)}_农民补助金`;
   worksheet.getCell('I1').alignment = { vertical: 'middle', horizontal: 'center' };
 
   getData({ noindex: 1 }).then((rows: any) => {
-    console.log('rows===>',rows)
+    console.log('rows===>', rows);
     const exportData = rows;
     exportData.map((item, index) => {
       worksheet.addRow([
@@ -247,7 +252,7 @@ const exportExcel = () => {
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook, `农民补助金_${monthSelect.value.slice(0,10)}`);
+    downloadLink(workbook, `农民补助金_${monthSelect.value.slice(0, 10)}`);
   });
 };
 </script>

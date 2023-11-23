@@ -103,7 +103,7 @@ const isCustomOrder = ref('0');
 watch(
   () => isCustomOrder.value,
   () => {
-    if (isCustomOrder.value == '1') {
+    if (isCustomOrder.value == '0') {
       order.value = {
         sortColumn: 'jiezhen',
         sortRule: 'DESC',

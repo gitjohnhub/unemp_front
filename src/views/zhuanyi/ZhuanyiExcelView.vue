@@ -1,6 +1,6 @@
 <template>
   <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
-  <a-segmented v-model:value="selectedMonth" :options="months.slice(7)" />
+  <a-segmented v-model:value="selectedMonth" :options="months.slice(6)" />
   <a-button type="primary" @click="getMonths()">刷新月份</a-button>
   <a-spin :spinning="spinning">
     <a-table :columns="columns" :data-source="dataSource" bordered>

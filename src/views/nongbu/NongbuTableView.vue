@@ -603,6 +603,9 @@ const columns = columnsOriginal.map((item) => {
 });
 </script>
 <style scoped>
+.ant-tag{
+  font-size: 14px;
+}
 .deleted {
   text-decoration: line-through;
 }

@@ -85,9 +85,6 @@
                 <a-tag>
                   {{ record.checkoperator }}
                 </a-tag>
-                <a-tag v-if="record.reviewoperator">
-                  {{ record.reviewoperator }}
-                </a-tag>
                 <a-tag v-if="record.reviewoperator != null">
                   {{ record.reviewoperator }}
                 </a-tag>
@@ -107,6 +104,10 @@
             </a-space>
 
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
+          </template>
+          <template v-if="column.key === 'note'">
+            <a-tag color='red' v-if="record.originalFile == '1'"><FilePdfOutlined></FilePdfOutlined></a-tag>
+            {{ record.note }}
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
@@ -134,28 +135,34 @@
                     @click="reviewData(record.id)"
                     type="primary"
                     v-if="record.status == '0'"
-                    >审批</a-button
+                    ><CheckOutlined /></a-button
+                  >
+                  <a-button
+                    @click="checkData(record.id,getData)"
+                    type="primary"
+                    v-if="record.status == '2'"
+                    >登记</a-button
+                  >
+                  <a-button
+                    @click="tagOriginalFile(record.id,getData)"
+                    type="primary"
+                    danger
+                    ><FilePdfOutlined /></a-button
                   >
 
                   <a-button
                     danger
-                    @click="deleteData(record.id)"
+                    @click="deleteData(record.id,getData)"
                     v-if="record.status !== 4 ? true : false"
-                    >删除</a-button
+                    ><DeleteOutlined /></a-button
                   >
                 </a-space>
               </a-row>
 
               <a-row>
                 <a-space>
-                  <a-button
-                    @click="refuseData(record.id)"
-                    v-if="record.status == '0' || record.status == '1'"
-                    type="primary"
-                    danger
-                    >驳回</a-button
-                  >
-                  <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
+
+                  <a-button @click="cancelData(record.id,getData)" type="primary" danger>取消</a-button>
                 </a-space>
               </a-row>
 
@@ -179,6 +186,7 @@
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
+import { cancelData, deleteData,getStatus,statusList,checkData, tagOriginalFile} from './utils';
 import { pinyin } from 'pinyin-pro';
 import YanchangAddFormView from './YanchangAddFormView.vue';
 import YanchangEditFormView from './YanchangEditFormView.vue';
@@ -187,7 +195,14 @@ import { useUserStore } from '@/stores';
 import { downloadLink } from '@/utils/util';
 import { genWorkbook, colorList } from '@/utils/util';
 import 'dayjs/locale/zh-cn';
-
+import {
+  WarningFilled,
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+  FilePdfOutlined,
+} from '@ant-design/icons-vue';
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -206,11 +221,8 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const statusList = ['已登记', '已审批', '已驳回', '已取消', '已删除', '全部'];
 
-const getStatus = (status: String) => {
-  return statusList[Number(status)];
-};
+
 const getProgress = (status: String) => {
   const currentIndex = Number(status) + 1;
   // 状态总数
@@ -416,30 +428,10 @@ const getCorrectTime = (date: string) => {
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
 
-const deleteData = async (id: number) => {
-  await api.updateYanchangData({ id: id, status: statusList.indexOf('已删除') }).then((res: any) => {
-    getData();
-  });
-};
+
 const reviewData = async (id: number) => {
   await api
     .updateYanchangData({ id: id, reviewoperator: userInfo.username, status: '1' })
-    .then((res: any) => {
-      getData();
-    });
-};
-
-const refuseData = async (id: number) => {
-  await api
-    .updateYanchangData({ id: id, reviewoperator: userInfo.username, status: statusList.indexOf('已驳回') })
-    .then((res: any) => {
-      getData();
-    });
-};
-
-const cancelData = async (id: number) => {
-  await api
-    .updateYanchangData({ id: id, reviewoperator: userInfo.username, status: statusList.indexOf('已取消') })
     .then((res: any) => {
       getData();
     });

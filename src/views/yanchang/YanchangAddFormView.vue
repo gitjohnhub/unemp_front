@@ -33,6 +33,18 @@
     <a-form-item label="备注">
       <a-textarea v-model:value="formState.note" />
     </a-form-item>
+    <a-form-item label="选择未登记">
+      <a-radio-group v-model:value="formState.status">
+        <a-radio value='0'>已登记</a-radio>
+        <a-radio value='2' >待登记</a-radio>
+      </a-radio-group>
+    </a-form-item>
+    <a-form-item label="原件">
+      <a-radio-group v-model:value="formState.originalFile">
+        <a-radio value='0'>未收到</a-radio>
+        <a-radio value='1' >已收到</a-radio>
+      </a-radio-group>
+    </a-form-item>
 
   </a-form>
 </template>
@@ -56,6 +68,7 @@ const formState = ref({
   endDate: '',
   note: '',
   jiezhen:'',
+  originalFile:'0'
 });
 
 watch(

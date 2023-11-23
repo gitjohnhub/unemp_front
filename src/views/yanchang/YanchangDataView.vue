@@ -25,12 +25,11 @@ onBeforeMount(() => {
 const getData = (params?: any) => {
   params = {
     ...params,
+    status:'1'
   };
   if (monthSelect.value) {
-    params.monthSelect = [
-      dayjs(monthSelect.value).startOf('month').toISOString().slice(0,10),
-      dayjs(monthSelect.value).endOf('month').toISOString().slice(0,10),
-    ];
+    console.log(monthSelect.value.format('YYYY-MM'))
+    params.monthSelect = monthSelect.value.format('YYYY-MM')
   }
   console.log('params',params)
 

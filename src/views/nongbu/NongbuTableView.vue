@@ -34,7 +34,8 @@
             <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
               导出Excel
             </a-button>
-            <a-switch v-model:checked="showCancelUnemp" />
+            <a-switch v-model:checked="showCancelUnemp" />只显示取消失业登记
+            <a-switch v-model:checked="showRepeat" />只显示重复
 
           </a-space>
         </a-row>
@@ -253,6 +254,7 @@ import 'dayjs/locale/zh-cn';
 import { tagOriginalFile ,tagWrong,tagCancelUnemp} from '@/views/nongbu/utils';
 const editForm = ref();
 const showCancelUnemp = ref(false)
+const showRepeat = ref(false)
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -301,6 +303,12 @@ watch(
 );
 watch(
   () => showCancelUnemp.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
+  () => showRepeat.value,
   (newValue) => {
     getData();
   }
@@ -452,6 +460,11 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
+  if (showRepeat.value){
+    params.showRepeat = 1
+  }else{
+    params.showRepeat = null
+  }
   if (showCancelUnemp.value){
     params.cancelUnemp = 1
   }else{

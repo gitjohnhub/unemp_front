@@ -34,6 +34,8 @@
             <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
               导出Excel
             </a-button>
+            <a-switch v-model:checked="showCancelUnemp" />
+
           </a-space>
         </a-row>
         <a-row>
@@ -124,6 +126,8 @@
             <a-row>
               <a-tag color="red" v-if="record.originalFile !== '0'"><FilePdfOutlined /></a-tag>
               <a-tag v-if="record.repeatTimes !== '0'">{{ record.repeatTimes }}</a-tag>
+              <a-tag color="red" v-if="record.cancelUnemp !== '0'"><StopOutlined /></a-tag>
+
             </a-row>
             <a-row>
               {{ record.note }}
@@ -169,6 +173,9 @@
                   <a-button @click="cancelData(record.id)" type="primary" danger
                     ><DeleteOutlined
                   /></a-button>
+                   <a-button @click="tagCancelUnemp(record.id, getData)" type="primary" danger v-if="record.status == '1'">
+              <StopOutlined />
+            </a-button>
                 </a-space>
               </a-row>
 
@@ -228,6 +235,7 @@ import {
   CheckOutlined,
   DeleteOutlined,
   EditOutlined,
+  StopOutlined,
   PlusCircleOutlined,
   FilePdfOutlined,
 } from '@ant-design/icons-vue';
@@ -239,8 +247,9 @@ import { useUserStore } from '@/stores';
 import { genWorkbook, colorList,downloadLink } from '@/utils/util';
 import { jiezhens } from '@/types';
 import 'dayjs/locale/zh-cn';
-import { tagOriginalFile ,tagWrong} from '@/views/nongbu/utils';
+import { tagOriginalFile ,tagWrong,tagCancelUnemp} from '@/views/nongbu/utils';
 const editForm = ref();
+const showCancelUnemp = ref(false)
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -283,6 +292,12 @@ const onSearch = () => {
 
 watch(
   () => searchValue.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
+  () => showCancelUnemp.value,
   (newValue) => {
     getData();
   }
@@ -434,6 +449,11 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
+  if (showCancelUnemp.value){
+    params.cancelUnemp = 1
+  }else{
+    params.cancelUnemp = null
+  }
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;
   }

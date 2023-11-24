@@ -150,19 +150,13 @@
                     ><FilePdfOutlined /></a-button
                   >
 
-                  <a-button
-                    danger
-                    @click="deleteData(record.id,getData)"
-                    v-if="record.status !== 4 ? true : false"
-                    ><DeleteOutlined /></a-button
-                  >
                 </a-space>
               </a-row>
 
               <a-row>
                 <a-space>
 
-                  <a-button @click="cancelData(record.id,getData)" type="primary" danger>取消</a-button>
+                  <a-button @click="cancelData(record.id,getData)" type="primary" danger><DeleteOutlined /></a-button>
                 </a-space>
               </a-row>
 

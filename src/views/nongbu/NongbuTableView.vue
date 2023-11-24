@@ -113,8 +113,11 @@
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
           </template>
           <template v-if="column.key === 'chengPayMonth'">
-            <a-tag>{{ record.chengPayMonth }}</a-tag>
-            <a-tag>{{ record.zhenPayMonth }}</a-tag>
+            <a-row>
+              <a-statistic title="城保" :value="record.chengPayMonth" />
+            <a-statistic title="镇保" :value="record.zhenPayMonth" />
+            </a-row>
+            
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">

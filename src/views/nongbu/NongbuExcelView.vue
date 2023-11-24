@@ -26,9 +26,15 @@
           }}</a-typography-paragraph>
         </template>
         <template v-if="column.key === 'personID'">
-          <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard>{{
-            record.personID
-          }}</a-typography-paragraph>
+          <a-tooltip :title="pinyin(record.personName)" color="#f50">
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                >
+                  {{ record.personName }}
+                </a-typography-paragraph>
+              </a-tooltip>
         </template>
         <template v-if="column.key === 'chengPayMonth'">
           <a-tag>{{ record.chengPayMonth }}</a-tag>
@@ -87,6 +93,7 @@ import api from '@/api';
 import { ref, onBeforeMount, watch } from 'vue';
 import { tagOriginalFile, tagWrong, tagCancelUnemp } from './utils';
 import { genWorkbook, downloadLink } from '@/utils/util';
+import { pinyin } from 'pinyin-pro';
 
 import {
   WarningFilled,

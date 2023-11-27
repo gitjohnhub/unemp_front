@@ -315,7 +315,6 @@ const exportExcel = () => {
       { header: '姓名', width: 12 },
       { header: '身份证', width: 25 },
       { header: '街镇', width: 25 },
-      { header: '是否初核', width: 25 },
       { header: '提交时间', width: 35 },
     ];
     const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
@@ -326,7 +325,6 @@ const exportExcel = () => {
         item.personName,
         item.personID,
         item.jiezhen,
-        item.verification == '0' ? '已初核':'已复核',
         item.createtime.slice(0, 10),
       ]);
     });

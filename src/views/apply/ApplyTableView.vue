@@ -309,7 +309,7 @@ const onSubmitRNote = (id, note) => {
 };
 //数据导出功能
 const exportExcel = () => {
-  getData({ noindex: 1,isIncludeCheckData:isIncludeCheckData.value ? 1 : 0 }).then(() => {
+  getData({ noindex: 1}).then(() => {
     const headersWithWidth = [
       { header: '序号', width: 10 },
       { header: '姓名', width: 12 },
@@ -400,6 +400,11 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
   };
+  if(isIncludeCheckData.value){
+    params.isIncludeCheckData = 1
+  }else{
+    params.isIncludeCheckData = null
+  }
 
   if (reviewChecked.value !== '4') {
     params.verification = reviewChecked.value;

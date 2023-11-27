@@ -116,6 +116,14 @@ const router = createRouter({
                   title: '数据管理',
                   requiresAuth: true,
                 },
+              },
+              {
+                path:'dutyCalendar',
+                component:()=>import('@/views/admin/DutyCalendarView.vue'),
+                meta: {
+                  title: '值班安排',
+                  requiresAuth: true,
+                },
               }
             ]
           }

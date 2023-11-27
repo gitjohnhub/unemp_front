@@ -27,6 +27,7 @@ export const useUserStore = defineStore('user', {
     async getUsers() {
       return await api.getUsers().then((res: any) => {
         console.log('users=====>', res);
+        this.usersList = res.rows
         this.checkoperators = res.rows.map((userInfo) => {
           return { value: userInfo.userName };
         });

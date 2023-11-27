@@ -105,4 +105,14 @@ export default {
   getNongbuAllDate(params?: any) {
     return POST('/getNongbuAllDate', params);
   },
+  // Duty
+  getDutyData(params?: any) {
+    return POST('/getDutyData', params);
+  },
+  addDutyData(params?: any) {
+    return POST('/addDutyData', params);
+  },
+  updateDutyData(params?: any) {
+    return POST('/updateDutyData', params);
+  },
 };

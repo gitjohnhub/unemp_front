@@ -9,6 +9,7 @@
           <a-radio-button value="1">按时间排序</a-radio-button>
         </a-radio-group>
         <a-switch v-model:checked="cancelUnempSwitch" />只显示取消失业登记
+        <a-tag>查询计数:{{ count }}</a-tag>
       </a-space>
     </a-row>
     <a-row>
@@ -107,6 +108,7 @@ const dataSource = ref();
 const months = ref(['']);
 const monthSelect = ref('');
 const spinning = ref<boolean>(false);
+const count = ref(0)
 //失业选择
 const cancelUnemp = ref();
 const cancelUnempSwitch = ref(false);
@@ -179,6 +181,7 @@ const getData = (params?: any) => {
   }
   return api.getNongbuData(params).then((res: any) => {
     dataSource.value = res.rows;
+    count.value = res.page.total
     return res.rows;
   });
 };

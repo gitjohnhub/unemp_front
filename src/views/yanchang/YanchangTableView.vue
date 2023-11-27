@@ -5,24 +5,14 @@
         <a-row>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
+            <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk"
+              @cancel="handleCancel">
               <YanchangAddFormView ref="formRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-divider type="vertical" />
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入姓名/身份证"
-              style="width: 200px"
-              @search="onSearch"
-            />
+            <a-input-search v-model:value="searchValue" placeholder="输入姓名/身份证" style="width: 200px" @search="onSearch" />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
         </a-row>
@@ -38,8 +28,7 @@
         </a-row>
         <a-row>
           <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
-              >{{ status.label }}
+            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index">{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
           </a-radio-group>
@@ -47,32 +36,18 @@
       </a-space>
     </div>
     <a-spin :spinning="spinning">
-      <a-table
-        :columns="columns"
-        :data-source="dataSource"
-        @change="handleChange"
-        @showSizeChange="onShowSizeChange"
-        :pagination="pagination"
-      >
+      <a-table :columns="columns" :data-source="dataSource" @change="handleChange" @showSizeChange="onShowSizeChange"
+        :pagination="pagination">
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
-            <a-typography-paragraph
-              :style="{ fontSize: '18px' }"
-              copyable
-              keyboard
-              :class="{ deleted: record.status == 4 }"
-              >{{ record.personID }}</a-typography-paragraph
-            >
+            <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard
+              :class="{ deleted: record.status == 4 }">{{ record.personID }}</a-typography-paragraph>
           </template>
           <template v-if="column.key === 'personName'">
             <a-space direction="vertical">
               <a-tooltip :title="pinyin(record.personName)" color="#f50">
-                <a-typography-paragraph
-                  :style="{ fontSize: '18px' }"
-                  copyable
-                  :class="{ deleted: record.isDeleted == 2 }"
-                  >{{ record.personName }}</a-typography-paragraph
-                >
+                <a-typography-paragraph :style="{ fontSize: '18px' }" copyable
+                  :class="{ deleted: record.isDeleted == 2 }">{{ record.personName }}</a-typography-paragraph>
               </a-tooltip>
             </a-space>
           </template>
@@ -90,12 +65,8 @@
                 </a-tag>
               </a-row>
               <a-tooltip :title="record.note" color="#f50">
-                <a-input-search
-                  v-model:value="record.note"
-                  placeholder="备注"
-                  size="medium"
-                  @search="onSubmitNote(record.id, record.note)"
-                >
+                <a-input-search v-model:value="record.note" placeholder="备注" size="medium"
+                  @search="onSubmitNote(record.id, record.note)">
                   <template #enterButton>
                     <a-button type="dashed">修改备注</a-button>
                   </template>
@@ -106,7 +77,9 @@
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
           </template>
           <template v-if="column.key === 'note'">
-            <a-tag color='red' v-if="record.originalFile == '1'"><FilePdfOutlined></FilePdfOutlined></a-tag>
+            <a-tag color='red' v-if="record.originalFile == '1'">
+              <FilePdfOutlined></FilePdfOutlined>
+            </a-tag>
             {{ record.note }}
           </template>
           <template v-if="column.key === 'status'">
@@ -118,37 +91,28 @@
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span
-                v-html="
-                  `${getCorrectTime(record.createtime)[0]}<br>${
-                    getCorrectTime(record.createtime)[1]
-                  }<br>id:${record.id}`
-                "
-              ></span>
+              <span v-html="
+                `${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]
+                }<br>id:${record.id}`
+              "></span>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button
-                    @click="reviewData(record.id)"
-                    type="primary"
-                    v-if="record.status == '0'"
-                    ><CheckOutlined /></a-button
-                  >
-                  <a-button
-                    @click="checkData(record.id,getData)"
-                    type="primary"
-                    v-if="record.status == '2'"
-                    >登记</a-button
-                  >
-                  <a-button
-                    @click="tagOriginalFile(record.id,getData)"
-                    type="primary"
-                    danger
-                    ><FilePdfOutlined /></a-button
-                  >
+                  <a-button @click="reviewData(record.id)" type="primary" v-if="record.status == '0'">
+                    <CheckOutlined />
+                  </a-button>
+                  <a-button @click="showEditModal(record)">
+                    <EditOutlined />
+                  </a-button>
+
+                  <a-button @click="checkData(record.id, getData)" type="primary"
+                    v-if="record.status == '2'">登记</a-button>
+                  <a-button @click="tagOriginalFile(record.id, getData)" type="primary" danger>
+                    <FilePdfOutlined />
+                  </a-button>
 
                 </a-space>
               </a-row>
@@ -156,18 +120,49 @@
               <a-row>
                 <a-space>
 
-                  <a-button @click="cancelData(record.id,getData)" type="primary" danger><DeleteOutlined /></a-button>
+                  <a-button @click="cancelData(record.id, getData)" type="primary" danger>
+                    <DeleteOutlined />
+                  </a-button>
                 </a-space>
               </a-row>
 
-              <!-- <a-button @click="showEditModal(record)">编辑</a-button> -->
               <!-- 编辑模态框 -->
-              <a-modal
-                v-model:visible="record.editVisible"
-                @ok="handleEditOk"
-                @cancel="handleEditCancel"
-              >
-                <YanchangEditFormView :editForm="record" ref="editFormRef" />
+              <a-modal v-model:visible="record.editVisible" @ok="handleEditOk" @cancel="handleEditCancel">
+                <a-form-item label="身份证号" name="personID" has-feedback>
+                  <a-input v-model:value="editForm.personID">
+                  </a-input>
+                </a-form-item>
+                <a-form-item label="姓名" name="personName" has-feedback>
+                  <a-input v-model:value="editForm.personName" />
+                </a-form-item>
+                <a-form-item label="月数" name="payMonth" has-feedback>
+                  <a-input v-model:value="editForm.payMonth" />
+                </a-form-item>
+                <a-form-item label="起始日期" name="startDate" has-feedback>
+                  <a-input v-model:value="editForm.startDate" />
+                </a-form-item>
+                <a-form-item label="终止日期" name="endDate" has-feedback>
+                  <a-input v-model:value="editForm.endDate" />
+                </a-form-item>
+                <a-form-item label="街镇" name="jiezhen" has-feedback>
+                  <a-select ref="select" v-model:value="editForm.jiezhen" style="width: 120px"
+                    :options="jiezhens"></a-select>
+                </a-form-item>
+                <a-form-item label="备注">
+                  <a-textarea v-model:value="editForm.note" />
+                </a-form-item>
+                <a-form-item label="选择未登记">
+                  <a-radio-group v-model:value="editForm.status">
+                    <a-radio value='0'>已登记</a-radio>
+                    <a-radio value='2'>待登记</a-radio>
+                  </a-radio-group>
+                </a-form-item>
+                <a-form-item label="原件">
+                  <a-radio-group v-model:value="editForm.originalFile">
+                    <a-radio value='0'>未收到</a-radio>
+                    <a-radio value='1'>已收到</a-radio>
+                  </a-radio-group>
+                </a-form-item>
               </a-modal>
             </a-space>
           </template>
@@ -180,11 +175,12 @@
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
-import { cancelData, deleteData,getStatus,statusList,checkData, tagOriginalFile} from './utils';
+import { jiezhens } from '@/types';
+
+import { cancelData, deleteData, getStatus, statusList, checkData, tagOriginalFile } from './utils';
 import { pinyin } from 'pinyin-pro';
 import YanchangAddFormView from './YanchangAddFormView.vue';
-import YanchangEditFormView from './YanchangEditFormView.vue';
-import { Dayjs } from 'dayjs';
+import dayjs,{ Dayjs } from 'dayjs';
 import { useUserStore } from '@/stores';
 import { downloadLink } from '@/utils/util';
 import { genWorkbook, colorList } from '@/utils/util';
@@ -209,6 +205,28 @@ const reviewChecked = ref('0');
 const exportData = ref();
 const status = ref('0');
 const statusCal = ref([]);
+//编辑数据弹窗
+const editForm = ref();
+
+const showEditModal = (record) => {
+  editForm.value = record;
+  record.editVisible = true;
+};
+const handleEditOk = () => {
+  api
+    .updateYanchangData(editForm.value)
+    .then((res: any) => {
+      message.info('修改成功');
+      editOpen.value = false;
+      getData();
+    })
+    .catch((error) => {
+      message.info('数据格式错误，无法提交=>', error);
+    });
+};
+const handleEditCancel = () => {
+  editOpen.value = false;
+};
 
 //加载数据动画
 const spinning = ref<boolean>(false);
@@ -236,7 +254,9 @@ const onSearch = () => {
 watch(
   () => searchValue.value,
   (newValue) => {
-    getData();
+    if (searchValue.value == ''){
+      getData()
+    }
   }
 );
 watch(
@@ -388,7 +408,7 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  if (monthSelect.value){
+  if (monthSelect.value) {
     params.monthSelect = monthSelect.value
   }
 
@@ -442,10 +462,6 @@ const showAddDataModal = async () => {
   open.value = true;
 };
 
-const showEditModal = (record) => {
-  record.editVisible = true;
-};
-
 const handleOk = () => {
   formRef.value
     .onSubmit()
@@ -461,65 +477,50 @@ const handleOk = () => {
 
   getData();
 };
-const handleEditOk = () => {
-  editFormRef.value
-    .onSubmit()
-    .then((res: any) => {
-      // message.info(res)
-      getData();
-      editOpen.value = false;
-    })
-    .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
-    });
 
-  getData();
-};
-const handleEditCancel = () => {
-  editOpen.value = false;
-};
+
 const handleCancel = () => {
   formRef.value.resetForm();
 };
 const columnsOriginal = [
   {
-    key:'personName',
-    title:'姓名'
-  },{
-    key:'personID',
-    title:'身份证号'
+    key: 'personName',
+    title: '姓名'
+  }, {
+    key: 'personID',
+    title: '身份证号'
   }
-  ,{
-    key:'payMonth',
-    title:'月数'
-  },{
-    key:'startDate',
-    title:'开始时间'
-  },{
-    key:'endDate',
-    title:'结束时间'
-  },{
-    key:'jiezhen',
-    title:'街镇'
-  },{
-    key:'note',
-    title:'备注'
-  },{
-    key:'status',
-    title:'进度'
-  },{
-    key:'createtime',
-    title:'提交时间'
+  , {
+    key: 'payMonth',
+    title: '月数'
+  }, {
+    key: 'startDate',
+    title: '开始时间'
+  }, {
+    key: 'endDate',
+    title: '结束时间'
+  }, {
+    key: 'jiezhen',
+    title: '街镇'
+  }, {
+    key: 'note',
+    title: '备注'
+  }, {
+    key: 'status',
+    title: '进度'
+  }, {
+    key: 'createtime',
+    title: '提交时间'
   }
-  ,{
-    key:'action',
-    title:'操作'
+  , {
+    key: 'action',
+    title: '操作'
   }
 
 ]
 const columns = columnsOriginal.map((item) => {
   return {
-   ...item,
+    ...item,
     dataIndex: item.key,
     align: 'center',
   };
@@ -535,7 +536,6 @@ const columns = columnsOriginal.map((item) => {
   margin-bottom: 16px;
 }
 
-.table-operations > button {
+.table-operations>button {
   margin-right: 8px;
-}
-</style>
+}</style>

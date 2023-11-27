@@ -327,7 +327,9 @@ watch(
 watch(
   () => searchValue.value,
   (newValue) => {
-    getData();
+    if (searchValue.value == ''){
+      getData()
+    }
   }
 );
 watch(

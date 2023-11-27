@@ -6,10 +6,10 @@
           <a-input type="text" v-model:value="user.account"></a-input>
         </a-form-item>
         <a-form-item label="密码：">
-          <a-input type="password" v-model:value="user.password"></a-input>
+          <a-input type="password" v-model:value="user.password" @keydown.enter="login"></a-input>
         </a-form-item>
         <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
-          <a-button type="primary" @click="login">登录</a-button>
+          <a-button type="primary" @click="login"   >登录</a-button>
           <!-- <a-button  @click="register">注册</a-button> -->
         </a-form-item>
       </a-form>

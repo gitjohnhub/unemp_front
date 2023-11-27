@@ -35,6 +35,7 @@
           <a-space>
             <a-range-picker v-model:value="monthSelect" />
             <a-button @click="exportExcel" type="primary"> <FileExcelOutlined />导出</a-button>
+            <a-switch v-model:checked="isIncludeCheckData"></a-switch>是否包含初核
           </a-space>
         </a-row>
         <a-row>
@@ -232,6 +233,7 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const reviewChecked = ref('0');
 const exportData = ref();
+const isIncludeCheckData = ref(false)
 const verifications = ['已初核', '已复核', '待初核', '已删除', '全部'];
 // 搜索相关
 const searchValue = ref();
@@ -252,6 +254,12 @@ const getColors = (user) => {
 };
 watch(
   () => selectedOp.value,
+  (newValue) => {
+    getData();
+  }
+);
+watch(
+  () => isIncludeCheckData.value,
   (newValue) => {
     getData();
   }
@@ -301,12 +309,13 @@ const onSubmitRNote = (id, note) => {
 };
 //数据导出功能
 const exportExcel = () => {
-  getData({ noindex: 1 }).then(() => {
+  getData({ noindex: 1,isIncludeCheckData:isIncludeCheckData.value ? 1 : 0 }).then(() => {
     const headersWithWidth = [
       { header: '序号', width: 10 },
       { header: '姓名', width: 12 },
       { header: '身份证', width: 25 },
       { header: '街镇', width: 25 },
+      { header: '是否初核', width: 25 },
       { header: '提交时间', width: 35 },
     ];
     const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
@@ -317,6 +326,7 @@ const exportExcel = () => {
         item.personName,
         item.personID,
         item.jiezhen,
+        item.verification == '0' ? '已初核':'已复核',
         item.createtime.slice(0, 10),
       ]);
     });

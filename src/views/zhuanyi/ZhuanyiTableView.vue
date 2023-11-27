@@ -126,7 +126,9 @@
                   <a-button @click="reviewData(record.id)" type="primary" v-if="record.status == '0'">
                     <CheckOutlined />
                   </a-button>
-                  <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
+                  <a-button @click="showEditModal(record)">
+                    <EditOutlined />
+                  </a-button>
 
                   <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'">支付</a-button>
                   <a-button @click="paySuccess(record.id)" type="primary" v-if="record.status == '2'">支付成功</a-button>
@@ -164,13 +166,20 @@
                   <a-form-item label="转入地" name="fromArea" has-feedback>
                     <a-input v-model:value="editForm.fromArea" />
                   </a-form-item>
-                  
-                  <a-form-item label="享受期限" name="payMonth" has-feedback>
-                    <a-input v-model:value="editForm.payMonth" />
+
+                   <a-form-item label="手动计算" name="paySplitMonth">
+                    <a-row>
+                      <a-space>
+                        标准一：<a-input v-model:value="firstPayMonth" style="width: 40px;" />
+                        二:<a-input v-model:value="secondPayMonth" style="width: 40px;" />
+                        享受期限:<a-input v-model:value="editForm.payMonth" disabled style="width: 40px;" />
+                      </a-space>
+                    </a-row>
                   </a-form-item>
                   <a-form-item label="转出金额" name="pay" has-feedback>
                     <a-input v-model:value="editForm.pay" />
                   </a-form-item>
+                 
                   <a-form-item label="转关系" name="isOnlyTransferRelation" has-feedback>
                     <a-select ref="select" v-model:value="editForm.isOnlyTransferRelation" style="width: 120px"
                       :options="isOnlyTransferRelationOp"></a-select>
@@ -190,7 +199,7 @@
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import {  CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons-vue';
+import { CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons-vue';
 
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
@@ -216,6 +225,16 @@ const status = ref('0');
 const statusCal = ref([]);
 //编辑相关
 const editForm = ref()
+const firstPayMonth = ref(0)
+const secondPayMonth = ref(0)
+watch(() => firstPayMonth.value, () => {
+  editForm.value.payMonth = Number(firstPayMonth.value) + Number(secondPayMonth.value)
+  editForm.value.pay = (Number(firstPayMonth.value) * 2175 + Number(secondPayMonth.value) * 1740) * 1.5
+})
+watch(() => secondPayMonth.value, () => {
+  editForm.value.payMonth = Number(firstPayMonth.value) + Number(secondPayMonth.value)
+  editForm.value.pay = (Number(firstPayMonth.value) * 2175 + Number(secondPayMonth.value) * 1740) * 1.5
+})
 const isOnlyTransferRelationOp = [
   {
     value: '只转关系',
@@ -226,22 +245,33 @@ const isOnlyTransferRelationOp = [
 ];
 const showEditModal = (record) => {
   editForm.value = record;
+  firstPayMonth.value = Number(editForm.value.payMonth) < 12 ? editForm.value.payMonth : 12
+  secondPayMonth.value = Number(editForm.value.payMonth) <= 12 ? 0 : Number(editForm.value.payMonth) - 12
   record.editVisible = true;
 };
+const resetEditForm = () => {
+  firstPayMonth.value = 0
+  secondPayMonth.value = 0
+}
 const handleEditOk = () => {
   api
     .updateZhuanyiData(editForm.value)
     .then((res: any) => {
       message.info('修改成功');
       editOpen.value = false;
+      resetEditForm()
       getData();
     })
     .catch((error) => {
       message.info('数据格式错误，无法提交=>', error);
+      resetEditForm()
+
     });
+
 };
 const handleEditCancel = () => {
   editOpen.value = false;
+  resetEditForm()
 };
 
 //加载数据动画

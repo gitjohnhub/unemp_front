@@ -203,6 +203,10 @@ const columnsOriginal = [
     title: '城保/镇保',
   },
   {
+    key: 'applyDate',
+    title: '申请日期',
+  },
+  {
     key: 'note',
     title: '备注',
     ellipsis: true,

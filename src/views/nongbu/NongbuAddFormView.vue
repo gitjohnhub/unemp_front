@@ -19,6 +19,10 @@
     <a-form-item label="街镇" name="jiezhen" has-feedback>
       <a-select ref="select" v-model:value="formState.jiezhen" style="width: 120px" :options="jiezhens"></a-select>
     </a-form-item>
+    <a-form-item label="申请日期" name="zhenPayMonth" has-feedback>
+      <a-date-picker v-model:value="applyDate" />
+    </a-form-item>
+
     <a-form-item label="备注">
       <a-textarea v-model:value="formState.note" />
     </a-form-item>
@@ -41,6 +45,7 @@ import { Dayjs } from 'dayjs';
 const formRef = ref(null);
 const checkoperator = useUserStore().userInfo.username;
 const startDate = ref<Dayjs>();
+const applyDate = ref<Dayjs>();
 const formState = ref({
   personID: '',
   personName: '',
@@ -67,6 +72,7 @@ const onSubmit = () => {
       .addNongbuData({
         ...formState.value,
         checkoperator,
+        applyDate:applyDate.value.format("YYYY-MM-DD")
       })
       .then(() => {
         resetForm();

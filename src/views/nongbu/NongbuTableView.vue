@@ -118,7 +118,7 @@
               <a-statistic title="城保" :value="record.chengPayMonth" />
             <a-statistic title="镇保" :value="record.zhenPayMonth" />
             </a-row>
-            
+
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
@@ -612,6 +612,10 @@ const columnsOriginal = [
   {
     key: 'jiezhen',
     title: '街镇',
+  },
+  {
+    key: 'applyDate',
+    title: '申请日期',
   },
   {
     key: 'note',

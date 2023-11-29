@@ -5,17 +5,25 @@
         <a-row>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal v-model:open="open" title="Title" :confirm-loading="confirmLoading" @ok="handleOk"
-              @cancel="handleCancel">
+            <a-modal
+              v-model:open="open"
+              title="Title"
+              :confirm-loading="confirmLoading"
+              @ok="handleOk"
+              @cancel="handleCancel"
+            >
               <ZhuanyiAddFormView ref="formRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-divider type="vertical" />
-            <a-input-search v-model:value="searchValue" placeholder="输入姓名/身份证/金额" style="width: 200px"
-              @search="onSearch" />
+            <a-input-search
+              v-model:value="searchValue"
+              placeholder="输入姓名/身份证/金额"
+              style="width: 200px"
+              @search="onSearch"
+            />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
-
           </a-space>
         </a-row>
         <a-row>
@@ -41,7 +49,8 @@
         </a-row>
         <a-row>
           <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index">{{ status.label }}
+            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
+              >{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
           </a-radio-group>
@@ -49,26 +58,42 @@
       </a-space>
     </div>
     <a-spin :spinning="spinning">
-      <a-table :columns="columns" :data-source="dataSource" @change="handleChange" @showSizeChange="onShowSizeChange"
-        :pagination="pagination">
+      <a-table
+        :columns="columns"
+        :data-source="dataSource"
+        @change="handleChange"
+        @showSizeChange="onShowSizeChange"
+        :pagination="pagination"
+      >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
-            <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard
-              :class="{ deleted: record.isDeleted == 0 }">{{ record.personID }}</a-typography-paragraph>
+            <a-typography-paragraph
+              :style="{ fontSize: '18px' }"
+              copyable
+              keyboard
+              :class="{ deleted: record.isDeleted == 0 }"
+              >{{ record.personID }}</a-typography-paragraph
+            >
           </template>
           <template v-if="column.key === 'personName'">
             <a-space direction="vertical">
               <a-tooltip :title="pinyin(record.personName)" color="#f50">
-                <a-typography-paragraph :style="{ fontSize: '18px' }" copyable
-                  :class="{ deleted: record.isDeleted == 2 }">{{ record.personName }}</a-typography-paragraph>
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                  >{{ record.personName }}</a-typography-paragraph
+                >
               </a-tooltip>
             </a-space>
           </template>
           <template v-if="column.key === 'isOnlyTransferRelation'">
             <a-space direction="vertical">
               <a-row>
-                <a-tag :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]">{{
-                  record.isOnlyTransferRelation }}</a-tag>
+                <a-tag
+                  :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]"
+                  >{{ record.isOnlyTransferRelation }}</a-tag
+                >
                 <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
                   record.payMonth ? record.payMonth : '无数据'
                 }}</a-tag>
@@ -86,13 +111,20 @@
                 <a-tag>
                   {{ record.checkoperator }}
                 </a-tag>
-                <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
+                <a-tag
+                  :color="getColors(record.reviewoperator)"
+                  v-if="record.reviewoperator != null"
+                >
                   {{ record.reviewoperator }}
                 </a-tag>
               </a-row>
               <a-tooltip :title="record.note" color="#f50">
-                <a-input-search v-model:value="record.note" placeholder="初核备注" size="medium"
-                  @search="onSubmitNote(record.id, record.note)">
+                <a-input-search
+                  v-model:value="record.note"
+                  placeholder="初核备注"
+                  size="medium"
+                  @search="onSubmitNote(record.id, record.note)"
+                >
                   <template #enterButton>
                     <a-button type="dashed">修改备注</a-button>
                   </template>
@@ -108,34 +140,58 @@
             </a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
 
-            <a-tag v-if="record.status !== '0' && record.status !== '1'">支付日期：{{ record.payDate }}</a-tag>
+            <a-tag v-if="record.status !== '0' && record.status !== '1'"
+              >支付日期：{{ record.payDate }}</a-tag
+            >
           </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span v-html="
-                `${getCorrectTime(record.createtime)[0]}<br>${getCorrectTime(record.createtime)[1]
-                }<br>id:${record.id}`
-              "></span>
+              <span
+                v-html="
+                  `${getCorrectTime(record.createtime)[0]}<br>${
+                    getCorrectTime(record.createtime)[1]
+                  }<br>id:${record.id}`
+                "
+              ></span>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button @click="reviewData(record.id)" type="primary" v-if="record.status == '0'">
+                  <a-button
+                    @click="reviewData(record.id)"
+                    type="primary"
+                    v-if="record.status == '0'"
+                  >
                     <CheckOutlined />
                   </a-button>
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
 
-                  <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'">支付</a-button>
-                  <a-button @click="paySuccess(record.id)" type="primary" v-if="record.status == '2'">支付成功</a-button>
-                  <a-button @click="recoveryFromFreezeData(record.id)" type="primary"
-                    v-if="record.status == '6'">恢复冻结</a-button>
+                  <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'"
+                    ><PayCircleOutlined
+                  /></a-button>
+                  <a-button
+                    @click="paySuccess(record.id)"
+                    type="primary"
+                    v-if="record.status == '2'"
+                    >支付成功</a-button
+                  >
+                  <a-button
+                    @click="recoveryFromFreezeData(record.id)"
+                    type="primary"
+                    v-if="record.status == '6'"
+                    >恢复冻结</a-button
+                  >
 
-                  <a-button danger @click="deleteData(record.id)" v-if="record.isDeleted == 1 ? true : false">
+                  <a-button
+                    danger
+                    @click="deleteData(record.id)"
+                    v-if="record.isDeleted == 1 ? true : false"
+                  >
                     <DeleteOutlined />
                   </a-button>
                 </a-space>
@@ -143,22 +199,41 @@
 
               <a-row>
                 <a-space>
-                  <a-button @click="refuseData(record.id)" v-if="record.status == '0' || record.status == '1'"
-                    type="primary" danger>驳回</a-button>
-                  <a-button @click="freezeData(record.id)" v-if="record.status == '1'" type="primary" danger>冻结</a-button>
+                  <a-button
+                    @click="refuseData(record.id)"
+                    v-if="record.status == '0' || record.status == '1'"
+                    type="primary"
+                    danger
+                    ><ExclamationCircleOutlined /></a-button
+                  >
+                  <a-button
+                    @click="freezeData(record.id)"
+                    v-if="record.status == '1'"
+                    type="primary"
+                    danger
+                    >冻结</a-button
+                  >
 
                   <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
-                  <a-button @click="payFailData(record.id)" v-if="record.status == '2'" type="primary"
-                    danger>支付失败</a-button>
+                  <a-button
+                    @click="payFailData(record.id)"
+                    v-if="record.status == '2'"
+                    type="primary"
+                    danger
+                    >支付失败</a-button
+                  >
                 </a-space>
               </a-row>
 
               <!-- 编辑模态框 -->
-              <a-modal v-model:visible="record.editVisible" @ok="handleEditOk" @cancel="handleEditCancel">
+              <a-modal
+                v-model:visible="record.editVisible"
+                @ok="handleEditOk"
+                @cancel="handleEditCancel"
+              >
                 <a-form :model="editForm">
                   <a-form-item label="身份证号" name="personID" has-feedback>
-                    <a-input v-model:value="editForm.personID">
-                    </a-input>
+                    <a-input v-model:value="editForm.personID"> </a-input>
                   </a-form-item>
                   <a-form-item label="姓名" name="personName" has-feedback>
                     <a-input v-model:value="editForm.personName" />
@@ -167,22 +242,30 @@
                     <a-input v-model:value="editForm.fromArea" />
                   </a-form-item>
 
-                   <a-form-item label="手动计算" name="paySplitMonth">
+                  <a-form-item label="手动计算" name="paySplitMonth">
                     <a-row>
                       <a-space>
-                        标准一：<a-input v-model:value="firstPayMonth" style="width: 40px;" />
-                        二:<a-input v-model:value="secondPayMonth" style="width: 40px;" />
-                        享受期限:<a-input v-model:value="editForm.payMonth" disabled style="width: 40px;" />
+                        标准一：<a-input v-model:value="firstPayMonth" style="width: 40px" />
+                        二:<a-input v-model:value="secondPayMonth" style="width: 40px" />
+                        享受期限:<a-input
+                          v-model:value="editForm.payMonth"
+                          disabled
+                          style="width: 40px"
+                        />
                       </a-space>
                     </a-row>
                   </a-form-item>
                   <a-form-item label="转出金额" name="pay" has-feedback>
                     <a-input v-model:value="editForm.pay" />
                   </a-form-item>
-                 
+
                   <a-form-item label="转关系" name="isOnlyTransferRelation" has-feedback>
-                    <a-select ref="select" v-model:value="editForm.isOnlyTransferRelation" style="width: 120px"
-                      :options="isOnlyTransferRelationOp"></a-select>
+                    <a-select
+                      ref="select"
+                      v-model:value="editForm.isOnlyTransferRelation"
+                      style="width: 120px"
+                      :options="isOnlyTransferRelationOp"
+                    ></a-select>
                   </a-form-item>
                   <a-form-item label="备注">
                     <a-textarea v-model:value="editForm.note" />
@@ -199,8 +282,7 @@
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
-import { CheckOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons-vue';
-
+import { CheckOutlined, DeleteOutlined, EditOutlined,PayCircleOutlined,ExclamationCircleOutlined } from '@ant-design/icons-vue';
 import api from '@/api';
 import { pinyin } from 'pinyin-pro';
 import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';
@@ -757,7 +839,7 @@ const columns = [
   margin-bottom: 16px;
 }
 
-.table-operations>button {
+.table-operations > button {
   margin-right: 8px;
 }
 </style>

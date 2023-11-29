@@ -1,25 +1,12 @@
 <template>
-  <a-form
-    :model="formState"
-    name="horizontal_login"
-    layout="inline"
-    autocomplete="off"
-    @finish="onFinish"
-    @finishFailed="onFinishFailed"
-  >
-    <a-form-item
-      label="联系人"
-      name="contactPerson"
-      :rules="[{ required: true, message: 'Please input your contactPerson!' }]"
-    >
+  <a-form :model="formState" name="horizontal_login" layout="inline" autocomplete="off" @finish="onFinish"
+    @finishFailed="onFinishFailed">
+    <a-form-item label="联系人" name="contactPerson"
+      :rules="[{ required: true, message: 'Please input your contactPerson!' }]">
       <a-input v-model:value="formState.contactPerson"> </a-input>
     </a-form-item>
 
-    <a-form-item
-      label="联系电话"
-      name="phoneNum"
-      :rules="[{ required: true, message: 'Please input your phoneNum!' }]"
-    >
+    <a-form-item label="联系电话" name="phoneNum" :rules="[{ required: true, message: 'Please input your phoneNum!' }]">
       <a-input v-model:value="formState.phoneNum"> </a-input>
     </a-form-item>
     <a-form-item label="地址">
@@ -35,11 +22,7 @@
       </a-radio-group>
     </a-form-item>
     <a-form-item label="所属名称">
-      <a-select
-        v-model:value="formState.title"
-        placeholder="please select your zone"
-        :options="titles"
-      >
+      <a-select v-model:value="formState.title" placeholder="please select your zone" :options="titles">
       </a-select>
     </a-form-item>
     <a-form-item label="是否对外">
@@ -53,11 +36,13 @@
       <a-button @click="onSubmit" type="primary">提交</a-button>
     </a-form-item>
   </a-form>
-
-  <a-table :columns="columns" :data-source="dataSource" bordered>
+  <a-input-search v-model:value="searchValue" placeholder="查询" style="width: 200px" @search="onSearch" />
+  <a-segmented v-model:value="selectBelong" :options="belongs" />
+  <a-table :columns="columns" :data-source="dataSource" bordered @change="handleChange" @showSizeChange="onShowSizeChange"
+    :pagination="pagination">
     <template #bodyCell="{ column, record }">
-      <template v-if="column.dataIndex === 'personName'">
-        <a-tag>{{ record.personName }}</a-tag>
+      <template v-if="column.dataIndex === 'isPublic'">
+        <a-tag>{{ record.isPublic == '1' ? '对外' :''}}</a-tag>
       </template>
     </template>
     <template #title>通讯录</template>
@@ -65,10 +50,34 @@
 </template>
 <script lang="ts" setup>
 import { ref, onBeforeMount, computed } from 'vue';
+import { message } from 'ant-design-vue'
 import api from '@/api';
+import { jiezhens } from '@/types'
 onBeforeMount(() => {
   getData();
 });
+// 分页
+const pager = ref({
+  current: 1,
+  pageSize: 10,
+  total: 0,
+});
+//
+const selectBelong = ref()
+const belongs = ['jiezhen','']
+const handleChange = async (page: any) => {
+  pager.value = page;
+  getData();
+};
+const pagination = computed(() => {
+  return {
+    ...pager.value,
+    change: handleChange,
+  };
+});
+const onShowSizeChange = async (page: any) => {
+  console.log('showsizechangepage=>', page);
+};
 
 // 表单
 const formState = ref({
@@ -80,61 +89,24 @@ const formState = ref({
   mobileNum: '',
   isPublic: '1',
 });
-const titles = [
-  {
-    value: '江桥镇',
-    label: '江桥镇',
-  },
-  {
-    value: '马陆镇',
-    label: '马陆镇',
-  },
-  {
-    value: '外冈镇',
-    label: '外冈镇',
-  },
-  {
-    value: '华亭镇',
-    label: '华亭镇',
-  },
-  {
-    value: '安亭镇',
-    label: '安亭镇',
-  },
-  {
-    value: '南翔镇',
-    label: '南翔镇',
-  },
-  {
-    value: '徐行镇',
-    label: '徐行镇',
-  },
-  {
-    value: '黄渡镇',
-    label: '黄渡镇',
-  },
-  {
-    value: '嘉定镇',
-    label: '嘉定镇',
-  },
-  {
-    value: '工业区',
-    label: '工业区',
-  },
-  {
-    value: '真新街道',
-    label: '真新街道',
-  },
-  {
-    value: '新成街道',
-    label: '新成街道',
-  },
-  {
-    value: '菊园新区',
-    label: '菊园新区',
-  },
-
-];
+const searchValue = ref()
+const onSearch = () => {
+  pager.value.current = 1;
+  getData()
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((e) => {
+      console.log(e);
+      message.info('查询错误，联系管理员');
+    });
+};
+const titles = jiezhens.map(item => {
+  return {
+    value: item.value,
+    index: item.value
+  }
+})
 const onFinish = (values: any) => {
   console.log('Success:', values);
 };
@@ -158,11 +130,7 @@ const disabled = computed(() => {
 });
 
 const dataSource = ref();
-const pager = ref({
-  current: 1,
-  pageSize: 10,
-  total: 0,
-});
+
 const form = ref();
 const count = ref();
 // 获取失业金数据
@@ -171,6 +139,13 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
+  if (selectBelong){
+    params.belong = selectBelong.value
+  }
+  if (searchValue.value !== undefined && searchValue.value !== '') {
+    params.belong = null
+    params.searchValue = searchValue.value
+  }
   return await api.getContactData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

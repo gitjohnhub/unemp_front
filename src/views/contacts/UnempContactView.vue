@@ -49,13 +49,14 @@
   </a-table>
 </template>
 <script lang="ts" setup>
-import { ref, onBeforeMount, computed } from 'vue';
+import { ref, onBeforeMount, computed ,watch} from 'vue';
 import { message } from 'ant-design-vue'
 import api from '@/api';
 import { jiezhens } from '@/types'
 onBeforeMount(() => {
   getData();
 });
+
 // 分页
 const pager = ref({
   current: 1,
@@ -63,8 +64,13 @@ const pager = ref({
   total: 0,
 });
 //
-const selectBelong = ref()
-const belongs = ['jiezhen','']
+const selectBelong = ref('')
+const belongs = [{
+  value:'街镇'
+
+},{
+  value:'全国'
+}]
 const handleChange = async (page: any) => {
   pager.value = page;
   getData();
@@ -125,13 +131,10 @@ const onSubmit = () => {
 const onFinishFailed = (errorInfo: any) => {
   console.log('Failed:', errorInfo);
 };
-const disabled = computed(() => {
-  return !(formState.value.contactPerson && formState.value.phoneNum);
-});
+
 
 const dataSource = ref();
 
-const form = ref();
 const count = ref();
 // 获取失业金数据
 const getData = async (params?: any) => {
@@ -146,6 +149,7 @@ const getData = async (params?: any) => {
     params.belong = null
     params.searchValue = searchValue.value
   }
+  console.log('params===>',params)
   return await api.getContactData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;
@@ -188,6 +192,9 @@ const columns = [
     dataIndex: 'isPublic',
   },
 ];
+watch(()=>selectBelong.value,()=>{
+  getData()
+})
 </script>
 <style scoped>
 th.column-money,

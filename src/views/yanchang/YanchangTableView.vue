@@ -51,6 +51,21 @@
               </a-tooltip>
             </a-space>
           </template>
+          <template v-if="column.key === 'startDate'">
+            <a-row>
+              <a-tag> {{ record.startDate }}</a-tag>
+            </a-row>
+            <a-row>
+              <a-tag> {{ record.endDate }}</a-tag>
+            </a-row>
+            <a-row>
+              <a-tooltip :title="record.note" color="#f50">
+                <a-tag v-if="record.note"> {{ record.note }}</a-tag>
+            </a-tooltip>
+            </a-row>
+
+
+          </template>
           <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
@@ -64,14 +79,6 @@
                   {{ record.reviewoperator }}
                 </a-tag>
               </a-row>
-              <a-tooltip :title="record.note" color="#f50">
-                <a-input-search v-model:value="record.note" placeholder="备注" size="medium"
-                  @search="onSubmitNote(record.id, record.note)">
-                  <template #enterButton>
-                    <a-button type="dashed">修改备注</a-button>
-                  </template>
-                </a-input-search>
-              </a-tooltip>
             </a-space>
 
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
@@ -86,6 +93,7 @@
             <a-tag :color="colorList[Number(record.status)]">
               {{ getStatus(record.status) }}
             </a-tag>
+            <a-tag>{{ record.payMonth }}</a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
           </template>
           <!-- createtime column -->
@@ -489,23 +497,13 @@ const columnsOriginal = [
   }, {
     key: 'personID',
     title: '身份证号'
-  }
-  , {
-    key: 'payMonth',
-    title: '月数'
   }, {
     key: 'startDate',
-    title: '开始时间'
-  }, {
-    key: 'endDate',
-    title: '结束时间'
+    title: '开始/结束/备注'
   }, {
     key: 'jiezhen',
     title: '街镇'
-  }, {
-    key: 'note',
-    title: '备注'
-  }, {
+  },  {
     key: 'status',
     title: '进度'
   }, {

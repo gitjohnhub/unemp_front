@@ -497,7 +497,7 @@ const columnsOriginal = [
   }, {
     key: 'personID',
     title: '身份证号'
-  }, {
+  } , {
     key: 'startDate',
     title: '开始/结束/备注'
   }, {

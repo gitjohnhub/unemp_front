@@ -128,9 +128,8 @@ import { reactive, ref, watch } from 'vue';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons-vue';
 import type { FormInstance } from 'ant-design-vue';
 import { InboxOutlined } from '@ant-design/icons-vue';
-import Tesseract from 'tesseract.js';
 import type { UploadProps } from 'ant-design-vue';
-
+import {handleTesseract} from '@/utils/util'
 interface year {
   first: string;
   last: string;
@@ -293,8 +292,11 @@ const customRequest = (options: any) => {
   dynamicCheckForm.checkValues = [];
   dynamicValidateForm.years = [];
   const { onProgress, onError, onSuccess, file } = options;
-  handleTesseract(file)
-    .then((result) => {
+  handleTesseract(file,fixRecoginizedData)
+    .then((result:any) => {
+      console.log('result==>',result)
+      dynamicValidateForm.years = result
+      calServiceYear(result)
       onProgress({ percent: 100 });
       onSuccess(result);
     })
@@ -308,26 +310,26 @@ const handleRemove = (file: File) => {
   newFileList.splice(index, 1);
   fileList.value = newFileList;
 };
-function handleTesseract(file: File) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async (e) => {
-      try {
-        const result = await Tesseract.recognize(e.target!.result).then((result) => {
-          dynamicValidateForm.years = fixRecoginizedData(result.data.text);
-          calServiceYear(dynamicValidateForm.years);
-        });
-        resolve(result);
-      } catch (err) {
-        reject(err);
-      }
-    };
-    reader.onerror = (error) => {
-      reject(error);
-    };
-  });
-}
+// function handleTesseract(file: File) {
+//   return new Promise((resolve, reject) => {
+//     const reader = new FileReader();
+//     reader.readAsDataURL(file);
+//     reader.onload = async (e) => {
+//       try {
+//         const result = await Tesseract.recognize(e.target!.result as ImageLike).then((result) => {
+//           dynamicValidateForm.years = fixRecoginizedData(result.data.text);
+//           calServiceYear(dynamicValidateForm.years);
+//         });
+//         resolve(result);
+//       } catch (err) {
+//         reject(err);
+//       }
+//     };
+//     reader.onerror = (error) => {
+//       reject(error);
+//     };
+//   });
+// }
 
 function getServiceMonths(dateArray) {
   const startDate = new Date(
@@ -372,7 +374,8 @@ function getServiceMonths(dateArray) {
 //       parseInt(dates[i + 1].slice(6)),
 //     ];
 //     const diff = calculateMonthDifference(firstDate, lastDate);
-function fixRecoginizedData(dateStr: string): any {
+const fixRecoginizedData = (dateStr: string)=>{
+  console.log('dateStr===>',dateStr)
   const dates: string[] = dateStr.replace(/\s+/g, ' ').split(' ');
   const dateArray = [];
   //如果是18几几年说明识别错误，替换18年

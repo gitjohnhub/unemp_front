@@ -1,10 +1,33 @@
 import Excel from 'exceljs'
+import Tesseract, { ImageLike } from 'tesseract.js';
+
+//图片识别文字
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
   const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD');
   const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD');
   return [firstDay, lastDay];
+}
+export function handleTesseract(file: File,handleResult:(params:string)=>{}) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async (e) => {
+      try {
+        const result = await Tesseract.recognize(e.target!.result as ImageLike).then((result) => {
+          console.log('result.data.text==>',result.data.text)
+          const dateArray = handleResult(result.data.text);
+          resolve(dateArray);
+        });
+      } catch (err) {
+        reject(err);
+      }
+    };
+    reader.onerror = (error) => {
+      reject(error);
+    };
+  });
 }
 export function downloadLink(workbook,filename){
   workbook.xlsx.writeBuffer().then((buffer) => {

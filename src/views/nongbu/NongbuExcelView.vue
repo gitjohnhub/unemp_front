@@ -27,13 +27,13 @@
           }}</a-typography-paragraph>
         </template>
         <template v-if="column.key === 'personID'">
-          <a-tooltip :title="pinyin(record.personName)" color="#f50">
+          <a-tooltip :title="pinyin(record.personID)" color="#f50">
                 <a-typography-paragraph
                   :style="{ fontSize: '18px' }"
                   copyable
                   :class="{ deleted: record.isDeleted == 2 }"
                 >
-                  {{ record.personName }}
+                  {{ record.personID }}
                 </a-typography-paragraph>
               </a-tooltip>
         </template>

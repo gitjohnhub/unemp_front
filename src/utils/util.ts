@@ -1,5 +1,5 @@
 import Excel from 'exceljs'
-import Tesseract, { ImageLike } from 'tesseract.js';
+import Tesseract, { ImageLike,createWorker } from 'tesseract.js';
 
 //图片识别文字
 
@@ -15,7 +15,8 @@ export function handleTesseract(file: File,handleResult:(params:string)=>{}) {
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
       try {
-        const result = await Tesseract.recognize(e.target!.result as ImageLike).then((result) => {
+        const worker = await createWorker('chi_sim');
+        const result = await worker.recognize(e.target!.result as ImageLike).then((result) => {
           console.log('result.data.text==>',result.data.text)
           const dateArray = handleResult(result.data.text);
           resolve(dateArray);
@@ -28,6 +29,7 @@ export function handleTesseract(file: File,handleResult:(params:string)=>{}) {
       reject(error);
     };
   });
+
 }
 export function downloadLink(workbook,filename){
   workbook.xlsx.writeBuffer().then((buffer) => {

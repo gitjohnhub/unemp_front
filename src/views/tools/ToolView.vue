@@ -17,9 +17,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import GonglingView from './GonglingView.vue';
-import YearGonglingView from './YearGonglingView.vue'
 import TesseractCalView from './TesseractCalView.vue';
-import PersonInfoView from '@/components/PersonInfoView.vue';
+import PersonInfoView from './PersonInfoView.vue';
 const activeKey = ref('1');
 
 

@@ -1,6 +1,10 @@
 import Excel from 'exceljs'
 import Tesseract, { ImageLike,createWorker } from 'tesseract.js';
-
+interface DataItem {
+  month: number;
+  count: number;
+  jiezhen: string;
+}
 //图片识别文字
 
 // 通过月份获得月尾和月头的日期
@@ -45,6 +49,84 @@ export function downloadLink(workbook,filename){
   });
 
 }
+//计算累计
+export function calculateStatistics(data) {
+  const monthlyTotals = Array(12).fill(0);
+  const townTotals = {};
+
+  for (const item of data) {
+    const { jiezhen, value } = item;
+
+    // 统计每个街镇每个月的数据
+    if (!townTotals[jiezhen]) {
+      townTotals[jiezhen] = Array(12).fill(0);
+    }
+
+    for (let i = 0; i < value.length; i++) {
+      const monthlyValue = value[i];
+      townTotals[jiezhen][i] += monthlyValue;
+      monthlyTotals[i] += monthlyValue;
+    }
+  }
+
+  return {
+    monthlyTotals,
+    townTotals,
+  };
+}
+
+export function CalByMonthAndJiezhen(data: any) {
+  const result: any = [];
+  // 遍历原始数据，根据街镇进行分组
+  const groupedData = data.reduce((acc: Record<string, DataItem[]>, item: DataItem) => {
+    if (!acc[item.jiezhen]) {
+      acc[item.jiezhen] = [];
+    }
+    acc[item.jiezhen].push(item);
+    return acc;
+  }, {});
+  const nextHandleData = [];
+
+  // 将分组后的数据转换为目标格式
+  for (const jiezhen in groupedData) {
+    let total = 0;
+
+    const groupedItems = groupedData[jiezhen];
+    const value: (number | string)[] = [];
+
+    // 初始化 value 数组
+    for (let i = 0; i <= 11; i++) {
+      value.push(0);
+    }
+
+    // 填充对应月份的值
+    for (const item of groupedItems) {
+      value[item.month - 1] = item.count;
+      total += item.count;
+    }
+    nextHandleData.push({
+      jiezhen,
+      value,
+      total,
+    });
+
+    result.push({
+      jiezhen,
+      ...Object.fromEntries(months.map((month, index) => [month, value[index]])),
+      total,
+    });
+  }
+  const totalCal = calculateStatistics(nextHandleData);
+  result.push({
+    jiezhen: '合计',
+    ...Object.fromEntries(months.map((month, index) => [month, totalCal.monthlyTotals[index]])),
+    total: totalCal.monthlyTotals.reduce((pre, cur) => {
+      return pre + cur;
+    }, 0),
+  });
+  return result;
+}
+
 
 export function genWorkbook(headersWithWidth){
   const workbook = new Excel.Workbook();
@@ -86,3 +168,4 @@ export const colorList = [
   '#fd5732',
   '#fd5732',
 ];
+export const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

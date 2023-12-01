@@ -67,7 +67,7 @@ const getData = (params?: any) => {
   if (year.value) {
     params.year = year.value.format('YYYY');
   }
-  return api.getNongbuCalByMonthAndJiezhen(params);
+  return api.getYanchangCalByMonthAndJiezhen(params);
 };
 
 const columns = [

@@ -7,14 +7,14 @@
       <YanchangExcelView />
     </a-tab-pane>
     <a-tab-pane key="3" tab="统计视图">
-      <YanchangDataView/>
+      <YanchangDataViews/>
     </a-tab-pane>
   </a-tabs>
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
 import YanchangTableView from '@/views/yanchang/YanchangTableView.vue';
-import YanchangDataView from '@/views/yanchang/YanchangDataView.vue';
+import YanchangDataViews from '@/views/yanchang/YanchangDataViews.vue';
 import YanchangExcelView from './YanchangExcelView.vue';
 const activeKey = ref('1');
 

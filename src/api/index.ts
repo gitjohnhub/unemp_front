@@ -85,6 +85,9 @@ export default {
   getYanchangAllDate(params?: any) {
     return POST('/getYanchangAllDate', params);
   },
+  getYanchangCalByMonthAndJiezhen(params?: any) {
+    return POST('/getYanchangCalByMonthAndJiezhen', params);
+  },
 
   // Nongbu
   getNongbuData(params?: any) {

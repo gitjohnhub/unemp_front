@@ -251,7 +251,8 @@ import { useUserStore } from '@/stores';
 import { genWorkbook, colorList,downloadLink } from '@/utils/util';
 import { jiezhens } from '@/types';
 import 'dayjs/locale/zh-cn';
-import { tagOriginalFile ,tagWrong,tagCancelUnemp} from '@/views/nongbu/utils';
+import { tagCancelUnemp} from '@/views/nongbu/utils';
+import { tagOriginalFile,tagWrong } from '@/utils/tag';
 const editForm = ref();
 const showCancelUnemp = ref(false)
 const showRepeat = ref(false)

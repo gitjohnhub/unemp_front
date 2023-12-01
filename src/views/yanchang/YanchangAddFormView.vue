@@ -45,6 +45,12 @@
         <a-radio value='1' >已收到</a-radio>
       </a-radio-group>
     </a-form-item>
+    <a-form-item label="是否错核">
+      <a-radio-group v-model:value="formState.wrongTag">
+        <a-radio value='1'>标记错核</a-radio>
+        <a-radio value='0'>未错核</a-radio>
+      </a-radio-group>
+    </a-form-item>
 
   </a-form>
 </template>
@@ -68,7 +74,8 @@ const formState = ref({
   endDate: '',
   note: '',
   jiezhen:'',
-  originalFile:'0'
+  originalFile:'0',
+  wrongTag:'0'
 });
 
 watch(

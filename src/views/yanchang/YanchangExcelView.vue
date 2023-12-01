@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import api from '@/api';
 import { ref, onBeforeMount, watch } from 'vue';
-import { tagOriginalFile } from './utils';
+import { tagOriginalFile } from '@/utils/tag';
 import { genWorkbook, downloadLink } from '@/utils/util';
 import { pinyin } from 'pinyin-pro';
 import {

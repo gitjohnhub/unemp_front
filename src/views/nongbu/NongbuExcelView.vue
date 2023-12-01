@@ -100,7 +100,8 @@
 <script setup lang="ts">
 import api from '@/api';
 import { ref, onBeforeMount, watch } from 'vue';
-import { tagOriginalFile, tagWrong, tagCancelUnemp } from './utils';
+import {  tagCancelUnemp } from './utils';
+import {tagOriginalFile, tagWrong} from '@/utils/tag'
 import { genWorkbook, downloadLink } from '@/utils/util';
 import { pinyin } from 'pinyin-pro';
 

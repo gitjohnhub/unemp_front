@@ -112,6 +112,9 @@
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
+                  <a-button @click="tagWrong(record.id,getData)" type="primary" danger>
+                    <WarningFilled />
+                  </a-button>
 
                   <a-button @click="checkData(record.id, getData)" type="primary"
                     v-if="record.status == '2'">登记</a-button>
@@ -168,6 +171,12 @@
                     <a-radio value='1'>已收到</a-radio>
                   </a-radio-group>
                 </a-form-item>
+                <a-form-item label="是否错核">
+                    <a-radio-group v-model:value="editForm.wrongTag">
+                      <a-radio value="1">标记错核</a-radio>
+                      <a-radio value="0">未错核</a-radio>
+                    </a-radio-group>
+                  </a-form-item>
               </a-modal>
             </a-space>
           </template>
@@ -181,8 +190,8 @@ import { computed, ref, onBeforeMount, watch } from 'vue';
 import { message } from 'ant-design-vue';
 import api from '@/api';
 import { jiezhens } from '@/types';
-
-import { cancelData, deleteData, getStatus, statusList, checkData, tagOriginalFile } from './utils';
+import { cancelData, getStatus, statusList, checkData } from './utils';
+import { tagWrong,tagOriginalFile } from '@/utils/tag';
 import { pinyin } from 'pinyin-pro';
 import YanchangAddFormView from './YanchangAddFormView.vue';
 import dayjs,{ Dayjs } from 'dayjs';

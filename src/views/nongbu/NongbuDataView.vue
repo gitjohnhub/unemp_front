@@ -2,43 +2,10 @@
   <a-date-picker v-model:value="year" picker="year"></a-date-picker>
   <a-button type="primary" @click="refreshData()">刷新数据</a-button>
   <a-divider></a-divider>
+  <a-table :columns="columns" :dataSource="dataSource" :pagination="false">
+  </a-table>
+  <a-table :columns="columns" :dataSource="dataSourceWithWrongTag" :pagination="false"></a-table>
 
-  <a-row :gutter="[6, 12]">
-    <a-col :span="2">镇/月<a-divider type="vertical" /></a-col>
-    <a-col :span="1" v-for="num in numbers()" :key="num">{{ num }}月</a-col>
-    <a-col :span="2">合计</a-col>
-    <a-col :span="1">错误率</a-col>
-  </a-row>
-  <a-row :gutter="[6, 12]" v-for="data in dataSource">
-    <a-col :span="2">{{ data.jiezhen }}<a-divider type="vertical" /></a-col>
-    <a-col :span="1" v-for="monthData in data.value"
-      ><a-tag>{{ monthData }}</a-tag>
-    </a-col>
-    <a-col :span="1"
-      ><a-tag>{{ data.total }}</a-tag></a-col
-    >
-    <a-col :span="1"
-      ><a-tag v-if="wrongPA.length > 0">{{ wrongPA.filter(item=>item.jiezhen == data.jiezhen)[0].errorRate }}</a-tag></a-col
-    >
-  </a-row>
-  <a-divider></a-divider>
-
-  <!-- 错误 -->
-  <h1>差错统计</h1>
-  <a-row :gutter="[6, 24]">
-    <a-col :span="2">镇/月<a-divider type="vertical" /></a-col>
-    <a-col :span="1" v-for="num in numbers()" :key="num">{{ num }}月</a-col>
-    <a-col :span="2">合计</a-col>
-  </a-row>
-  <a-row :gutter="[6, 24]" v-for="data in dataSourceWithWrongTag">
-    <a-col :span="2">{{ data.jiezhen }}<a-divider type="vertical" /></a-col>
-    <a-col :span="1" v-for="monthData in data.value"
-      ><a-tag>{{ monthData }}</a-tag>
-    </a-col>
-    <a-col :span="1"
-      ><a-tag>{{ data.total }}</a-tag></a-col
-    >
-  </a-row>
 </template>
 
 <script setup lang="ts">
@@ -57,7 +24,6 @@ const numbers = () => {
 const wrongPA = computed(() => {
   const errorRateArray = [];
   if (dataSource.value && dataSourceWithWrongTag.value) {
-    console.log(dataSource.value)
     for (let i = 0; i < dataSource.value.length; i++) {
       const wronyIndexData = dataSourceWithWrongTag.value.filter((item) => {
         return item.jiezhen == dataSource.value[i].jiezhen;
@@ -73,7 +39,6 @@ const wrongPA = computed(() => {
         jiezhen:dataSource.value[i].jiezhen
       }
         );
-      console.log(errorRateArray);
     }
     return errorRateArray;
 
@@ -89,6 +54,7 @@ watch(
 );
 const refreshData=()=>{
   getData().then((res) => {
+    console.log('res===>',res)
     dataSource.value = CalNongbuCalByMonthAndJiezhen(res);
   });
   getData({ wrongTag: '1' }).then((res) => {
@@ -100,6 +66,7 @@ onBeforeMount(() => {
   refreshData()
 });
 const getData = (params?: any) => {
+  convertedData.value = [];
   params = {
     ...params,
     status:'1'
@@ -109,21 +76,25 @@ const getData = (params?: any) => {
   }
   return api.getNongbuCalByMonthAndJiezhen(params);
 };
+const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
 const columns = [
   {
     title: '街镇',
     dataIndex: 'jiezhen',
     key: 'jiezhen',
   },
-  {
-    title: '月份',
-    dataIndex: 'month',
-    key: 'month',
-  },
+  ...months.map((month,index) => {
+    return {
+      title: `${index+1}月`,
+      dataIndex: month,
+      key: month,
+    }
+  }),
   {
     title: '计数',
-    dataIndex: 'count',
-    key: 'count',
+    dataIndex: 'total',
+    key: 'total',
   },
 ];
 interface DataItem {
@@ -131,16 +102,11 @@ interface DataItem {
   count: number;
   jiezhen: string;
 }
+const convertedData = ref([]);
 
-interface ConvertedData {
-  jiezhen: string;
-  value: (number | string)[];
-  total: number;
-}
 
 function CalNongbuCalByMonthAndJiezhen(data: any) {
-  const convertedData: ConvertedData[] = [];
-
+  const result: any = [];
   // 遍历原始数据，根据街镇进行分组
   const groupedData = data.reduce((acc: Record<string, DataItem[]>, item: DataItem) => {
     if (!acc[item.jiezhen]) {
@@ -149,6 +115,7 @@ function CalNongbuCalByMonthAndJiezhen(data: any) {
     acc[item.jiezhen].push(item);
     return acc;
   }, {});
+  const nextHandleData = []
 
   // 将分组后的数据转换为目标格式
   for (const jiezhen in groupedData) {
@@ -167,25 +134,31 @@ function CalNongbuCalByMonthAndJiezhen(data: any) {
       value[item.month - 1] = item.count;
       total += item.count;
     }
-
-    convertedData.push({
+    nextHandleData.push({
       jiezhen,
       value,
       total,
     });
+
+    result.push({
+      jiezhen,
+      ...Object.fromEntries(months.map((month, index) => [month, value[index]])),
+      total,
+    });
   }
-  calculateStatistics(convertedData);
-  convertedData.push({
+  const totalCal = calculateStatistics(nextHandleData);
+  result.push({
     jiezhen: '合计',
-    value: calculateStatistics(convertedData).monthlyTotals,
-    total: calculateStatistics(convertedData).monthlyTotals.reduce((pre, cur) => {
+    ...Object.fromEntries(months.map((month, index) => [month, totalCal.monthlyTotals[index]])),
+    total: totalCal.monthlyTotals.reduce((pre, cur) => {
       return pre + cur;
     }, 0),
   });
-  return convertedData;
+  return result
 }
 //计算累计
 function calculateStatistics(data) {
+  console.log('data===>',data)
   const monthlyTotals = Array(12).fill(0);
   const townTotals = {};
 

@@ -22,10 +22,18 @@
     <a-table :columns="columns" :data-source="dataSource" bordered>
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personName'">
-          <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard>{{
-            record.personName
-          }}</a-typography-paragraph>
-        </template>
+            <a-space direction="vertical">
+              <a-tooltip :title="pinyin(record.personName)" color="#f50">
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                >
+                  {{ record.personName }}
+                </a-typography-paragraph>
+              </a-tooltip>
+            </a-space>
+          </template>
         <template v-if="column.key === 'personID'">
           <a-tooltip :title="pinyin(record.personID)" color="#f50">
                 <a-typography-paragraph

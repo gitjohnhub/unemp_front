@@ -23,10 +23,18 @@
     <a-table class='custom-table' :columns="columns" :data-source="dataSource" bordered size="small">
       <template #bodyCell="{ column, record }">
         <template v-if="column.key === 'personName'">
-          <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard>{{
-            record.personName
-          }}</a-typography-paragraph>
-        </template>
+            <a-space direction="vertical">
+              <a-tooltip :title="pinyin(record.personName)" color="#f50">
+                <a-typography-paragraph
+                  :style="{ fontSize: '18px' }"
+                  copyable
+                  :class="{ deleted: record.isDeleted == 2 }"
+                >
+                  {{ record.personName }}
+                </a-typography-paragraph>
+              </a-tooltip>
+            </a-space>
+          </template>
         <template v-if="column.key === 'personID'">
           <a-typography-paragraph :style="{ fontSize: '18px' }" copyable keyboard>{{
             record.personID
@@ -83,7 +91,7 @@ import api from '@/api';
 import { ref, onBeforeMount, watch } from 'vue';
 import { tagOriginalFile } from './utils';
 import { genWorkbook, downloadLink } from '@/utils/util';
-
+import { pinyin } from 'pinyin-pro';
 import {
   WarningFilled,
   CheckOutlined,

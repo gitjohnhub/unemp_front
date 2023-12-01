@@ -2,10 +2,7 @@
   <a-date-picker v-model:value="year" picker="year"></a-date-picker>
   <a-button type="primary" @click="refreshData()">刷新数据</a-button>
   <a-divider></a-divider>
-  <a-table :columns="columns" :dataSource="dataSource" :pagination="false">
-  </a-table>
-  <a-table :columns="columns" :dataSource="dataSourceWithWrongTag" :pagination="false"></a-table>
-
+  <a-table :columns="columns" :dataSource="fixDataSource" :pagination="false"> </a-table>
 </template>
 
 <script setup lang="ts">
@@ -17,6 +14,7 @@ import 'dayjs/locale/zh-cn';
 
 const dataSource = ref();
 const dataSourceWithWrongTag = ref();
+const fixDataSource = ref();
 const year = ref<Dayjs>(dayjs(new Date()));
 const numbers = () => {
   return Array.from({ length: 12 }, (_, index) => index + 1);
@@ -35,48 +33,71 @@ const wrongPA = computed(() => {
         errorRate = '0';
       }
       errorRateArray.push({
-        errorRate:`${Number(errorRate)*100}%`,
-        jiezhen:dataSource.value[i].jiezhen
-      }
-        );
+        errorRate: `${Number(errorRate) * 100}%`,
+        jiezhen: dataSource.value[i].jiezhen,
+      });
     }
     return errorRateArray;
-
-  }else{
-    return []
+  } else {
+    return [];
   }
 });
 watch(
   () => year.value,
   () => {
-   refreshData()
+    refreshData();
   }
 );
-const refreshData=()=>{
-  getData().then((res) => {
-    console.log('res===>',res)
-    dataSource.value = CalNongbuCalByMonthAndJiezhen(res);
-  });
-  getData({ wrongTag: '1' }).then((res) => {
-    dataSourceWithWrongTag.value = CalNongbuCalByMonthAndJiezhen(res);
-  });
+const refreshData = () => {
+  getData()
+    .then((res) => {
+      dataSource.value = CalNongbuCalByMonthAndJiezhen(res);
+    })
+    .then(() => {
+      getData({ wrongTag: '1' }).then((res) => {
+        dataSourceWithWrongTag.value = CalNongbuCalByMonthAndJiezhen(res);
+      }).then(() => {
+      console.log('dataSource.value==>', dataSource.value);
+      console.log('dataSourceWithWrongTag.value===>',dataSourceWithWrongTag.value);
 
-}
+      fixDataSource.value = dataSource.value.map((item1) => {
+        const matchingItem2 = dataSourceWithWrongTag.value.find((item2) => item2.jiezhen === item1.jiezhen);
+
+        if (matchingItem2) {
+          // 对相同的 jiezhen 进行合并
+          const mergedItem = {
+            jiezhen: item1.jiezhen,
+            ...Object.fromEntries(
+              Object.entries(item1)
+                .filter(([key]) => key !== 'jiezhen' && key !== 'total')
+                .map(([key, value]) => [key, `${value}(${matchingItem2[key]})`])
+            ),
+            total: `${item1.total}(${ matchingItem2.total})`,
+          };
+
+          return mergedItem;
+        } else {
+          return item1;
+        }
+      });
+    });
+  })
+};
 onBeforeMount(() => {
-  refreshData()
+  refreshData();
 });
 const getData = (params?: any) => {
   convertedData.value = [];
   params = {
     ...params,
-    status:'1'
+    status: '1',
   };
   if (year.value) {
     params.year = year.value.format('YYYY');
   }
   return api.getNongbuCalByMonthAndJiezhen(params);
 };
-const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const columns = [
   {
@@ -84,12 +105,12 @@ const columns = [
     dataIndex: 'jiezhen',
     key: 'jiezhen',
   },
-  ...months.map((month,index) => {
+  ...months.map((month, index) => {
     return {
-      title: `${index+1}月`,
+      title: `${index + 1}月`,
       dataIndex: month,
       key: month,
-    }
+    };
   }),
   {
     title: '计数',
@@ -104,7 +125,6 @@ interface DataItem {
 }
 const convertedData = ref([]);
 
-
 function CalNongbuCalByMonthAndJiezhen(data: any) {
   const result: any = [];
   // 遍历原始数据，根据街镇进行分组
@@ -115,7 +135,7 @@ function CalNongbuCalByMonthAndJiezhen(data: any) {
     acc[item.jiezhen].push(item);
     return acc;
   }, {});
-  const nextHandleData = []
+  const nextHandleData = [];
 
   // 将分组后的数据转换为目标格式
   for (const jiezhen in groupedData) {
@@ -154,11 +174,10 @@ function CalNongbuCalByMonthAndJiezhen(data: any) {
       return pre + cur;
     }, 0),
   });
-  return result
+  return result;
 }
 //计算累计
 function calculateStatistics(data) {
-  console.log('data===>',data)
   const monthlyTotals = Array(12).fill(0);
   const townTotals = {};
 

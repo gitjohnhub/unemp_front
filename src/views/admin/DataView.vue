@@ -52,7 +52,7 @@ const getData = async (params?:any)=>{
     params = {
       ...params,
       alreadydelete:1,
-      monthSelect: getMonthRange(monthSelect.value),
+      monthSelect: monthSelect.value,
     };
   }
   userStore

@@ -72,7 +72,7 @@ const refreshData = () => {
                 .filter(([key]) => key !== 'jiezhen' && key !== 'total')
                 .map(([key, value]) => [key, `${value}(${matchingItem2[key]})`])
             ),
-            total: `${item1.total}(${ matchingItem2.total})(${matchingItem2.total/item1.total })`,
+            total: `${item1.total}(${ matchingItem2.total})(${parseFloat((matchingItem2.total/item1.total).toFixed(2) )*100}%)`,
           };
 
           return mergedItem;

@@ -83,15 +83,12 @@
 
             <!-- <span v-html="`<br>${record.checknote}`"></span> -->
           </template>
-          <template v-if="column.key === 'note'">
-            <a-tag color='red' v-if="record.originalFile == '1'">
-              <FilePdfOutlined></FilePdfOutlined>
-            </a-tag>
-            {{ record.note }}
-          </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
               {{ getStatus(record.status) }}
+            </a-tag>
+            <a-tag color='red' v-if="record.originalFile == '1'">
+              <FilePdfOutlined></FilePdfOutlined>
             </a-tag>
             <a-tag>{{ record.payMonth }}</a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />

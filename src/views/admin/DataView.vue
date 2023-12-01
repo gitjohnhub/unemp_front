@@ -23,13 +23,13 @@
       </a-row>
       <a-row>
         <a-col :span="6">
-          <a-statistic title="农民补助金" :value="NongbuTotalCurrentMonth" style="margin-right: 20px" />
+          <a-statistic title="农民补助金(已审批)" :value="NongbuTotalCurrentMonth" style="margin-right: 20px" />
         </a-col>
         <a-col :span="6">
-          <a-statistic title="延长失业金" :value="YanchangTotalCurrentMonth" style="margin-right: 50px"  />
+          <a-statistic title="延长失业金(已审批)" :value="YanchangTotalCurrentMonth" style="margin-right: 50px"  />
           </a-col>
           <a-col :span="6">
-          <a-statistic title="跨省市转移" :value="ZhuanyiTotalCurrentMonth" style="margin-right: 50px"  />
+          <a-statistic title="跨省市转移(转金额)" :value="ZhuanyiTotalCurrentMonth" style="margin-right: 50px"  />
         </a-col>
       </a-row>
     </a-space>
@@ -139,8 +139,9 @@ const getZhuanyiData = async () => {
   params.status = 3;
   params.isOnlyTransferRelation = '转金额'
   if (monthSelect.value) {
-    params.monthSelect = monthSelect.value;
+    params.payDate = monthSelect.value.format('YYYY-MM');
   }
+  console.log('paramsPayMonth===>',params)
   await api.getZhuanyiData(params).then((res: any) => {
     ZhuanyiTotalCurrentMonth.value = res.page.total;
   });

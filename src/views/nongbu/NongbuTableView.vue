@@ -40,12 +40,18 @@
           </a-space>
         </a-row>
         <a-row>
+          <a-space>
+
           <a-radio-group v-model:value="status" button-style="solid">
             <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
               >{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
           </a-radio-group>
+          <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" />
+
+        </a-space>
+
         </a-row>
       </a-space>
     </div>
@@ -272,7 +278,13 @@ const statusCal = ref([]);
 
 //加载数据动画
 const spinning = ref<boolean>(false);
+// 按街镇选择
+const chosenJiezhen = ref([])
 
+watch(()=>chosenJiezhen.value,()=>{
+ getData()
+}
+)
 // 搜索相关
 const searchValue = ref();
 const statusList = ['已登记', '已审批', '已取消', '全部'];
@@ -470,6 +482,9 @@ const getData = async (params?: any) => {
     params.cancelUnemp = 1
   }else{
     params.cancelUnemp = null
+  }
+  if(chosenJiezhen.value.length > 0){
+    params.jiezhen = chosenJiezhen.value
   }
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;

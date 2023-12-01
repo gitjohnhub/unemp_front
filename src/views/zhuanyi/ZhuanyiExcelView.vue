@@ -1,7 +1,18 @@
 <template>
-  <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
-  <a-segmented v-model:value="selectedMonth" :options="months.slice(6)" />
-  <a-button type="primary" @click="getMonths()">刷新月份</a-button>
+  <a-space direction="vertical">
+    <a-row>
+      <a-segmented v-model:value="selectedMonth" :options="months.slice(0, 6)" />
+      <a-segmented v-model:value="selectedMonth" :options="months.slice(6)" />
+    </a-row>
+    <a-row>
+      <a-space>
+        <a-button type="primary" @click="getMonths()">刷新月份</a-button>
+        <a-switch v-model:checked="onlyShowPaySuccess" />只显示支付成功
+        <a-tag>查询计数:{{ count }}</a-tag>
+      </a-space>
+    </a-row>
+  </a-space>
+
   <a-spin :spinning="spinning">
     <a-table :columns="columns" :data-source="dataSource" bordered>
       <template #bodyCell="{ column, record }">
@@ -13,13 +24,12 @@
             <template #title>
               <a-timeline mode="alternate">
                 <a-timeline-item>
-                    <p>初审人：{{ record.checkoperator }}</p>
-                    <p>{{ record.createtime.slice(0,10) }}</p>
-                    <p>{{ record.note }}</p>
+                  <p>初审人：{{ record.checkoperator }}</p>
+                  <p>{{ record.createtime.slice(0, 10) }}</p>
+                  <p>{{ record.note }}</p>
                 </a-timeline-item>
                 <a-timeline-item>复审人:{{ record.reviewoperator }}</a-timeline-item>
               </a-timeline>
-
             </template>
             {{ record.note }}
           </a-tooltip>
@@ -35,6 +45,8 @@ const dataSource = ref();
 const months = ref(['']);
 const selectedMonth = ref('');
 const spinning = ref<boolean>(false);
+const count = ref(0);
+const onlyShowPaySuccess = ref(false);
 
 const statusList = [
   '已初核待复审',
@@ -52,15 +64,21 @@ watch(
     getData();
   }
 );
+watch(
+  () => onlyShowPaySuccess.value,
+  () => {
+    getData();
+  }
+);
+
 onBeforeMount(() => {
   console.log('zhuanyiExcel');
   getMonths();
 });
 const getMonths = (params?: any) => {
   api
-    .getZhuanyiAllDate()
+    .getZhuanyiAllDate(params)
     .then((res: any) => {
-      console.log('res', res);
       months.value = res;
       console.log('months===>', months.value);
     })
@@ -74,10 +92,15 @@ const getData = (params?: any) => {
     noindex: 1,
     searchDate: selectedMonth.value,
   };
+  if (onlyShowPaySuccess.value) {
+    params.status = '3';
+  }
+
   console.log(selectedMonth.value);
   api.getZhuanyiData(params).then((res: any) => {
     console.log(res);
     dataSource.value = res.rows;
+    count.value = res.page.total;
   });
 };
 const columnsOriginal = [

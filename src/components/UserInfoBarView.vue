@@ -36,7 +36,7 @@ const userInfo = useUserStore().userInfo
 
 const logout = ()=>{
   userStore.logout()
-  router.push('login')
+  router.push('/login')
 
 }
 interface IconLink {

@@ -90,13 +90,11 @@ const getData = (params?: any) => {
   params = {
     ...params,
     noindex: 1,
-    searchDate: selectedMonth.value,
+    monthSelect: selectedMonth.value,
   };
   if (onlyShowPaySuccess.value) {
     params.status = '3';
   }
-
-  console.log(selectedMonth.value);
   api.getZhuanyiData(params).then((res: any) => {
     console.log(res);
     dataSource.value = res.rows;

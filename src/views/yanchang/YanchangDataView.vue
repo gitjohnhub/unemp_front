@@ -1,6 +1,6 @@
 <template>
   <a-date-picker v-model:value="monthSelect" picker="month"></a-date-picker>
-  <a-table :dataSource="dataSource" :columns="columns" />
+  <a-table :dataSource="dataSource" :columns="columns" :pagination="false"/>
 </template>
 
 <script setup lang="ts">

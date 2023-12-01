@@ -48,7 +48,14 @@
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
           </a-radio-group>
-          <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" />
+          <!-- <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" /> -->
+          <a-select
+              v-model:value="chosenJiezhen"
+              mode="multiple"
+              placeholder="选择街镇筛选"
+              style="width: 300px"
+              :options="jiezhens"
+            ></a-select>
 
         </a-space>
 

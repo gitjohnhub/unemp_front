@@ -124,6 +124,14 @@ const router = createRouter({
                   title: '值班安排',
                   requiresAuth: true,
                 },
+              },
+              {
+                path:'AdminHome',
+                component:()=>import('@/views/admin/AdminHomeView.vue'),
+                meta: {
+                  title: '管理主页',
+                  requiresAuth: true,
+                },
               }
             ]
           }

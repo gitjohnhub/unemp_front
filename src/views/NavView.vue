@@ -11,62 +11,27 @@
           mode="inline"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <a-sub-menu key="sub1">
-            <template #title>
-              <span>
-                <user-outlined />
-                失业保险
-              </span>
-            </template>
-            <RouterLink v-for="link in routerItems" :to="link.path"
-              ><a-menu-item :key="link.path" v-if="getPathPattern(link.path)">{{
-                link.title
-              }}</a-menu-item></RouterLink
-            >
-          </a-sub-menu>
-          <a-sub-menu key="sub2">
-            <template #title>
-              <span>
-                <laptop-outlined />
-                通讯录
-              </span>
-            </template>
+          <a-sub-menu
+            v-for="item in routeTitleItems"
+            :key="item.path"
+            :icon="
+              item.meta.hasOwnProperty('icon')
+                ? item.meta.icon
+                : () => h(UserOutlined)
+            "
+            :label="item.name"
+            :title="item.name"
+          >
             <RouterLink v-for="link in routerItems" :to="link.path"
               ><a-menu-item
                 :key="link.path"
-                v-if="link.path.startsWith('/contact')"
-                >{{ link.title }}</a-menu-item
-              ></RouterLink
-            >
-          </a-sub-menu>
-          <a-sub-menu key="sub3">
-            <template #title>
-              <span>
-                <notification-outlined />
-                工具箱
-              </span>
-            </template>
-            <RouterLink v-for="link in routerItems" :to="link.path"
-              ><a-menu-item
-                :key="link.path"
-                v-if="link.path.startsWith('/tools')"
-                >{{ link.title }}</a-menu-item
-              ></RouterLink
-            >
-          </a-sub-menu>
-
-          <a-sub-menu key="sub4">
-            <template #title>
-              <span>
-                <notification-outlined />
-                管理
-              </span>
-            </template>
-            <RouterLink v-for="link in routerItems" :to="link.path"
-              ><a-menu-item
-                :key="link.path"
-                v-if="link.path.startsWith('/management')"
-                >{{ link.title }}</a-menu-item
+                v-if="link.path.startsWith(`${item.path}/`)"
+                :icon="
+                  link.meta.hasOwnProperty('icon')
+                    ? link.meta.icon
+                    : () => h(UserOutlined)
+                "
+                >{{ link.name }}</a-menu-item
               ></RouterLink
             >
           </a-sub-menu>
@@ -84,11 +49,15 @@
   </a-layout>
 </template>
 <script lang="ts" setup>
-import { ref, onBeforeMount } from "vue";
+import { h, ref, onBeforeMount } from "vue";
+
+import { Icon } from "@/components/Icon";
 import {
   UserOutlined,
-  LaptopOutlined,
+  ToolOutlined,
   NotificationOutlined,
+  PhoneOutlined,
+  AreaChartOutlined,
 } from "@ant-design/icons-vue";
 import BreadCrumbView from "@/components/BreadCrumbView.vue";
 import UserInfoBarView from "@/components/UserInfoBarView.vue";
@@ -96,22 +65,14 @@ import router from "@/router";
 const selectedKeys2 = ref<string[]>(["1"]);
 const openKeys = ref<string[]>(["sub1"]);
 const routerItems = ref();
+const routeTitleItems = ref([]);
 onBeforeMount(() => {
-  const excludePaths = ["/", "/login", "/contact", "/tools", "/management"];
-  console.log("routes==>", router.getRoutes());
-  routerItems.value = router
-    .getRoutes()
-    .filter((item) => {
-      return !excludePaths.includes(item.path);
-    })
-    .map((item) => {
-      return { path: item.path, title: item.meta.title };
-    });
+  routerItems.value = router.getRoutes();
+  routeTitleItems.value = routerItems.value.filter(
+    (item) => item.redirect !== undefined
+  );
+  console.log(routerItems.value);
 });
-const getPathPattern = (path) => {
-  const pattern = /^\/[a-zA-Z]+$/;
-  return pattern.test(path);
-};
 </script>
 <style scoped>
 .header {

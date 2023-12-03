@@ -1,17 +1,29 @@
 import { createRouter, createWebHistory } from "vue-router";
 import storage from "@/utils/storage";
+import { h } from "vue";
+import {
+  AreaChartOutlined,
+  PhoneOutlined,
+  ToolOutlined,
+  MoneyCollectOutlined,
+  CheckCircleOutlined,
+  UserSwitchOutlined,
+  TransactionOutlined,
+  SisternodeOutlined,
+  UserDeleteOutlined,
+} from "@ant-design/icons-vue";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: "/login",
-      name: "login",
+      name: "登录",
       component: () => import("@/views/LoginView.vue"),
       meta: { title: "登陆" },
     },
     {
       path: "/",
-      name: "home",
+      name: "首页",
       component: () => import("@/views/HomeView.vue"),
       meta: {
         title: "首页",
@@ -19,59 +31,75 @@ const router = createRouter({
       },
       children: [
         {
-          path: "/applyTable",
-          name: "applyTable",
-          component: () => import("@/views/apply/ApplyTableView.vue"),
+          path: "/unemp",
+          redirect: "/unemp/applyTable",
           meta: {
-            title: "失业金核定",
+            icon: () => h(MoneyCollectOutlined),
             requiresAuth: true,
           },
-        },
-        {
-          path: "/xiechaTable",
-          name: "xiechaTable",
-          component: () => import("@/views/xiecha/XiechaTableView.vue"),
-          meta: {
-            title: "外省市协查",
-            requiresAuth: true,
-          },
-        },
-        {
-          path: "/zhuanyiTable",
-          name: "zhuanyiTable",
-          component: () => import("@/views/zhuanyi/ZhuanyiHomeView.vue"),
-          meta: {
-            title: "跨省市转移",
-            requiresAuth: true,
-          },
-        },
-        {
-          path: "/yanchangTable",
-          name: "yanchangTable",
-          component: () => import("@/views/yanchang/YanchangHomeView.vue"),
-          meta: {
-            title: "延长失业金",
-            requiresAuth: true,
-          },
-        },
-        {
-          path: "/nongbuTable",
-          name: "nongbuTable",
-          component: () => import("@/views/nongbu/NongbuHomeView.vue"),
-          meta: {
-            title: "农民补助金",
-            requiresAuth: true,
-          },
+          name: "失业金",
+          children: [
+            {
+              path: "/unemp/applyTable",
+              name: "失业金核定",
+              component: () => import("@/views/apply/ApplyTableView.vue"),
+              meta: {
+                requiresAuth: true,
+                icon: () => h(CheckCircleOutlined),
+              },
+            },
+            {
+              path: "/unemp/xiechaTable",
+              name: "外省市协查",
+              component: () => import("@/views/xiecha/XiechaTableView.vue"),
+              meta: {
+                requiresAuth: true,
+                icon: () => h(UserSwitchOutlined),
+              },
+            },
+            {
+              path: "/unemp/zhuanyiTable",
+              name: "跨省市转移",
+              component: () => import("@/views/zhuanyi/ZhuanyiHomeView.vue"),
+              meta: {
+                requiresAuth: true,
+                icon: () => h(TransactionOutlined),
+              },
+            },
+            {
+              path: "/unemp/yanchangTable",
+              name: "延长失业金",
+              component: () => import("@/views/yanchang/YanchangHomeView.vue"),
+              meta: {
+                requiresAuth: true,
+                icon: () => h(SisternodeOutlined),
+              },
+            },
+            {
+              path: "/unemp/nongbuTable",
+              name: "农民补助金",
+              component: () => import("@/views/nongbu/NongbuHomeView.vue"),
+              meta: {
+                requiresAuth: true,
+                icon: () => h(UserDeleteOutlined),
+              },
+            },
+          ],
         },
         {
           path: "/contact",
           redirect: "/contact/unempContact",
+          meta: {
+            requiresAuth: true,
+            icon: () => h(PhoneOutlined),
+          },
+          name: "通讯录",
           children: [
             {
               path: "unempContact",
+              name: "失业保险科通讯录",
               component: () => import("@/views/contacts/UnempContactView.vue"),
               meta: {
-                title: "失业保险科通讯录",
                 requiresAuth: true,
               },
             },
@@ -80,12 +108,17 @@ const router = createRouter({
         {
           path: "/tools",
           redirect: "/tools/gongling",
+          name: "工具箱",
+          meta: {
+            requiresAuth: true,
+            icon: () => h(ToolOutlined),
+          },
           children: [
             {
               path: "gongling",
+              name: "工具箱",
               component: () => import("@/views/tools/ToolView.vue"),
               meta: {
-                title: "工具箱",
                 requiresAuth: true,
               },
             },
@@ -94,36 +127,41 @@ const router = createRouter({
         {
           path: "/management",
           redirect: "/management/userManagement",
+          name: "管理",
+          meta: {
+            requiresAuth: true,
+          },
           children: [
             {
               path: "userManagement",
+              name: "用户管理",
               component: () => import("@/views/admin/UserManagementView.vue"),
               meta: {
-                title: "用户管理",
                 requiresAuth: true,
               },
             },
             {
               path: "dataManagement",
+              name: "数据管理",
               component: () => import("@/views/admin/DataView.vue"),
               meta: {
-                title: "数据管理",
                 requiresAuth: true,
+                icon: () => h(AreaChartOutlined),
               },
             },
             {
               path: "dutyCalendar",
+              name: "值班安排",
               component: () => import("@/views/admin/DutyCalendarView.vue"),
               meta: {
-                title: "值班安排",
                 requiresAuth: true,
               },
             },
             {
               path: "AdminHome",
+              name: "管理主页",
               component: () => import("@/views/admin/AdminHomeView.vue"),
               meta: {
-                title: "管理主页",
                 requiresAuth: true,
               },
             },

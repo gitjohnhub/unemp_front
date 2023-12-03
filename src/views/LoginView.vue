@@ -8,7 +8,11 @@
         </a-input>
       </a-form-item>
       <a-form-item label="密码：">
-        <a-input type="password" v-model:value="user.password" @keydown.enter="login">
+        <a-input
+          type="password"
+          v-model:value="user.password"
+          @keydown.enter="login"
+        >
           <template #prefix><LockOutlined /></template>
         </a-input>
       </a-form-item>
@@ -21,23 +25,23 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { ref } from 'vue';
-import api from '../api/index';
-import { useUserStore } from '@/stores/index';
-import { UserOutlined, LockOutlined } from '@ant-design/icons-vue';
+import { useRouter } from "vue-router";
+import { ref } from "vue";
+import api from "../api/index";
+import { useUserStore } from "@/stores/index";
+import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
 const router = useRouter();
 const userStore = useUserStore();
 const user = ref({
-  account: '',
-  password: '',
+  account: "",
+  password: "",
 });
 
 const login = () => {
   api.login(user.value).then((res: any) => {
-    console.log('userInfores=>', res);
+    console.log("userInfores=>", res);
     userStore.saveUserInfo(res);
-    router.push('applyTable');
+    router.push("/home");
   });
 };
 // const register = (()=>{

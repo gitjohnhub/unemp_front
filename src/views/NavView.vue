@@ -37,10 +37,10 @@
           </a-sub-menu>
         </a-menu>
       </a-layout-sider>
-      <a-layout style="padding: 0 24px 24px">
+      <a-layout style="padding: 0 12px 12px">
         <BreadCrumbView />
         <a-layout-content
-          :style="{ padding: '24px', margin: 0, minHeight: '280px' }"
+          :style="{ padding: '12px', margin: 0, minHeight: '140px' }"
         >
           <RouterView />
         </a-layout-content>

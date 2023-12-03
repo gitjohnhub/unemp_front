@@ -24,6 +24,7 @@ const router = createRouter({
     {
       path: "/",
       name: "首页",
+      redirect: "/unemp/applyTable",
       component: () => import("@/views/HomeView.vue"),
       meta: {
         title: "首页",

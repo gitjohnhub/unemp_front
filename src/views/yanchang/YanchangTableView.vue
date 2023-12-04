@@ -17,12 +17,6 @@
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-divider type="vertical" />
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入姓名/身份证"
-              style="width: 200px"
-              @search="onSearch"
-            />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
         </a-row>
@@ -51,13 +45,11 @@
             </a-radio-button>
           </a-radio-group>
         </a-row>
-        <a-select
-          v-model:value="chosenJiezhen"
-          mode="multiple"
-          placeholder="选择街镇筛选"
-          style="width: 300px"
-          :options="jiezhens"
-        ></a-select>
+        <FilterView
+          v-bind:chosen-jiezhen="chosenJiezhen"
+          @jiezhenSelectChange="jiezhenSelectChange"
+          @hanle-change-search="hanleChangeSearch"
+        />
       </a-space>
     </div>
     <a-spin :spinning="spinning">
@@ -255,6 +247,7 @@ import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
 import api from "@/api";
 import { jiezhens } from "@/types";
+import FilterView from "@/components/FilterView.vue";
 import { cancelData, getStatus, statusList, checkData } from "./utils";
 import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
@@ -272,8 +265,21 @@ import {
   PlusCircleOutlined,
   FilePdfOutlined,
 } from "@ant-design/icons-vue";
-// 街镇筛选
+// 按街镇选择子组件,搜索
+const jiezhenSelectChange = (selectJiezhens: any) => {
+  chosenJiezhen.value = selectJiezhens;
+};
 const chosenJiezhen = ref([]);
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+};
+const searchValue = ref();
+watch(
+  () => searchValue.value,
+  () => {
+    getData();
+  }
+);
 watch(
   () => chosenJiezhen.value,
   () => {
@@ -318,9 +324,6 @@ const handleEditCancel = () => {
 //加载数据动画
 const spinning = ref<boolean>(false);
 
-// 搜索相关
-const searchValue = ref();
-
 const getProgress = (status: String) => {
   const currentIndex = Number(status) + 1;
   // 状态总数
@@ -330,21 +333,7 @@ const getProgress = (status: String) => {
 
   return percent; // 33.33
 };
-const onSearch = () => {
-  getData().catch((e) => {
-    console.log(e);
-    message.info("查询错误，联系管理员");
-  });
-};
 
-watch(
-  () => searchValue.value,
-  (newValue) => {
-    if (searchValue.value == "") {
-      getData();
-    }
-  }
-);
 watch(
   () => monthSelect.value,
   (newValue) => {

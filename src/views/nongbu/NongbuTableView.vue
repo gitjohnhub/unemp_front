@@ -17,12 +17,6 @@
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
             <a-divider type="vertical" />
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入姓名/身份证"
-              style="width: 200px"
-              @search="onSearch"
-            />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
         </a-row>
@@ -31,34 +25,35 @@
           <a-space>
             <h5>导出操作：</h5>
             <a-range-picker v-model:value="monthRangeSelect" />
-            <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
+            <a-button
+              @click="exportExcel"
+              type="primary"
+              style="background-color: #1e1e1e"
+            >
               导出Excel
             </a-button>
             <a-switch v-model:checked="showCancelUnemp" />只显示取消失业登记
             <a-switch v-model:checked="showRepeat" />只显示重复
-
           </a-space>
         </a-row>
         <a-row>
           <a-space>
-
-          <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
-              >{{ status.label }}
-              <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
-            </a-radio-button>
-          </a-radio-group>
-          <!-- <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" /> -->
-          <a-select
-              v-model:value="chosenJiezhen"
-              mode="multiple"
-              placeholder="选择街镇筛选"
-              style="width: 300px"
-              :options="jiezhens"
-            ></a-select>
-
-        </a-space>
-
+            <a-radio-group v-model:value="status" button-style="solid">
+              <a-radio-button
+                v-for="(status, index) in statusCal"
+                :value="String(index)"
+                :key="index"
+                >{{ status.label }}
+                <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
+              </a-radio-button>
+            </a-radio-group>
+            <!-- <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" /> -->
+            <FilterView
+              v-bind:chosen-jiezhen="chosenJiezhen"
+              @jiezhenSelectChange="jiezhenSelectChange"
+              @hanle-change-search="hanleChangeSearch"
+            />
+          </a-space>
         </a-row>
       </a-space>
     </div>
@@ -129,9 +124,8 @@
           <template v-if="column.key === 'chengPayMonth'">
             <a-row>
               <a-statistic title="城保" :value="record.chengPayMonth" />
-            <a-statistic title="镇保" :value="record.zhenPayMonth" />
+              <a-statistic title="镇保" :value="record.zhenPayMonth" />
             </a-row>
-
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
@@ -141,15 +135,19 @@
           </template>
           <template v-if="column.key === 'note'">
             <a-row>
-              <a-tag color="red" v-if="record.originalFile !== '0'"><FilePdfOutlined /></a-tag>
-              <a-tag v-if="record.repeatTimes !== '0'">{{ record.repeatTimes }}</a-tag>
-              <a-tag color="red" v-if="record.cancelUnemp !== '0'"><StopOutlined /></a-tag>
-
+              <a-tag color="red" v-if="record.originalFile !== '0'"
+                ><FilePdfOutlined
+              /></a-tag>
+              <a-tag v-if="record.repeatTimes !== '0'">{{
+                record.repeatTimes
+              }}</a-tag>
+              <a-tag color="red" v-if="record.cancelUnemp !== '0'"
+                ><StopOutlined
+              /></a-tag>
             </a-row>
             <a-row>
               {{ record.note }}
             </a-row>
-
           </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
@@ -167,11 +165,21 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button @click="tagWrong(record.id,getData)" type="primary" danger>
+                  <a-button
+                    @click="tagWrong(record.id, getData)"
+                    type="primary"
+                    danger
+                  >
                     <WarningFilled />
                   </a-button>
-                  <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
-                  <a-button @click="tagOriginalFile(record.id, getData)" type="primary" danger>
+                  <a-button @click="showEditModal(record)"
+                    ><EditOutlined
+                  /></a-button>
+                  <a-button
+                    @click="tagOriginalFile(record.id, getData)"
+                    type="primary"
+                    danger
+                  >
                     <FilePdfOutlined />
                   </a-button>
                 </a-space>
@@ -184,15 +192,23 @@
                     v-if="record.status == '0'"
                     ><CheckOutlined
                   /></a-button>
-                  <a-button @click="addRepeat(record.id, record.repeatTimes)" type="primary" danger
+                  <a-button
+                    @click="addRepeat(record.id, record.repeatTimes)"
+                    type="primary"
+                    danger
                     ><PlusCircleOutlined />
                   </a-button>
                   <a-button @click="cancelData(record.id)" type="primary" danger
                     ><DeleteOutlined
                   /></a-button>
-                   <a-button @click="tagCancelUnemp(record.id, getData)" type="primary" danger v-if="record.status == '1'">
-              <StopOutlined />
-            </a-button>
+                  <a-button
+                    @click="tagCancelUnemp(record.id, getData)"
+                    type="primary"
+                    danger
+                    v-if="record.status == '1'"
+                  >
+                    <StopOutlined />
+                  </a-button>
                 </a-space>
               </a-row>
 
@@ -227,7 +243,10 @@
                     <a-textarea v-model:value="editForm.note" />
                   </a-form-item>
                   <a-form-item label="重复次数">
-                    <a-input type="number" v-model:value="editForm.repeatTimes" />
+                    <a-input
+                      type="number"
+                      v-model:value="editForm.repeatTimes"
+                    />
                   </a-form-item>
                   <a-form-item label="是否错核">
                     <a-radio-group v-model:value="editForm.wrongTag">
@@ -245,8 +264,9 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount, watch } from 'vue';
-import { message } from 'ant-design-vue';
+import { computed, ref, onBeforeMount, watch } from "vue";
+import { message } from "ant-design-vue";
+import FilterView from "@/components/FilterView.vue";
 import {
   WarningFilled,
   CheckOutlined,
@@ -255,20 +275,20 @@ import {
   StopOutlined,
   PlusCircleOutlined,
   FilePdfOutlined,
-} from '@ant-design/icons-vue';
-import api from '@/api';
-import { pinyin } from 'pinyin-pro';
-import NongbuAddFormView from './NongbuAddFormView.vue';
-import { Dayjs } from 'dayjs';
-import { useUserStore } from '@/stores';
-import { genWorkbook, colorList,downloadLink } from '@/utils/util';
-import { jiezhens } from '@/types';
-import 'dayjs/locale/zh-cn';
-import { tagCancelUnemp} from '@/views/nongbu/utils';
-import { tagOriginalFile,tagWrong } from '@/utils/tag';
+} from "@ant-design/icons-vue";
+import api from "@/api";
+import { pinyin } from "pinyin-pro";
+import NongbuAddFormView from "./NongbuAddFormView.vue";
+import { Dayjs } from "dayjs";
+import { useUserStore } from "@/stores";
+import { genWorkbook, colorList, downloadLink } from "@/utils/util";
+import { jiezhens } from "@/types";
+import "dayjs/locale/zh-cn";
+import { tagCancelUnemp } from "@/views/nongbu/utils";
+import { tagOriginalFile, tagWrong } from "@/utils/tag";
 const editForm = ref();
-const showCancelUnemp = ref(false)
-const showRepeat = ref(false)
+const showCancelUnemp = ref(false);
+const showRepeat = ref(false);
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -278,23 +298,28 @@ const payDate = ref<Dayjs>();
 
 const count = ref<number>();
 const checked = ref(false);
-const reviewChecked = ref('0');
+const reviewChecked = ref("0");
 const exportData = ref();
-const status = ref('0');
+const status = ref("0");
 const statusCal = ref([]);
+// 按街镇选择子组件
+const jiezhenSelectChange = (selectJiezhens: any) => {
+  chosenJiezhen.value = selectJiezhens;
+};
+const chosenJiezhen = ref([]);
+watch(
+  () => chosenJiezhen.value,
+  () => {
+    getData();
+  }
+);
 
 //加载数据动画
 const spinning = ref<boolean>(false);
-// 按街镇选择
-const chosenJiezhen = ref([])
 
-watch(()=>chosenJiezhen.value,()=>{
- getData()
-}
-)
 // 搜索相关
 const searchValue = ref();
-const statusList = ['已登记', '已审批', '已取消', '全部'];
+const statusList = ["已登记", "已审批", "已取消", "全部"];
 
 const getStatus = (status: String) => {
   return statusList[Number(status)];
@@ -308,11 +333,9 @@ const getProgress = (status: String) => {
 
   return percent; // 33.33
 };
-const onSearch = () => {
-  getData().catch((e) => {
-    console.log(e);
-    message.info('查询错误，联系管理员');
-  });
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+  console.log("fatherSearchValue==>", searchValue.value);
 };
 
 watch(
@@ -372,32 +395,37 @@ const onSubmitNote = (id, note) => {
     .updateNongbuData({ id: id, note: note })
     .then((res) => {
       getData();
-      message.info('修改备注成功');
+      message.info("修改备注成功");
     })
     .catch((e) => {
       console.log(e);
-      message.info('修改备注失败，请联系管理员');
+      message.info("修改备注失败，请联系管理员");
     });
 };
 //数据导出功能
 const exportExcel = () => {
   // 写入文件
   const headersWithWidth = [
-    { header: '序号', key: 'index', width: 6 },
-    { header: '姓名', key: 'name', width: 10 },
-    { header: '身份证', key: 'personID', width: 26 },
-    { header: '镇保', key: 'chengPayMonth', width: 24 },
-    { header: '城保', key: 'zhenPayMonth', width: 18 },
-    { header: '街镇', key: 'originalFile', width: 24 },
-    { header: '收到原件', key: 'jiezhen', width: 24 },
-    { header: '是否审批', key: 'status', width: 22 },
-    { header: '备注', key: 'note', width: 22 },
+    { header: "序号", key: "index", width: 6 },
+    { header: "姓名", key: "name", width: 10 },
+    { header: "身份证", key: "personID", width: 26 },
+    { header: "镇保", key: "chengPayMonth", width: 24 },
+    { header: "城保", key: "zhenPayMonth", width: 18 },
+    { header: "街镇", key: "originalFile", width: 24 },
+    { header: "收到原件", key: "jiezhen", width: 24 },
+    { header: "是否审批", key: "status", width: 22 },
+    { header: "备注", key: "note", width: 22 },
   ];
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
-  worksheet.mergeCells('A1:I1');
-  worksheet.getCell('A1').value = `${monthRangeSelect.value[0].format('YYYY-MM-dd')}-${monthRangeSelect.value[1].format('YYYY-MM-dd')}_农民补助金`;
-  worksheet.getCell('I1').alignment = { vertical: 'middle', horizontal: 'center' };
+  worksheet.mergeCells("A1:I1");
+  worksheet.getCell("A1").value = `${monthRangeSelect.value[0].format(
+    "YYYY-MM-dd"
+  )}-${monthRangeSelect.value[1].format("YYYY-MM-dd")}_农民补助金`;
+  worksheet.getCell("I1").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
 
   getData({ noindex: 1 }).then((res) => {
     exportData.value.map((item, index) => {
@@ -408,8 +436,8 @@ const exportExcel = () => {
         item.chengPayMonth,
         item.zhenPayMonth,
         item.jiezhen,
-        item.originalFile === '1'? '已收到' : '未收到',
-        item.status == '1' ? '已审批' : '',
+        item.originalFile === "1" ? "已收到" : "未收到",
+        item.status == "1" ? "已审批" : "",
         item.note,
       ]);
     });
@@ -427,14 +455,17 @@ const exportExcel = () => {
     worksheet.eachRow((row, rowNumber) => {
       row.font = { size: 15 };
       row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
       });
     });
     worksheet.getRow(2).font = { size: 15, bold: true };
     worksheet.getRow(1).font = { size: 18, bold: true };
 
     // 导出 Excel 文件
-    downloadLink(workbook, `农民补助金_${monthRangeSelect.value[0].format('YYYY-MM')}`);
+    downloadLink(
+      workbook,
+      `农民补助金_${monthRangeSelect.value[0].format("YYYY-MM")}`
+    );
   });
 };
 // 分页
@@ -456,7 +487,7 @@ const pagination = computed(() => {
 });
 
 const onShowSizeChange = async (page: any) => {
-  console.log('showsizechangepage=>', page);
+  console.log("showsizechangepage=>", page);
 };
 
 onBeforeMount(() => {
@@ -480,18 +511,18 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  if (showRepeat.value){
-    params.showRepeat = 1
-  }else{
-    params.showRepeat = null
+  if (showRepeat.value) {
+    params.showRepeat = 1;
+  } else {
+    params.showRepeat = null;
   }
-  if (showCancelUnemp.value){
-    params.cancelUnemp = 1
-  }else{
-    params.cancelUnemp = null
+  if (showCancelUnemp.value) {
+    params.cancelUnemp = 1;
+  } else {
+    params.cancelUnemp = null;
   }
-  if(chosenJiezhen.value.length > 0){
-    params.jiezhen = chosenJiezhen.value
+  if (chosenJiezhen.value.length > 0) {
+    params.jiezhen = chosenJiezhen.value;
   }
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;
@@ -502,12 +533,15 @@ const getData = async (params?: any) => {
   } else {
     params.status = null;
   }
-  if (searchValue.value !== undefined && searchValue.value !== '') {
+  if (searchValue.value !== undefined && searchValue.value !== "") {
     params = {
       searchValue: searchValue.value,
       current: 1,
     };
+  } else {
+    params.searchValue = null;
   }
+  console.log("params==>", params);
   return await api
     .getNongbuData(params)
     .then((res: any) => {
@@ -523,7 +557,9 @@ const getData = async (params?: any) => {
 };
 const getCorrectTime = (date: string) => {
   const originalDate = new Date(date);
-  const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
+  const updatedDate = new Date(
+    originalDate.getTime() + 8 * 60 * 60 * 1000
+  ).toISOString();
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
 
@@ -534,15 +570,19 @@ const getCorrectTime = (date: string) => {
 // };
 const reviewData = async (id: number) => {
   await api
-    .updateNongbuData({ id: id, reviewoperator: userInfo.username, status: '1' })
+    .updateNongbuData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "1",
+    })
     .then((res: any) => {
       getData();
     });
 };
 
 const addRepeat = async (id: number, repeatTimes: string) => {
-  if (repeatTimes === '0') {
-    repeatTimes = '1';
+  if (repeatTimes === "0") {
+    repeatTimes = "1";
   } else {
     repeatTimes = (Number(repeatTimes) + 1).toString();
   }
@@ -552,7 +592,7 @@ const addRepeat = async (id: number, repeatTimes: string) => {
       repeatTimes,
     })
     .then((res: any) => {
-      message.info('增加重复成功');
+      message.info("增加重复成功");
       getData();
     });
   console.log(id);
@@ -563,7 +603,7 @@ const cancelData = async (id: number) => {
     .updateNongbuData({
       id: id,
       reviewoperator: userInfo.username,
-      status: statusList.indexOf('已取消'),
+      status: statusList.indexOf("已取消"),
     })
     .then((res: any) => {
       getData();
@@ -595,7 +635,7 @@ const handleOk = () => {
       confirmLoading.value = false;
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
+      message.info("数据格式错误，无法提交=>", error);
     });
 
   getData();
@@ -605,12 +645,12 @@ const handleEditOk = () => {
   api
     .updateNongbuData(editForm.value)
     .then((res: any) => {
-      message.info('修改成功');
+      message.info("修改成功");
       editOpen.value = false;
       getData();
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
+      message.info("数据格式错误，无法提交=>", error);
     });
 };
 const handleEditCancel = () => {
@@ -621,52 +661,52 @@ const handleCancel = () => {
 };
 const columnsOriginal = [
   {
-    key: 'personName',
-    title: '姓名',
+    key: "personName",
+    title: "姓名",
   },
   {
-    key: 'personID',
-    title: '身份证号',
+    key: "personID",
+    title: "身份证号",
   },
   {
-    key: 'chengPayMonth',
-    title: '城保/镇保',
+    key: "chengPayMonth",
+    title: "城保/镇保",
   },
   {
-    key: 'jiezhen',
-    title: '街镇',
+    key: "jiezhen",
+    title: "街镇",
   },
   {
-    key: 'applyDate',
-    title: '申请日期',
+    key: "applyDate",
+    title: "申请日期",
   },
   {
-    key: 'note',
-    title: '备注',
+    key: "note",
+    title: "备注",
   },
   {
-    key: 'status',
-    title: '进度',
+    key: "status",
+    title: "进度",
   },
   {
-    key: 'createtime',
-    title: '提交时间',
+    key: "createtime",
+    title: "提交时间",
   },
   {
-    key: 'action',
-    title: '操作',
+    key: "action",
+    title: "操作",
   },
 ];
 const columns = columnsOriginal.map((item) => {
   return {
     ...item,
     dataIndex: item.key,
-    align: 'center',
+    align: "center",
   };
 });
 </script>
 <style scoped>
-.ant-tag{
+.ant-tag {
   font-size: 14px;
 }
 .deleted {

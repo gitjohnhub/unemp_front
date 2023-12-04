@@ -166,7 +166,7 @@
               <a-row>
                 <a-space>
                   <a-button
-                    @click="tagWrong(record.id, getData)"
+                    @click="tagWrong(record.id, getData, 'nongbu')"
                     type="primary"
                     danger
                   >
@@ -176,7 +176,7 @@
                     ><EditOutlined
                   /></a-button>
                   <a-button
-                    @click="tagOriginalFile(record.id, getData)"
+                    @click="tagOriginalFile(record.id, getData, 'nongbu')"
                     type="primary"
                     danger
                   >

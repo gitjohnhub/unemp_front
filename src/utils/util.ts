@@ -1,5 +1,5 @@
-import Excel from 'exceljs'
-import Tesseract, { ImageLike,createWorker } from 'tesseract.js';
+import Excel from "exceljs";
+import Tesseract, { ImageLike, createWorker } from "tesseract.js";
 interface DataItem {
   month: number;
   count: number;
@@ -9,22 +9,27 @@ interface DataItem {
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
-  const firstDay = monthSelect.startOf('month').format('YYYY-MM-DD');
-  const lastDay = monthSelect.endOf('month').format('YYYY-MM-DD');
+  const firstDay = monthSelect.startOf("month").format("YYYY-MM-DD");
+  const lastDay = monthSelect.endOf("month").format("YYYY-MM-DD");
   return [firstDay, lastDay];
 }
-export function handleTesseract(file: File,handleResult:(params:string)=>{}) {
+export function handleTesseract(
+  file: File,
+  handleResult: (params: string) => {}
+) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = async (e) => {
       try {
-        const worker = await createWorker('chi_sim');
-        const result = await worker.recognize(e.target!.result as ImageLike).then((result) => {
-          console.log('result.data.text==>',result.data.text)
-          const dateArray = handleResult(result.data.text);
-          resolve(dateArray);
-        });
+        const worker = await createWorker("chi_sim");
+        const result = await worker
+          .recognize(e.target!.result as ImageLike)
+          .then((result) => {
+            console.log("result.data.text==>", result.data.text);
+            const dateArray = handleResult(result.data.text);
+            resolve(dateArray);
+          });
       } catch (err) {
         reject(err);
       }
@@ -33,21 +38,19 @@ export function handleTesseract(file: File,handleResult:(params:string)=>{}) {
       reject(error);
     };
   });
-
 }
-export function downloadLink(workbook,filename){
+export function downloadLink(workbook, filename) {
   workbook.xlsx.writeBuffer().then((buffer) => {
     const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
     const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `${filename}.xlsx`;
     link.click();
     window.URL.revokeObjectURL(url);
   });
-
 }
 //计算累计
 export function calculateStatistics(data) {
@@ -78,13 +81,16 @@ export function calculateStatistics(data) {
 export function CalByMonthAndJiezhen(data: any) {
   const result: any = [];
   // 遍历原始数据，根据街镇进行分组
-  const groupedData = data.reduce((acc: Record<string, DataItem[]>, item: DataItem) => {
-    if (!acc[item.jiezhen]) {
-      acc[item.jiezhen] = [];
-    }
-    acc[item.jiezhen].push(item);
-    return acc;
-  }, {});
+  const groupedData = data.reduce(
+    (acc: Record<string, DataItem[]>, item: DataItem) => {
+      if (!acc[item.jiezhen]) {
+        acc[item.jiezhen] = [];
+      }
+      acc[item.jiezhen].push(item);
+      return acc;
+    },
+    {}
+  );
   const nextHandleData = [];
 
   // 将分组后的数据转换为目标格式
@@ -112,14 +118,18 @@ export function CalByMonthAndJiezhen(data: any) {
 
     result.push({
       jiezhen,
-      ...Object.fromEntries(months.map((month, index) => [month, value[index]])),
+      ...Object.fromEntries(
+        months.map((month, index) => [month, value[index]])
+      ),
       total,
     });
   }
   const totalCal = calculateStatistics(nextHandleData);
   result.push({
-    jiezhen: '合计',
-    ...Object.fromEntries(months.map((month, index) => [month, totalCal.monthlyTotals[index]])),
+    jiezhen: "合计",
+    ...Object.fromEntries(
+      months.map((month, index) => [month, totalCal.monthlyTotals[index]])
+    ),
     total: totalCal.monthlyTotals.reduce((pre, cur) => {
       return pre + cur;
     }, 0),
@@ -127,12 +137,11 @@ export function CalByMonthAndJiezhen(data: any) {
   return result;
 }
 
-
-export function genWorkbook(headersWithWidth){
+export function genWorkbook(headersWithWidth) {
   const workbook = new Excel.Workbook();
-  const worksheet = workbook.addWorksheet('Sheet1', {
+  const worksheet = workbook.addWorksheet("Sheet1", {
     pageSetup: {
-      orientation: 'landscape',
+      orientation: "landscape",
       showGridLines: true,
       fitToPage: true,
       fitToWidth: 1,
@@ -142,30 +151,128 @@ export function genWorkbook(headersWithWidth){
       paperSize: 9,
     },
   });
-  worksheet.columns = headersWithWidth
+  worksheet.columns = headersWithWidth;
   const headers = headersWithWidth.map((item) => item.header);
 
   return {
     workbook,
     headers,
-    worksheet
-  }
-
+    worksheet,
+  };
 }
 export function calculateEndDate(startDate: string, months: String): string {
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + Number(months));
   endDate.setDate(0);
-  return endDate.toISOString().slice(0,10);
+  return endDate.toISOString().slice(0, 10);
 }
 export const colorList = [
-  '#25b1bf',
-  '#acc2ef',
-  '#3D5A80',
-  '#2E8B57',
-  '#c21d03',
-  '#fd5732',
-  '#fd5732',
-  '#fd5732',
+  "#25b1bf",
+  "#acc2ef",
+  "#3D5A80",
+  "#2E8B57",
+  "#c21d03",
+  "#fd5732",
+  "#fd5732",
+  "#fd5732",
 ];
-export const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const months = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const alpahbets = [
+  "A",
+  "B",
+  "C",
+  "D",
+  "E",
+  "F",
+  "G",
+  "H",
+  "I",
+  "J",
+  "K",
+  "L",
+  "M",
+  "N",
+  "O",
+  "P",
+  "Q",
+  "R",
+  "S",
+  "T",
+  "U",
+  "V",
+  "W",
+  "X",
+  "Y",
+  "Z",
+];
+
+export const exportExcel = (
+  headersWithWidth: any[],
+  dataSource: any[],
+  fileName: string,
+  getData: any,
+  monthRangeSelect: any[]
+) => {
+  // 写入文件
+  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
+  const title = `${fileName}_${monthRangeSelect[0].format(
+    "YYYY-MM-DD"
+  )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
+
+  worksheet.addRow(headers);
+  worksheet.mergeCells(`A1:${alpahbets[headers.length - 1]}1`);
+  worksheet.getCell("A1").value = title;
+  worksheet.getCell(`${alpahbets[headers.length - 1]}1`).alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
+  getData({ noindex: 1 }).then(() => {
+    dataSource.map((item, index) => {
+      const ItemList = [];
+      headersWithWidth
+        .map((header) => {
+          return header.key;
+        })
+        .forEach((header) => {
+          switch (header) {
+            case "index":
+              ItemList.push(index + 1);
+              break;
+            case "status":
+              ItemList.push(item[header] == "1" ? "已审核" : "");
+              break;
+            default:
+              ItemList.push(item[header]);
+          }
+        });
+      worksheet.addRow(ItemList);
+    });
+    worksheet.pageSetup.printArea = `A1:${alpahbets[headers.length - 1]}${
+      dataSource.length + 4
+    }`;
+    worksheet.eachRow((row, rowNumber) => {
+      row.font = { size: 15 };
+      row.eachCell((cell, colNumber) => {
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+      });
+    });
+    worksheet.getRow(2).font = { size: 15, bold: true };
+    worksheet.getRow(1).font = { size: 18, bold: true };
+
+    // 导出 Excel 文件
+    downloadLink(workbook, title);
+  });
+};

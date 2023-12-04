@@ -44,7 +44,6 @@ const getDuty = () => {
   const month = String(today.getMonth() + 1).padStart(2, "0");
   const day = String(today.getDate()).padStart(2, "0");
   const dutyDay = `${year}-${month}-${day}`;
-  console.log("dutyDay===>", dutyDay);
   api.getDutyData({ dutyDay: dutyDay }).then((res: any) => {
     if (res.rows.length > 0) {
       dutyPerson.value = res.rows[0].dutyPerson;

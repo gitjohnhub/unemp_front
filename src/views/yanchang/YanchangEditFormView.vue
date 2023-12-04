@@ -16,7 +16,7 @@
     <a-form-item label="姓名" name="personName" has-feedback>
       <a-input v-model:value="localEditForm.personName" />
     </a-form-item>
-    <a-form-item label="jiezhen" name="jiezhen" has-feedback>
+    <a-form-item label="街镇" name="jiezhen" has-feedback>
       <a-select
         ref="select"
         v-model:value="localEditForm.jiezhen"
@@ -24,27 +24,100 @@
         :options="jiezhens"
       ></a-select>
     </a-form-item>
-    <a-form-item label="初核备注">
-      <a-textarea v-model:value="localEditForm.checknote" />
+    <a-form-item label="月数" name="payMonth" has-feedback>
+      <a-input v-model:value="localEditForm.payMonth" />
+    </a-form-item>
+    <a-form-item label="开始日期" name="startDate" has-feedback>
+      <a-date-picker v-model:value="startDate" />
+    </a-form-item>
+    <a-form-item
+      label="终止日期"
+      name="endDate"
+      v-if="initialEditForm.personID !== ''"
+    >
+      <a-input v-model:value="localEditForm.endDate" />
+    </a-form-item>
+    <a-form-item label="备注">
+      <a-textarea v-model:value="localEditForm.note" />
     </a-form-item>
   </a-form>
+  <a-form-item label="选择未登记">
+    <a-radio-group v-model:value="localEditForm.status">
+      <a-radio value="0">已登记</a-radio>
+      <a-radio value="2">待登记</a-radio>
+    </a-radio-group>
+  </a-form-item>
 </template>
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, onBeforeMount, ref, watch } from "vue";
 import { jiezhens } from "@/types";
 import api from "@/api/index";
-const props = defineProps(["editForm"]);
+import { useUserStore } from "@/stores";
+import dayjs, { Dayjs } from "dayjs";
+import { calculateEndDate } from "@/utils/util";
+import locale from "ant-design-vue/es/locale-provider";
+
+const checkoperator = useUserStore().userInfo.username;
+const props = defineProps({
+  editForm: {
+    type: Object,
+    default() {
+      return {
+        personID: "",
+        personName: "",
+        checkoperator: "",
+        payMonth: "",
+        status: "0",
+        startDate: "",
+        endDate: "",
+        note: "",
+        jiezhen: "",
+        originalFile: "0",
+        wrongTag: "0",
+      };
+    },
+  },
+});
 const editableFormRef = ref(null);
-const localEditForm = ref(props.editForm);
-// const emit = defineEmits(["hanleChangeEdit"]);
-// const hanleChangeEdit = () => {
-//   emit("hanleChangeEdit", localEditForm.value);
-// };
+const initialEditForm = { ...props.editForm };
+const startDate = ref<Dayjs>();
+watch(
+  () => startDate.value,
+  () => {
+    if (startDate.value) {
+      localEditForm.value.endDate = calculateEndDate(
+        startDate.value.format("YYYY-MM-DD"),
+        localEditForm.value.payMonth
+      );
+    }
+  }
+);
+const localEditForm = ref({ ...props.editForm });
+onBeforeMount(() => {
+  if (initialEditForm.personID !== "") {
+    startDate.value = dayjs(localEditForm.value.startDate);
+  }
+});
+
 const onSubmit = () => {
-  return editableFormRef.value.validate().then(() => {
-    console.log("localEditForm.value===>", localEditForm.value);
-    return api.updateYanchangData(localEditForm.value);
-  });
+  if (initialEditForm.personID == "") {
+    return editableFormRef.value.validate().then(async () => {
+      localEditForm.value.checkoperator = checkoperator;
+      localEditForm.value.startDate = startDate.value.format("YYYY-MM-DD");
+      localEditForm.value.endDate = calculateEndDate(
+        startDate.value.format("YYYY-MM-DD"),
+        localEditForm.value.payMonth
+      );
+      console.log("localAddForm.value===>", localEditForm.value);
+      return await api.addYanchangData(localEditForm.value);
+    });
+  } else {
+    localEditForm.value.startDate = startDate.value.format("YYYY-MM-DD");
+    return editableFormRef.value.validate().then(() => {
+      console.log("localEditForm.value===>", localEditForm.value);
+      return api.updateYanchangData(localEditForm.value);
+    });
+  }
 };
 
 const personIDCount = computed(() => {

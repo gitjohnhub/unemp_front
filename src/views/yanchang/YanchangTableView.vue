@@ -4,15 +4,19 @@
       <a-space direction="vertical">
         <a-row>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
+            <a-button @click="showEditModal(null)" type="primary"
+              >添加</a-button
             >
-              <YanchangAddFormView ref="formRef" />
+            <a-modal
+              v-model:open="addOpen"
+              title="增加"
+              :confirm-loading="confirmLoading"
+              :destroyOnClose="true"
+              @ok="handleEditOk(null)"
+              @cancel="handleEditCancel(null)"
+            >
+              <!-- <YanchangAddFormView ref="formRef" /> -->
+              <YanchangEditFormView ref="editableFormRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
             <a-button @click="getData"> 刷新数据 </a-button>
@@ -24,9 +28,17 @@
           <!-- 数据导出操作 -->
           <a-space>
             <h5>导出操作：</h5>
-            <a-range-picker v-model:value="monthSelect" />
+            <a-range-picker v-model:value="monthRangeSelect" />
             <a-button
-              @click="exportExcel"
+              @click="
+                exportExcel(
+                  headersWithWidth,
+                  dataSource,
+                  '延长失业金',
+                  getData,
+                  monthRangeSelect
+                )
+              "
               type="primary"
               style="background-color: #1e1e1e"
             >
@@ -119,6 +131,9 @@
             <a-tag color="red" v-if="record.originalFile == '1'">
               <FilePdfOutlined></FilePdfOutlined>
             </a-tag>
+            <a-tag color="red" v-if="record.wrongTag == '1'">
+              <WarningOutlined></WarningOutlined>
+            </a-tag>
             <a-tag>{{ record.payMonth }}</a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
           </template>
@@ -149,7 +164,7 @@
                     <EditOutlined />
                   </a-button>
                   <a-button
-                    @click="tagWrong(record.id, getData)"
+                    @click="tagWrong(record.id, getData, 'yanchang')"
                     type="primary"
                     danger
                   >
@@ -163,7 +178,7 @@
                     >登记</a-button
                   >
                   <a-button
-                    @click="tagOriginalFile(record.id, getData)"
+                    @click="tagOriginalFile(record.id, getData, 'yanchang')"
                     type="primary"
                     danger
                   >
@@ -185,10 +200,11 @@
               </a-row>
               <!-- 编辑模态框 -->
               <a-modal
-                :open="editOpen"
+                :open="record.editVisible"
+                title="编辑"
                 :destroyOnClose="true"
-                @ok="handleEditOk"
-                @cancel="handleEditCancel"
+                @ok="handleEditOk(record)"
+                @cancel="handleEditCancel(record)"
               >
                 <YanchangEditFormView
                   v-bind:edit-form="editForm"
@@ -210,20 +226,18 @@ import FilterView from "@/components/FilterView.vue";
 import { cancelData, getStatus, statusList, checkData } from "./utils";
 import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
-import YanchangAddFormView from "./YanchangAddFormView.vue";
 import YanchangEditFormView from "./YanchangEditFormView.vue";
-import dayjs, { Dayjs } from "dayjs";
+import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { downloadLink } from "@/utils/util";
-import { genWorkbook, colorList } from "@/utils/util";
+import { exportExcel, colorList } from "@/utils/util";
 import "dayjs/locale/zh-cn";
 import {
   WarningFilled,
   CheckOutlined,
   DeleteOutlined,
   EditOutlined,
-  PlusCircleOutlined,
   FilePdfOutlined,
+  WarningOutlined,
 } from "@ant-design/icons-vue";
 // 按街镇选择子组件,搜索
 const jiezhenSelectChange = (selectJiezhens: any) => {
@@ -249,37 +263,50 @@ watch(
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
-const monthSelect = ref<Dayjs>();
+type RangeValue = [Dayjs, Dayjs];
+const monthRangeSelect = ref<RangeValue>();
 const payDate = ref<Dayjs>();
 
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const exportData = ref();
 const status = ref("0");
 const statusCal = ref([]);
 //编辑数据弹窗
 const editForm = ref();
 const editableFormRef = ref(null);
-const editOpen = ref<boolean>(false);
+const addOpen = ref<boolean>(false);
 const showEditModal = (record: any) => {
-  editForm.value = record;
-  editOpen.value = true;
+  if (record) {
+    record.editVisible = true;
+    editForm.value = record;
+  } else {
+    addOpen.value = true;
+  }
 };
-const handleEditOk = () => {
-  editableFormRef.value
+const handleEditOk = async (record: any) => {
+  await editableFormRef.value
     .onSubmit()
-    .then((res: any) => {
-      message.info("修改成功");
-      editOpen.value = false;
+    .then(() => {
+      message.info("成功");
+      addOpen.value = false;
+      if (record) {
+        record.editVisible = false;
+      } else {
+        addOpen.value = false;
+      }
       getData();
     })
     .catch((error) => {
+      console.log("error==>", error);
       message.info("数据格式错误，无法提交=>", error);
     });
 };
-const handleEditCancel = () => {
-  editOpen.value = false;
+const handleEditCancel = (record) => {
+  if (record) {
+    record.editVisible = false;
+  }
+  addOpen.value = false;
 };
 
 //加载数据动画
@@ -296,7 +323,7 @@ const getProgress = (status: String) => {
 };
 
 watch(
-  () => monthSelect.value,
+  () => monthRangeSelect.value,
   () => {
     getData();
   }
@@ -326,83 +353,18 @@ watch(
     getData();
   }
 );
-// 提交备注
-const onSubmitNote = (id, note) => {
-  api
-    .updateYanchangData({ id: id, note: note })
-    .then((res) => {
-      getData();
-      message.info("修改备注成功");
-    })
-    .catch((e) => {
-      message.info("修改备注失败，请联系管理员");
-    });
-};
 //数据导出功能
-const exportExcel = () => {
-  // 写入文件
-  const headersWithWidth = [
-    { header: "序号", key: "index", width: 6 },
-    { header: "姓名", key: "name", width: 10 },
-    { header: "身份证", key: "personID", width: 26 },
-    { header: "月数", key: "payMonth", width: 12 },
-    { header: "起始日期", key: "startDate", width: 24 },
-    { header: "终止日期", key: "endDate", width: 18 },
-    { header: "街镇", key: "jiezhen", width: 24 },
-    { header: "是否审批", key: "status", width: 22 },
-  ];
-  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-  worksheet.addRow(headers);
-  worksheet.mergeCells("A1:H1");
-  worksheet.getCell("A1").value = `${monthSelect.value[0].format(
-    "YYYY-mm"
-  )}_延长失业金`;
-  worksheet.getCell("H1").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
+const headersWithWidth = [
+  { header: "序号", key: "index", width: 6 },
+  { header: "姓名", key: "personName", width: 10 },
+  { header: "身份证", key: "personID", width: 26 },
+  { header: "月数", key: "payMonth", width: 12 },
+  { header: "起始日期", key: "startDate", width: 24 },
+  { header: "终止日期", key: "endDate", width: 18 },
+  { header: "街镇", key: "jiezhen", width: 24 },
+  { header: "是否审批", key: "status", width: 22 },
+];
 
-  getData({ noindex: 1 }).then((res) => {
-    exportData.value.map((item, index) => {
-      worksheet.addRow([
-        index + 1,
-        item.personName,
-        item.personID,
-        item.payMonth,
-        item.startDate,
-        item.endDate,
-        item.jiezhen,
-        item.status == "1" ? "已审批" : "",
-        item.note,
-      ]);
-    });
-    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
-    // worksheet.addRow([
-    //   '',
-    //   '',
-    //   `打印人:${userInfo.username}`,
-    //   '',
-    //   `${monthSelect.value[0].format('YYYY-MM-DD')}`,
-    //   '',
-    //   '',
-    //   '',
-    // ]);
-    worksheet.eachRow((row, rowNumber) => {
-      row.font = { size: 15 };
-      row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      });
-    });
-    worksheet.getRow(2).font = { size: 15, bold: true };
-    worksheet.getRow(1).font = { size: 18, bold: true };
-
-    // 导出 Excel 文件
-    downloadLink(
-      workbook,
-      `延长失业金_${monthSelect.value[0].format("YYYY-MM")}`
-    );
-  });
-};
 // 分页
 const pager = ref({
   current: 1,
@@ -443,8 +405,8 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
   };
-  if (monthSelect.value) {
-    params.monthSelect = monthSelect.value;
+  if (monthRangeSelect.value) {
+    params.monthRangeSelect = monthRangeSelect.value;
   }
   if (chosenJiezhen.value.length > 0) {
     params.jiezhen = chosenJiezhen.value;
@@ -464,10 +426,14 @@ const getData = async (params?: any) => {
   return await api
     .getYanchangData(params)
     .then((res: any) => {
-      exportData.value = res.rows;
       pager.value = res.page;
       count.value = pager.value.total;
-      dataSource.value = res.rows;
+      dataSource.value = res.rows.map((item: any) => {
+        return {
+          editVisible: false,
+          ...item,
+        };
+      });
     })
     .then(() => {
       spinning.value = false;
@@ -497,29 +463,7 @@ const reviewData = async (id: number) => {
 const formRef = ref(null);
 const open = ref<boolean>(false);
 const confirmLoading = ref<boolean>(false);
-const showAddDataModal = async () => {
-  open.value = true;
-};
 
-const handleOk = () => {
-  formRef.value
-    .onSubmit()
-    .then(() => {
-      confirmLoading.value = true;
-      getData();
-      open.value = false;
-      confirmLoading.value = false;
-    })
-    .catch((error) => {
-      message.info("数据格式错误，无法提交=>", error);
-    });
-
-  getData();
-};
-
-const handleCancel = () => {
-  formRef.value.resetForm();
-};
 const columnsOriginal = [
   {
     key: "personName",

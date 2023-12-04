@@ -313,6 +313,9 @@ watch(
     getData();
   }
 );
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+};
 
 //加载数据动画
 const spinning = ref<boolean>(false);
@@ -332,10 +335,6 @@ const getProgress = (status: String) => {
   const percent = (currentIndex / total) * 100;
 
   return percent; // 33.33
-};
-const hanleChangeSearch = (childSearchValue: any) => {
-  searchValue.value = childSearchValue;
-  console.log("fatherSearchValue==>", searchValue.value);
 };
 
 watch(
@@ -521,9 +520,7 @@ const getData = async (params?: any) => {
   } else {
     params.cancelUnemp = null;
   }
-  if (chosenJiezhen.value.length > 0) {
-    params.jiezhen = chosenJiezhen.value;
-  }
+
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;
   }
@@ -532,6 +529,9 @@ const getData = async (params?: any) => {
     params.status = status.value;
   } else {
     params.status = null;
+  }
+  if (chosenJiezhen.value.length > 0) {
+    params.jiezhen = chosenJiezhen.value;
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params = {

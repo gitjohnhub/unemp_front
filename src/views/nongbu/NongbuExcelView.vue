@@ -7,11 +7,18 @@
         <a-radio-group v-model:value="isCustomOrder">
           <a-radio-button value="0">按街镇排序</a-radio-button>
           <a-radio-button value="1">按时间排序</a-radio-button>
+          <a-radio-button value="2">未收到原件</a-radio-button>
         </a-radio-group>
         <a-switch v-model:checked="cancelUnempSwitch" />只显示取消失业登记
         <a-tag>查询计数:{{ count }}</a-tag>
       </a-space>
     </a-row>
+
+    <FilterView
+      v-bind:chosen-jiezhen="chosenJiezhen"
+      @jiezhenSelectChange="jiezhenSelectChange"
+      @hanle-change-search="hanleChangeSearch"
+    />
     <a-row>
       <a-segmented v-model:value="monthSelect" :options="months.slice(0, 6)" />
       <a-segmented v-model:value="monthSelect" :options="months.slice(6)" />
@@ -124,6 +131,7 @@ import { tagCancelUnemp } from "./utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
 import { genWorkbook, downloadLink } from "@/utils/util";
 import { pinyin } from "pinyin-pro";
+import FilterView from "@/components/FilterView.vue";
 
 import {
   WarningFilled,
@@ -138,6 +146,21 @@ const months = ref([""]);
 const monthSelect = ref("");
 const spinning = ref<boolean>(false);
 const count = ref(0);
+// 按街镇选择子组件
+const searchValue = ref();
+const jiezhenSelectChange = (selectJiezhens: any) => {
+  chosenJiezhen.value = selectJiezhens;
+};
+const chosenJiezhen = ref([]);
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+};
+watch(
+  () => chosenJiezhen.value,
+  () => {
+    getData();
+  }
+);
 //失业选择
 const cancelUnemp = ref();
 const cancelUnempSwitch = ref(false);
@@ -161,16 +184,26 @@ const isCustomOrder = ref("0");
 watch(
   () => isCustomOrder.value,
   () => {
-    if (isCustomOrder.value == "0") {
-      order.value = {
-        sortColumn: "jiezhen",
-        sortRule: "DESC",
-      };
-    } else {
-      order.value = {
-        sortColumn: "createtime",
-        sortRule: "DESC",
-      };
+    switch (isCustomOrder.value) {
+      case "0":
+        order.value = {
+          sortColumn: "jiezhen",
+          sortRule: "DESC",
+        };
+        break;
+      case "1":
+        order.value = {
+          sortColumn: "createtime",
+          sortRule: "DESC",
+        };
+        break;
+      case "2":
+        order.value = {
+          sortColumn: "originalFile",
+          sortRule: "DESC",
+        };
+      default:
+        break;
     }
     getData();
   }
@@ -205,6 +238,17 @@ const getData = (params?: any) => {
     noindex: 1,
     customOrder: order.value,
   };
+  if (chosenJiezhen.value.length > 0) {
+    params.jiezhen = chosenJiezhen.value;
+  }
+  if (searchValue.value !== undefined && searchValue.value !== "") {
+    params = {
+      searchValue: searchValue.value,
+      current: 1,
+    };
+  } else {
+    params.searchValue = null;
+  }
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
   }

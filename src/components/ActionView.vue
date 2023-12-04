@@ -1,8 +1,8 @@
 <template>
   <a-button
-    @click="updateStatus(params, getData, table)"
+    @click="updateStatus(props.params, props.getData, props.table)"
     type="primary"
-    v-if="params.status == '0'"
+    v-if="props.params.status == '0'"
   >
     <CheckOutlined />
   </a-button>
@@ -24,12 +24,19 @@ const props = defineProps({
     default: "",
   },
 });
-const updateStatus = async (params?: any, callBack?: any, table?: string) => {
+const updateStatus = async (params: any, callBack: any, table: string) => {
+  console.log("button click");
+  console.log(table);
   switch (table) {
-    case "apply":
-      await api.updateUnempVeriData(params).then((res: any) => {
-        callBack();
-      });
+    case "unemp":
+      params.status = 1;
+      await api
+        .updateUnempVeriData({
+          ...params,
+        })
+        .then((res: any) => {
+          callBack();
+        });
       break;
     case "yanchang":
       await api.updateYanchangData(params).then((res: any) => {

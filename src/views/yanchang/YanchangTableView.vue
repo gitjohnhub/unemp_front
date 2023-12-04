@@ -153,13 +153,22 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button
+                  <!-- <a-button
                     @click="reviewData(record.id)"
                     type="primary"
                     v-if="record.status == '0'"
                   >
                     <CheckOutlined />
-                  </a-button>
+                  </a-button> -->
+                  <ActionView
+                    :params="{
+                      id: record.id,
+                      status: record.status,
+                    }"
+                    :get-data="getData"
+                    table="yanchang"
+                  />
+
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
@@ -227,6 +236,7 @@ import { cancelData, getStatus, statusList, checkData } from "./utils";
 import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
 import YanchangEditFormView from "./YanchangEditFormView.vue";
+import ActionView from "@/components/ActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { exportExcel, colorList } from "@/utils/util";

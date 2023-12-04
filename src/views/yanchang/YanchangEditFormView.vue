@@ -1,45 +1,32 @@
 <template>
   <a-form
-    :model="editForm"
+    :model="localEditForm"
     ref="editableFormRef"
     :rules="rules"
     :label-col="labelCol"
     :wrapper-col="wrapperCol"
   >
     <a-form-item label="身份证号" name="personID" has-feedback>
-      <a-input v-model:value="editForm.personID">
+      <a-input v-model:value="localEditForm.personID">
         <template #suffix>
           <a-tag>{{ personIDCount }}</a-tag>
         </template>
       </a-input>
     </a-form-item>
     <a-form-item label="姓名" name="personName" has-feedback>
-      <a-input v-model:value="editForm.personName" />
+      <a-input v-model:value="localEditForm.personName" />
     </a-form-item>
-    <a-form-item label="转入地" name="fromArea" has-feedback>
+    <a-form-item label="jiezhen" name="jiezhen" has-feedback>
       <a-select
         ref="select"
-        v-model:value="editForm.fromArea"
+        v-model:value="localEditForm.jiezhen"
         style="width: 120px"
         :options="jiezhens"
       ></a-select>
     </a-form-item>
     <a-form-item label="初核备注">
-      <a-textarea v-model:value="editForm.checknote" />
+      <a-textarea v-model:value="localEditForm.checknote" />
     </a-form-item>
-    <a-form-item label="复核备注">
-      <a-textarea v-model:value="editForm.reviewnote" />
-    </a-form-item>
-    <a-form-item label="是否删除">
-      <a-radio-group v-model:value="editForm.alreadydelete">
-        <a-radio :value="1">保留</a-radio>
-        <a-radio :value="2">删除</a-radio>
-      </a-radio-group>
-    </a-form-item>
-    <!-- <a-form-item :wrapper-col="{ span: 14, offset: 4 }">
-      <a-button type="primary" @click="onSubmit">Create</a-button>
-      <a-button style="margin-left: 10px">Cancel</a-button>
-    </a-form-item> -->
   </a-form>
 </template>
 <script lang="ts" setup>
@@ -47,19 +34,21 @@ import { computed, ref } from "vue";
 import { jiezhens } from "@/types";
 import api from "@/api/index";
 const props = defineProps(["editForm"]);
-console.log(props);
 const editableFormRef = ref(null);
-
-const editForm = ref(props.editForm);
+const localEditForm = ref(props.editForm);
+// const emit = defineEmits(["hanleChangeEdit"]);
+// const hanleChangeEdit = () => {
+//   emit("hanleChangeEdit", localEditForm.value);
+// };
 const onSubmit = () => {
   return editableFormRef.value.validate().then(() => {
-    console.log(editForm.value);
-    return api.updateUnempVeriData(editForm.value);
+    console.log("localEditForm.value===>", localEditForm.value);
+    return api.updateYanchangData(localEditForm.value);
   });
 };
 
 const personIDCount = computed(() => {
-  return editForm.value.personID.length;
+  return localEditForm.value.personID.length;
 });
 const rules = {
   personID: [

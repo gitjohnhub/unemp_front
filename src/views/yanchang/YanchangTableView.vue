@@ -183,57 +183,17 @@
                   </a-button>
                 </a-space>
               </a-row>
-
               <!-- 编辑模态框 -->
               <a-modal
-                v-model:visible="record.editVisible"
+                :open="editOpen"
+                :destroyOnClose="true"
                 @ok="handleEditOk"
                 @cancel="handleEditCancel"
               >
-                <a-form-item label="身份证号" name="personID" has-feedback>
-                  <a-input v-model:value="editForm.personID"> </a-input>
-                </a-form-item>
-                <a-form-item label="姓名" name="personName" has-feedback>
-                  <a-input v-model:value="editForm.personName" />
-                </a-form-item>
-                <a-form-item label="月数" name="payMonth" has-feedback>
-                  <a-input v-model:value="editForm.payMonth" />
-                </a-form-item>
-                <a-form-item label="起始日期" name="startDate" has-feedback>
-                  <a-input v-model:value="editForm.startDate" />
-                </a-form-item>
-                <a-form-item label="终止日期" name="endDate" has-feedback>
-                  <a-input v-model:value="editForm.endDate" />
-                </a-form-item>
-                <a-form-item label="街镇" name="jiezhen" has-feedback>
-                  <a-select
-                    ref="select"
-                    v-model:value="editForm.jiezhen"
-                    style="width: 120px"
-                    :options="jiezhens"
-                  ></a-select>
-                </a-form-item>
-                <a-form-item label="备注">
-                  <a-textarea v-model:value="editForm.note" />
-                </a-form-item>
-                <a-form-item label="选择未登记">
-                  <a-radio-group v-model:value="editForm.status">
-                    <a-radio value="0">已登记</a-radio>
-                    <a-radio value="2">待登记</a-radio>
-                  </a-radio-group>
-                </a-form-item>
-                <a-form-item label="原件">
-                  <a-radio-group v-model:value="editForm.originalFile">
-                    <a-radio value="0">未收到</a-radio>
-                    <a-radio value="1">已收到</a-radio>
-                  </a-radio-group>
-                </a-form-item>
-                <a-form-item label="是否错核">
-                  <a-radio-group v-model:value="editForm.wrongTag">
-                    <a-radio value="1">标记错核</a-radio>
-                    <a-radio value="0">未错核</a-radio>
-                  </a-radio-group>
-                </a-form-item>
+                <YanchangEditFormView
+                  v-bind:edit-form="editForm"
+                  ref="editableFormRef"
+                />
               </a-modal>
             </a-space>
           </template>
@@ -246,12 +206,12 @@
 import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
 import api from "@/api";
-import { jiezhens } from "@/types";
 import FilterView from "@/components/FilterView.vue";
 import { cancelData, getStatus, statusList, checkData } from "./utils";
 import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
 import YanchangAddFormView from "./YanchangAddFormView.vue";
+import YanchangEditFormView from "./YanchangEditFormView.vue";
 import dayjs, { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { downloadLink } from "@/utils/util";
@@ -300,14 +260,15 @@ const status = ref("0");
 const statusCal = ref([]);
 //编辑数据弹窗
 const editForm = ref();
-
-const showEditModal = (record) => {
+const editableFormRef = ref(null);
+const editOpen = ref<boolean>(false);
+const showEditModal = (record: any) => {
   editForm.value = record;
-  record.editVisible = true;
+  editOpen.value = true;
 };
 const handleEditOk = () => {
-  api
-    .updateYanchangData(editForm.value)
+  editableFormRef.value
+    .onSubmit()
     .then((res: any) => {
       message.info("修改成功");
       editOpen.value = false;
@@ -336,27 +297,25 @@ const getProgress = (status: String) => {
 
 watch(
   () => monthSelect.value,
-  (newValue) => {
-    // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
+  () => {
     getData();
   }
 );
 watch(
   () => payDate.value,
-  (newValue) => {
+  () => {
     getData();
   }
 );
 watch(
   () => checked.value,
-  (newValue) => {
+  () => {
     getData();
   }
 );
 watch(
   () => status.value,
   (newValue) => {
-    console.log(status.value);
     pager.value.current = 1;
     getData();
   }
@@ -376,7 +335,6 @@ const onSubmitNote = (id, note) => {
       message.info("修改备注成功");
     })
     .catch((e) => {
-      console.log(e);
       message.info("修改备注失败，请联系管理员");
     });
 };
@@ -463,9 +421,7 @@ const pagination = computed(() => {
   };
 });
 
-const onShowSizeChange = async (page: any) => {
-  console.log("showsizechangepage=>", page);
-};
+const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
@@ -475,7 +431,6 @@ onBeforeMount(() => {
 const getData = async (params?: any) => {
   spinning.value = true;
   api.getYanchangDataCal().then((res: any) => {
-    console.log(res);
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -510,7 +465,6 @@ const getData = async (params?: any) => {
     .getYanchangData(params)
     .then((res: any) => {
       exportData.value = res.rows;
-      console.log(exportData.value);
       pager.value = res.page;
       count.value = pager.value.total;
       dataSource.value = res.rows;
@@ -541,10 +495,7 @@ const reviewData = async (id: number) => {
 
 // 增加数据弹窗
 const formRef = ref(null);
-const editFormRef = ref(null);
 const open = ref<boolean>(false);
-const editOpen = ref<boolean>(false);
-
 const confirmLoading = ref<boolean>(false);
 const showAddDataModal = async () => {
   open.value = true;

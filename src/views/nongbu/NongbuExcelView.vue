@@ -200,7 +200,7 @@ watch(
       case "2":
         order.value = {
           sortColumn: "originalFile",
-          sortRule: "DESC",
+          sortRule: "ASC",
         };
       default:
         break;

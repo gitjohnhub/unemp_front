@@ -218,61 +218,85 @@ const alpahbets = [
   "Y",
   "Z",
 ];
-
+//数据导出功能
+export const nongbuHeader = [
+  { header: "序号", key: "index", width: 6 },
+  { header: "姓名", key: "personName", width: 10 },
+  { header: "身份证", key: "personID", width: 26 },
+  { header: "镇保", key: "chengPayMonth", width: 24 },
+  { header: "城保", key: "zhenPayMonth", width: 18 },
+  { header: "街镇", key: "jiezhen", width: 24 },
+  { header: "原件", key: "originalFile", width: 24 },
+  { header: "审批情况", key: "status", width: 22 },
+  { header: "备注", key: "note", width: 22 },
+];
 export const exportExcel = (
   headersWithWidth: any[],
   dataSource: any[],
   fileName: string,
   getData: any,
-  monthRangeSelect: any[]
+  monthRangeSelect: any[] | string = []
 ) => {
-  // 写入文件
-  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-  const title = `${fileName}_${monthRangeSelect[0].format(
-    "YYYY-MM-DD"
-  )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
+  return new Promise((resolve, reject) => {
+    try {
+      // 写入文件
+      const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
+      const title =
+        typeof monthRangeSelect == "string"
+          ? `${fileName}_${monthRangeSelect}`
+          : `${fileName}_${monthRangeSelect[0].format(
+              "YYYY-MM-DD"
+            )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
 
-  worksheet.addRow(headers);
-  worksheet.mergeCells(`A1:${alpahbets[headers.length - 1]}1`);
-  worksheet.getCell("A1").value = title;
-  worksheet.getCell(`${alpahbets[headers.length - 1]}1`).alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-  getData({ noindex: 1 }).then(() => {
-    dataSource.map((item, index) => {
-      const ItemList = [];
-      headersWithWidth
-        .map((header) => {
-          return header.key;
-        })
-        .forEach((header) => {
-          switch (header) {
-            case "index":
-              ItemList.push(index + 1);
-              break;
-            case "status":
-              ItemList.push(item[header] == "1" ? "已审核" : "");
-              break;
-            default:
-              ItemList.push(item[header]);
-          }
+      worksheet.addRow(headers);
+      worksheet.mergeCells(`A1:${alpahbets[headers.length - 1]}1`);
+      worksheet.getCell("A1").value = title;
+      worksheet.getCell(`${alpahbets[headers.length - 1]}1`).alignment = {
+        vertical: "middle",
+        horizontal: "center",
+      };
+      getData({ noindex: 1 }).then(() => {
+        dataSource.map((item, index) => {
+          const ItemList = [];
+          headersWithWidth
+            .map((header) => {
+              return header.key;
+            })
+            .forEach((header) => {
+              switch (header) {
+                case "index":
+                  ItemList.push(index + 1);
+                  break;
+                case "status":
+                  ItemList.push(item[header] == "1" ? "已审核" : "");
+                  break;
+                case "originalFile":
+                  ItemList.push(item[header] == "1" ? "已收到原件" : "无");
+                  break;
+                default:
+                  ItemList.push(item[header]);
+              }
+            });
+          worksheet.addRow(ItemList);
         });
-      worksheet.addRow(ItemList);
-    });
-    worksheet.pageSetup.printArea = `A1:${alpahbets[headers.length - 1]}${
-      dataSource.length + 4
-    }`;
-    worksheet.eachRow((row, rowNumber) => {
-      row.font = { size: 15 };
-      row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      });
-    });
-    worksheet.getRow(2).font = { size: 15, bold: true };
-    worksheet.getRow(1).font = { size: 18, bold: true };
+        worksheet.pageSetup.printArea = `A1:${alpahbets[headers.length - 1]}${
+          dataSource.length + 4
+        }`;
+        worksheet.eachRow((row, rowNumber) => {
+          row.font = { size: 15 };
+          row.eachCell((cell, colNumber) => {
+            cell.alignment = { vertical: "middle", horizontal: "center" };
+          });
+        });
+        worksheet.getRow(2).font = { size: 15, bold: true };
+        worksheet.getRow(1).font = { size: 18, bold: true };
 
-    // 导出 Excel 文件
-    downloadLink(workbook, title);
+        // 导出 Excel 文件
+        downloadLink(workbook, title);
+        resolve("success");
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 };

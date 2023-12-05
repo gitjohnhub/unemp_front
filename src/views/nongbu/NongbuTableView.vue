@@ -14,40 +14,24 @@
             >
               <NongbuAddFormView ref="formRef" />
             </a-modal>
-            <a-tag color="#108ee9">{{ count }}</a-tag>
-            <a-button @click="getData"> 刷新数据 </a-button>
+            <a-button @click="getData"> 刷新 </a-button>
+            <a-button @click="localExportExcel()"> 导出 </a-button>
             <a-divider type="vertical" />
             <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
         </a-row>
         <a-row>
-          <!-- 数据导出操作 -->
           <a-space>
-            <h5>导出操作：</h5>
             <a-range-picker v-model:value="monthRangeSelect" />
-            <a-button
-              @click="exportExcel"
-              type="primary"
-              style="background-color: #1e1e1e"
-            >
-              导出Excel
-            </a-button>
-            <a-switch v-model:checked="showCancelUnemp" />只显示取消失业登记
-            <a-switch v-model:checked="showRepeat" />只显示重复
+            <a-checkbox v-model:checked="showCancelUnemp" />只显示取消失业登记
+            <a-checkbox v-model:checked="showRepeat" />只显示重复
           </a-space>
         </a-row>
         <a-row>
           <a-space>
-            <a-radio-group v-model:value="status" button-style="solid">
-              <a-radio-button
-                v-for="(status, index) in statusCal"
-                :value="String(index)"
-                :key="index"
-                >{{ status.label }}
-                <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
-              </a-radio-button>
-            </a-radio-group>
-            <!-- <a-checkbox-group v-model:value="chosenJiezhen" name="checkboxgroup" :options="jiezhens" /> -->
+            <a-segmented v-model:value="status" :options="mapStatusList" />
+            <a-tag color="#108ee9">{{ count }}</a-tag>
+
             <FilterView
               v-bind:chosen-jiezhen="chosenJiezhen"
               @jiezhenSelectChange="jiezhenSelectChange"
@@ -105,21 +89,7 @@
                   {{ record.reviewoperator }}
                 </a-tag>
               </a-row>
-              <!-- <a-tooltip :title="record.note" color="#f50">
-                <a-input-search
-                  v-model:value="record.note"
-                  placeholder="备注"
-                  size="medium"
-                  @search="onSubmitNote(record.id, record.note)"
-                >
-                  <template #enterButton>
-                    <a-button type="dashed">修改备注</a-button>
-                  </template>
-                </a-input-search>
-              </a-tooltip> -->
             </a-space>
-
-            <!-- <span v-html="`<br>${record.checknote}`"></span> -->
           </template>
           <template v-if="column.key === 'chengPayMonth'">
             <a-row>
@@ -281,26 +251,40 @@ import { pinyin } from "pinyin-pro";
 import NongbuAddFormView from "./NongbuAddFormView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { genWorkbook, colorList, downloadLink } from "@/utils/util";
+import { nongbuHeader, colorList, exportExcel } from "@/utils/util";
 import { jiezhens } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
+const localExportExcel = () => {
+  exportExcel(
+    nongbuHeader,
+    dataSource.value,
+    "农民补助金",
+    getData,
+    monthRangeSelect.value
+  )
+    .then(() => {
+      message.info("导出成功");
+    })
+    .catch(() => {
+      message.error("导出失败,请查看日期是否选择");
+    });
+};
 const editForm = ref();
 const showCancelUnemp = ref(false);
 const showRepeat = ref(false);
-
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
-const monthRangeSelect = ref<Dayjs>();
+type RangeValue = [Dayjs, Dayjs];
+const monthRangeSelect = ref<RangeValue>();
 const payDate = ref<Dayjs>();
 
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const exportData = ref();
-const status = ref("0");
+const status = ref(0);
 const statusCal = ref([]);
 // 按街镇选择子组件
 const jiezhenSelectChange = (selectJiezhens: any) => {
@@ -323,7 +307,12 @@ const spinning = ref<boolean>(false);
 // 搜索相关
 const searchValue = ref();
 const statusList = ["已登记", "已审批", "已取消", "全部"];
-
+const mapStatusList = statusList.map((item, index) => {
+  return {
+    label: item,
+    value: index,
+  };
+});
 const getStatus = (status: String) => {
   return statusList[Number(status)];
 };
@@ -358,7 +347,6 @@ watch(
 watch(
   () => monthRangeSelect.value,
   (newValue) => {
-    // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
     getData();
   }
 );
@@ -376,98 +364,17 @@ watch(
 );
 watch(
   () => status.value,
-  (newValue) => {
-    console.log(status.value);
+  () => {
     pager.value.current = 1;
     getData();
   }
 );
 watch(
   () => reviewChecked.value,
-  (newValue) => {
+  () => {
     getData();
   }
 );
-// 提交备注
-const onSubmitNote = (id, note) => {
-  api
-    .updateNongbuData({ id: id, note: note })
-    .then((res) => {
-      getData();
-      message.info("修改备注成功");
-    })
-    .catch((e) => {
-      console.log(e);
-      message.info("修改备注失败，请联系管理员");
-    });
-};
-//数据导出功能
-const exportExcel = () => {
-  // 写入文件
-  const headersWithWidth = [
-    { header: "序号", key: "index", width: 6 },
-    { header: "姓名", key: "name", width: 10 },
-    { header: "身份证", key: "personID", width: 26 },
-    { header: "镇保", key: "chengPayMonth", width: 24 },
-    { header: "城保", key: "zhenPayMonth", width: 18 },
-    { header: "街镇", key: "originalFile", width: 24 },
-    { header: "收到原件", key: "jiezhen", width: 24 },
-    { header: "是否审批", key: "status", width: 22 },
-    { header: "备注", key: "note", width: 22 },
-  ];
-  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-  worksheet.addRow(headers);
-  worksheet.mergeCells("A1:I1");
-  worksheet.getCell("A1").value = `${monthRangeSelect.value[0].format(
-    "YYYY-MM-dd"
-  )}-${monthRangeSelect.value[1].format("YYYY-MM-dd")}_农民补助金`;
-  worksheet.getCell("I1").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-
-  getData({ noindex: 1 }).then((res) => {
-    exportData.value.map((item, index) => {
-      worksheet.addRow([
-        index + 1,
-        item.personName,
-        item.personID,
-        item.chengPayMonth,
-        item.zhenPayMonth,
-        item.jiezhen,
-        item.originalFile === "1" ? "已收到" : "未收到",
-        item.status == "1" ? "已审批" : "",
-        item.note,
-      ]);
-    });
-    worksheet.pageSetup.printArea = `A1:I${exportData.value.length + 4}`;
-    // worksheet.addRow([
-    //   '',
-    //   '',
-    //   `打印人:${userInfo.username}`,
-    //   '',
-    //   `${monthRangeSelect.value[0].format('YYYY-MM-DD')}`,
-    //   '',
-    //   '',
-    //   '',
-    // ]);
-    worksheet.eachRow((row, rowNumber) => {
-      row.font = { size: 15 };
-      row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      });
-    });
-    worksheet.getRow(2).font = { size: 15, bold: true };
-    worksheet.getRow(1).font = { size: 18, bold: true };
-
-    // 导出 Excel 文件
-    downloadLink(
-      workbook,
-      `农民补助金_${monthRangeSelect.value[0].format("YYYY-MM")}`
-    );
-  });
-};
-// 分页
 const pager = ref({
   current: 1,
   pageSize: 10,
@@ -485,9 +392,7 @@ const pagination = computed(() => {
   };
 });
 
-const onShowSizeChange = async (page: any) => {
-  console.log("showsizechangepage=>", page);
-};
+const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
@@ -496,8 +401,7 @@ onBeforeMount(() => {
 // 获取数据
 const getData = async (params?: any) => {
   spinning.value = true;
-  api.getNongbuDataCal().then((res: any) => {
-    console.log(res);
+  await api.getNongbuDataCal().then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -509,30 +413,16 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
+    showRepeat: showRepeat.value ? 1 : null,
+    cancelUnemp: showCancelUnemp.value ? 1 : null,
+    monthRangeSelect: monthRangeSelect.value ? monthRangeSelect.value : null,
+    status:
+      Number(status.value) !== statusList.length - 1
+        ? Number(status.value)
+        : null,
+    jiezhen: chosenJiezhen.value.length > 0 ? chosenJiezhen.value : null,
   };
-  if (showRepeat.value) {
-    params.showRepeat = 1;
-  } else {
-    params.showRepeat = null;
-  }
-  if (showCancelUnemp.value) {
-    params.cancelUnemp = 1;
-  } else {
-    params.cancelUnemp = null;
-  }
 
-  if (monthRangeSelect.value) {
-    params.monthRangeSelect = monthRangeSelect.value;
-  }
-
-  if (Number(status.value) !== statusList.length - 1) {
-    params.status = status.value;
-  } else {
-    params.status = null;
-  }
-  if (chosenJiezhen.value.length > 0) {
-    params.jiezhen = chosenJiezhen.value;
-  }
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params = {
       searchValue: searchValue.value,
@@ -541,12 +431,9 @@ const getData = async (params?: any) => {
   } else {
     params.searchValue = null;
   }
-  console.log("params==>", params);
   return await api
     .getNongbuData(params)
     .then((res: any) => {
-      exportData.value = res.rows;
-      console.log(exportData.value);
       pager.value = res.page;
       count.value = pager.value.total;
       dataSource.value = res.rows;
@@ -595,7 +482,6 @@ const addRepeat = async (id: number, repeatTimes: string) => {
       message.info("增加重复成功");
       getData();
     });
-  console.log(id);
 };
 
 const cancelData = async (id: number) => {

@@ -235,7 +235,8 @@ import YanchangEditFormView from "./YanchangEditFormView.vue";
 import ActionView from "@/components/ActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { exportExcel, colorList } from "@/utils/util";
+import { exportExcel } from "@/utils/util";
+import { colorList } from "@/types";
 import "dayjs/locale/zh-cn";
 import {
   WarningFilled,

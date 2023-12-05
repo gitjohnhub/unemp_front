@@ -1,11 +1,6 @@
 import Excel from "exceljs";
-import Tesseract, { ImageLike, createWorker } from "tesseract.js";
-interface DataItem {
-  month: number;
-  count: number;
-  jiezhen: string;
-}
-//图片识别文字
+import { ImageLike, createWorker } from "tesseract.js";
+import { DataItem, months, alpahbets } from "@/types";
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
@@ -166,58 +161,7 @@ export function calculateEndDate(startDate: string, months: String): string {
   endDate.setDate(0);
   return endDate.toISOString().slice(0, 10);
 }
-export const colorList = [
-  "#25b1bf",
-  "#acc2ef",
-  "#3D5A80",
-  "#2E8B57",
-  "#c21d03",
-  "#fd5732",
-  "#fd5732",
-  "#fd5732",
-];
-export const months = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-const alpahbets = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-];
+
 //数据导出功能
 export const nongbuHeader = [
   { header: "序号", key: "index", width: 6 },

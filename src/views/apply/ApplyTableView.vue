@@ -25,11 +25,10 @@
               :options="userStore.checkoperators"
             ></a-select>
             <a-button @click="getData"> 刷新数据 </a-button>
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入身份证号查询"
-              style="width: 200px"
-              @search="onSearch"
+            <FilterView
+              v-bind:chosen-jiezhen="chosenJiezhen"
+              @jiezhenSelectChange="jiezhenSelectChange"
+              @hanle-change-search="hanleChangeSearch"
             />
           </a-space>
         </a-row>
@@ -39,7 +38,7 @@
             <a-button @click="localExportExcel()">
               <FileExcelOutlined />导出
             </a-button>
-            <a-switch v-model:checked="isIncludeCheckData"></a-switch
+            <a-checkbox v-model:checked="isIncludeCheckData"></a-checkbox
             >是否包含初核
           </a-space>
         </a-row>
@@ -99,7 +98,9 @@
                   v-model:value="record.checknote"
                   placeholder="初核备注"
                   size="medium"
-                  @search="onSubmitNote(record.id, record.checknote)"
+                  @search="
+                    updateParams({ id: record.id, checknote: record.checknote })
+                  "
                 >
                   <template #enterButton>
                     <a-button type="dashed">修改初核备注</a-button>
@@ -135,33 +136,10 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <a-button
-                    @click="reviewData(record.id)"
-                    v-if="
-                      record.verification == '0' &&
-                      record.checkoperator !== userInfo.username
-                    "
-                    type="primary"
-                    ><CheckOutlined
-                  /></a-button>
+                  <ApplyActionView :record="record" @get-data="getData" />
                   <a-button @click="showEditModal(record)"
                     ><EditOutlined
                   /></a-button>
-
-                  <a-button
-                    @click="chuheData(record.id)"
-                    v-if="record.verification == '2'"
-                    type="primary"
-                    ><RedoOutlined
-                  /></a-button>
-                  <a-tooltip title="删除">
-                    <a-button
-                      danger
-                      @click="deleteData(record.id)"
-                      type="primary"
-                      :disabled="record.verification == '3' ? true : false"
-                      ><DeleteOutlined /></a-button
-                  ></a-tooltip>
                   <!-- 编辑模态框 -->
                   <a-modal
                     v-model:visible="record.editVisible"
@@ -210,7 +188,12 @@
                     v-model:value="record.reviewnote"
                     placeholder="复核备注"
                     size="medium"
-                    @search="onSubmitRNote(record.id, record.reviewnote)"
+                    @search="
+                      updateParams({
+                        id: record.id,
+                        reviewNote: record.reviewnote,
+                      })
+                    "
                   >
                     <template #enterButton>
                       <a-button type="dashed">提交复核备注</a-button>
@@ -227,25 +210,24 @@
 </template>
 <script lang="ts" setup>
 import ApplyAddFormView from "./ApplyAddFormView.vue";
+import ApplyActionView from "./ApplyActionView.vue";
+import FilterView from "@/components/FilterView.vue";
+
 import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
+import { Dayjs } from "dayjs";
+import { pinyin } from "pinyin-pro";
+
+import "dayjs/locale/zh-cn";
 import {
   FileExcelOutlined,
-  CheckOutlined,
-  DeleteOutlined,
   EditOutlined,
   PlusCircleOutlined,
-  RedoOutlined,
 } from "@ant-design/icons-vue";
 import api from "@/api";
-import { pinyin } from "pinyin-pro";
-import { exportExcel, formattedTime } from "@/utils/util";
-import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import "dayjs/locale/zh-cn";
-import { colorList } from "@/utils/util";
-import { jiezhens } from "@/types";
-
+import { exportExcel, formattedTime } from "@/utils/util";
+import { jiezhens, colorList } from "@/types";
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -258,18 +240,22 @@ const isIncludeCheckData = ref(false);
 const verifications = ["已初核", "已复核", "待初核", "已删除", "全部"];
 // 搜索相关
 const searchValue = ref();
-const spinning = ref<boolean>(false);
-const onSearch = () => {
-  pager.value.current = 1;
-  getData()
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((e) => {
-      console.log(e);
-      message.info("查询错误，联系管理员");
-    });
+// 按街镇选择子组件
+const jiezhenSelectChange = (selectJiezhens: any) => {
+  chosenJiezhen.value = selectJiezhens;
 };
+const chosenJiezhen = ref([]);
+watch(
+  () => chosenJiezhen.value,
+  () => {
+    getData();
+  }
+);
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+  getData();
+};
+const spinning = ref<boolean>(false);
 const getColors = (user) => {
   return colorList[
     userStore.checkoperators.map((item) => item.value).indexOf(user)
@@ -303,9 +289,9 @@ watch(
   }
 );
 // 提交初核备注
-const onSubmitNote = (id, note) => {
+const updateParams = (params: any) => {
   api
-    .updateUnempVeriData({ id: id, checknote: note })
+    .updateUnempVeriData(params)
     .then((res) => {
       getData();
       message.info("修改备注成功");
@@ -316,20 +302,6 @@ const onSubmitNote = (id, note) => {
     });
 };
 
-// 提交复核备注
-const onSubmitRNote = (id, note) => {
-  api
-    .updateUnempVeriData({ id: id, reviewnote: note })
-    .then((res) => {
-      console.log(res);
-      getData();
-      message.info("添加复核备注成功");
-    })
-    .catch((e) => {
-      console.log(e);
-      message.info("添加复核备注失败，请联系管理员");
-    });
-};
 //数据导出功能
 const unempHeader = [
   { header: "序号", key: "index", width: 10 },
@@ -367,9 +339,7 @@ const pagination = computed(() => {
   };
 });
 
-const onShowSizeChange = async (page: any) => {
-  console.log("showsizechangepage=>", page);
-};
+const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
@@ -379,22 +349,6 @@ onBeforeMount(() => {
   getData();
 });
 
-// 获取用户数据，构造用户选择列表
-// const getUsers = async (params?: any) => {
-//   await api.getUsers(params).then((res: any) => {
-//     console.log('users=====>', res);
-//     checkoperators.value = res.rows.map((userInfo) => {
-//       return { value: userInfo.userName };
-//     });
-//     userColors.value = res.rows.map((userInfo, index) => {
-//       return {
-//         username: userInfo.userName,
-//         color: colors[index],
-//       };
-//     });
-//   });
-// };
-
 // 获取失业金数据
 const getData = async (params?: any) => {
   spinning.value = true;
@@ -402,6 +356,7 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
     checkoperators: selectedOp.value,
+    jiezhen: chosenJiezhen.value,
   };
   if (isIncludeCheckData.value) {
     params.isIncludeCheckData = 1;
@@ -420,12 +375,10 @@ const getData = async (params?: any) => {
   }
 
   if (searchValue.value !== undefined && searchValue.value !== "") {
-    console.log("searchValue===>", searchValue.value);
     params = {
       searchValue: searchValue.value,
       ...pager.value,
     };
-    console.log("params===>", params);
   }
   return await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
@@ -443,25 +396,6 @@ const deleteData = async (id: number) => {
       getData();
     });
 };
-const reviewData = async (id: number) => {
-  await api
-    .updateUnempVeriData({
-      id: id,
-      reviewoperator: userInfo.username,
-      verification: "1",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const chuheData = async (id: number) => {
-  await api
-    .updateUnempVeriData({ id: id, verification: "0" })
-    .then((res: any) => {
-      getData();
-    });
-};
-
 // 增加数据弹窗
 const formRef = ref(null);
 const open = ref<boolean>(false);
@@ -541,16 +475,6 @@ const columns = [
     dataIndex: "reviewoperator",
     key: "reviewoperator",
   },
-  // {
-  //   title: '初核备注',
-  //   dataIndex: 'checknote',
-  //   key: 'checknote',
-  // },
-  // {
-  //   title: '复核备注',
-  //   dataIndex: 'reviewnote',
-  //   key: 'reviewnote',
-  // },
   {
     title: "操作",
     // dataIndex: 'action',
@@ -562,25 +486,6 @@ const columns = [
     key: "createtime",
   },
 ];
-
-// const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
-//   // console.log('Various parameters', pagination, filters, sorter);
-//   filteredInfo.value = filters;
-//   sortedInfo.value = sorter;
-// };
-// const clearFilters = () => {
-//   filteredInfo.value = null;
-// };
-// const clearAll = () => {
-//   filteredInfo.value = null;
-//   sortedInfo.value = null;
-// };
-// const setAgeSort = () => {
-//   sortedInfo.value = {
-//     order: 'descend',
-//     columnKey: 'age',
-//   };
-// };
 </script>
 <style scoped>
 .deleted {

@@ -42,14 +42,21 @@
           <a-space>
             <h5>导出操作：</h5>
             <a-date-picker v-model:value="monthSelect" />
-            <a-button @click="exportExcel" type="primary" style="background-color: #1e1e1e">
+            <a-button
+              @click="exportExcel"
+              type="primary"
+              style="background-color: #1e1e1e"
+            >
               导出Excel
             </a-button>
           </a-space>
         </a-row>
         <a-row>
           <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button v-for="(status, index) in statusCal" :value="String(index)" :key="index"
+            <a-radio-button
+              v-for="(status, index) in statusCal"
+              :value="String(index)"
+              :key="index"
               >{{ status.label }}
               <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
             </a-radio-button>
@@ -91,14 +98,18 @@
             <a-space direction="vertical">
               <a-row>
                 <a-tag
-                  :color="record.isOnlyTransferRelation == '只转关系' ? colorList[5] : colorList[0]"
+                  :color="
+                    record.isOnlyTransferRelation == '只转关系'
+                      ? colorList[5]
+                      : colorList[0]
+                  "
                   >{{ record.isOnlyTransferRelation }}</a-tag
                 >
                 <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
-                  record.payMonth ? record.payMonth : '无数据'
+                  record.payMonth ? record.payMonth : "无数据"
                 }}</a-tag>
                 <a-tag v-if="record.isOnlyTransferRelation == '转金额'">{{
-                  record.pay ? record.pay : '无数据'
+                  record.pay ? record.pay : "无数据"
                 }}</a-tag>
               </a-row>
 
@@ -171,7 +182,10 @@
                     <EditOutlined />
                   </a-button>
 
-                  <a-button @click="payData(record.id)" type="primary" v-if="record.status == '1'"
+                  <a-button
+                    @click="payData(record.id)"
+                    type="primary"
+                    v-if="record.status == '1'"
                     ><PayCircleOutlined
                   /></a-button>
                   <a-button
@@ -204,8 +218,8 @@
                     v-if="record.status == '0' || record.status == '1'"
                     type="primary"
                     danger
-                    ><ExclamationCircleOutlined /></a-button
-                  >
+                    ><ExclamationCircleOutlined
+                  /></a-button>
                   <a-button
                     @click="freezeData(record.id)"
                     v-if="record.status == '1'"
@@ -214,7 +228,9 @@
                     >冻结</a-button
                   >
 
-                  <a-button @click="cancelData(record.id)" type="primary" danger>取消</a-button>
+                  <a-button @click="cancelData(record.id)" type="primary" danger
+                    >取消</a-button
+                  >
                   <a-button
                     @click="payFailData(record.id)"
                     v-if="record.status == '2'"
@@ -245,8 +261,14 @@
                   <a-form-item label="手动计算" name="paySplitMonth">
                     <a-row>
                       <a-space>
-                        标准一：<a-input v-model:value="firstPayMonth" style="width: 40px" />
-                        二:<a-input v-model:value="secondPayMonth" style="width: 40px" />
+                        标准一：<a-input
+                          v-model:value="firstPayMonth"
+                          style="width: 40px"
+                        />
+                        二:<a-input
+                          v-model:value="secondPayMonth"
+                          style="width: 40px"
+                        />
                         享受期限:<a-input
                           v-model:value="editForm.payMonth"
                           disabled
@@ -259,7 +281,11 @@
                     <a-input v-model:value="editForm.pay" />
                   </a-form-item>
 
-                  <a-form-item label="转关系" name="isOnlyTransferRelation" has-feedback>
+                  <a-form-item
+                    label="转关系"
+                    name="isOnlyTransferRelation"
+                    has-feedback
+                  >
                     <a-select
                       ref="select"
                       v-model:value="editForm.isOnlyTransferRelation"
@@ -280,18 +306,24 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, ref, onBeforeMount, watch } from 'vue';
-import { message } from 'ant-design-vue';
-import { CheckOutlined, DeleteOutlined, EditOutlined,PayCircleOutlined,ExclamationCircleOutlined } from '@ant-design/icons-vue';
-import api from '@/api';
-import { pinyin } from 'pinyin-pro';
-import ZhuanyiAddFormView from './ZhuanyiAddFormView.vue';
-import ZhuanyiEditFormView from './ZhuanyiEditFormView.vue';
-import { Dayjs } from 'dayjs';
-import { useUserStore } from '@/stores';
-import { downloadLink } from '@/utils/util';
-import { genWorkbook, colorList } from '@/utils/util';
-import 'dayjs/locale/zh-cn';
+import { computed, ref, onBeforeMount, watch } from "vue";
+import { message } from "ant-design-vue";
+import {
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PayCircleOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons-vue";
+import api from "@/api";
+import { pinyin } from "pinyin-pro";
+import ZhuanyiAddFormView from "./ZhuanyiAddFormView.vue";
+import { Dayjs } from "dayjs";
+import { useUserStore } from "@/stores";
+import { downloadLink, genWorkbook } from "@/utils/util";
+import {} from "@/utils/util";
+import { colorList } from "@/types";
+import "dayjs/locale/zh-cn";
 
 const dataSource = ref();
 const userStore = useUserStore();
@@ -301,59 +333,75 @@ const payDate = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
-const reviewChecked = ref('0');
+const reviewChecked = ref("0");
 const exportData = ref();
-const status = ref('0');
+const status = ref("0");
 const statusCal = ref([]);
 //编辑相关
-const editForm = ref()
-const firstPayMonth = ref(0)
-const secondPayMonth = ref(0)
-watch(() => firstPayMonth.value, () => {
-  editForm.value.payMonth = Number(firstPayMonth.value) + Number(secondPayMonth.value)
-  editForm.value.pay = (Number(firstPayMonth.value) * 2175 + Number(secondPayMonth.value) * 1740) * 1.5
-})
-watch(() => secondPayMonth.value, () => {
-  editForm.value.payMonth = Number(firstPayMonth.value) + Number(secondPayMonth.value)
-  editForm.value.pay = (Number(firstPayMonth.value) * 2175 + Number(secondPayMonth.value) * 1740) * 1.5
-})
+const editForm = ref();
+const firstPayMonth = ref(0);
+const secondPayMonth = ref(0);
+watch(
+  () => firstPayMonth.value,
+  () => {
+    editForm.value.payMonth =
+      Number(firstPayMonth.value) + Number(secondPayMonth.value);
+    editForm.value.pay =
+      (Number(firstPayMonth.value) * 2175 +
+        Number(secondPayMonth.value) * 1740) *
+      1.5;
+  }
+);
+watch(
+  () => secondPayMonth.value,
+  () => {
+    editForm.value.payMonth =
+      Number(firstPayMonth.value) + Number(secondPayMonth.value);
+    editForm.value.pay =
+      (Number(firstPayMonth.value) * 2175 +
+        Number(secondPayMonth.value) * 1740) *
+      1.5;
+  }
+);
 const isOnlyTransferRelationOp = [
   {
-    value: '只转关系',
+    value: "只转关系",
   },
   {
-    value: '转金额',
+    value: "转金额",
   },
 ];
 const showEditModal = (record) => {
   editForm.value = record;
-  firstPayMonth.value = Number(editForm.value.payMonth) < 12 ? editForm.value.payMonth : 12
-  secondPayMonth.value = Number(editForm.value.payMonth) <= 12 ? 0 : Number(editForm.value.payMonth) - 12
+  firstPayMonth.value =
+    Number(editForm.value.payMonth) < 12 ? editForm.value.payMonth : 12;
+  secondPayMonth.value =
+    Number(editForm.value.payMonth) <= 12
+      ? 0
+      : Number(editForm.value.payMonth) - 12;
   record.editVisible = true;
 };
 const resetEditForm = () => {
-  firstPayMonth.value = 0
-  secondPayMonth.value = 0
-}
+  firstPayMonth.value = 0;
+  secondPayMonth.value = 0;
+};
 const handleEditOk = () => {
   api
     .updateZhuanyiData(editForm.value)
     .then((res: any) => {
-      message.info('修改成功');
+      message.info("修改成功");
       editOpen.value = false;
-      resetEditForm()
+      resetEditForm();
       getData();
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
-      resetEditForm()
-
+      message.info("数据格式错误，无法提交=>", error);
+      resetEditForm();
     });
-
 };
 const handleEditCancel = () => {
   editOpen.value = false;
-  resetEditForm()
+  resetEditForm();
 };
 
 //加载数据动画
@@ -362,15 +410,15 @@ const spinning = ref<boolean>(false);
 // 搜索相关
 const searchValue = ref();
 const statusList = [
-  '已初核',
-  '已复核',
-  '支付中',
-  '已支付',
-  '已驳回',
-  '已取消',
-  '未确认冻结',
-  '支付失败',
-  '全部',
+  "已初核",
+  "已复核",
+  "支付中",
+  "已支付",
+  "已驳回",
+  "已取消",
+  "未确认冻结",
+  "支付失败",
+  "全部",
 ];
 
 const getStatus = (status: String) => {
@@ -386,18 +434,17 @@ const getProgress = (status: String) => {
   return percent; // 33.33
 };
 const onSearch = () => {
-  getData()
-    .catch((e) => {
-      console.log(e);
-      message.info('查询错误，联系管理员');
-    });
+  getData().catch((e) => {
+    console.log(e);
+    message.info("查询错误，联系管理员");
+  });
 };
 const getColors = (user) => {
   const findColor = userStore.userColors.filter((u) => u.username === user);
   if (findColor.length !== 0) {
     return findColor[0].color;
   } else {
-    return '#344D70';
+    return "#344D70";
   }
 };
 watch(
@@ -409,8 +456,8 @@ watch(
 watch(
   () => searchValue.value,
   (newValue) => {
-    if (searchValue.value == ''){
-      getData()
+    if (searchValue.value == "") {
+      getData();
     }
   }
 );
@@ -453,33 +500,36 @@ const onSubmitNote = (id, note) => {
     .updateZhuanyiData({ id: id, note: note })
     .then((res) => {
       getData();
-      message.info('修改备注成功');
+      message.info("修改备注成功");
     })
     .catch((e) => {
       console.log(e);
-      message.info('修改备注失败，请联系管理员');
+      message.info("修改备注失败，请联系管理员");
     });
 };
 //数据导出功能
 const exportExcel = () => {
   // 写入文件
   const headersWithWidth = [
-    { header: '序号', key: 'index', width: 6 },
-    { header: '姓名', key: 'name', width: 10 },
-    { header: '身份证', key: 'personID', width: 26 },
-    { header: '转入省市', key: 'fromArea', width: 22 },
-    { header: '转出日期', key: 'payDate', width: 14 },
-    { header: '享受期限（月）', key: 'month', width: 18 },
-    { header: '核发标准', key: 'biaozhun', width: 40 },
-    { header: '转出金额', key: 'pay', width: 12 },
+    { header: "序号", key: "index", width: 6 },
+    { header: "姓名", key: "name", width: 10 },
+    { header: "身份证", key: "personID", width: 26 },
+    { header: "转入省市", key: "fromArea", width: 22 },
+    { header: "转出日期", key: "payDate", width: 14 },
+    { header: "享受期限（月）", key: "month", width: 18 },
+    { header: "核发标准", key: "biaozhun", width: 40 },
+    { header: "转出金额", key: "pay", width: 12 },
   ];
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
   worksheet.addRow(headers);
-  worksheet.mergeCells('A1:H1');
-  worksheet.getCell('A1').value = '非上海户籍失业保险转移支付汇总表';
-  worksheet.getCell('H1').alignment = { vertical: 'middle', horizontal: 'center' };
+  worksheet.mergeCells("A1:H1");
+  worksheet.getCell("A1").value = "非上海户籍失业保险转移支付汇总表";
+  worksheet.getCell("H1").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
 
-  getData({ noindex: 1, isOnlyTransferRelation: '转金额' }).then((res) => {
+  getData({ noindex: 1, isOnlyTransferRelation: "转金额" }).then((res) => {
     let totalPayNum = 0;
     exportData.value.map((item, index) => {
       worksheet.addRow([
@@ -489,28 +539,30 @@ const exportExcel = () => {
         item.fromArea,
         item.payDate,
         item.payMonth,
-        Number(item.payMonth) < 12 ? '2175.00/1-12月' : '2175.00/1-12月，1740.00/13-24月',
+        Number(item.payMonth) < 12
+          ? "2175.00/1-12月"
+          : "2175.00/1-12月，1740.00/13-24月",
         CalPayMonth(item.payMonth),
       ]);
       totalPayNum = totalPayNum + CalPayMonth(item.payMonth);
     });
     worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
     console.log(`A1:H${exportData.value.length + 2}`);
-    worksheet.addRow(['合计', '', '', '', '', '', '', `${totalPayNum}`]);
+    worksheet.addRow(["合计", "", "", "", "", "", "", `${totalPayNum}`]);
     worksheet.addRow([
-      '',
-      '',
+      "",
+      "",
       `打印人:${userInfo.username}`,
-      '',
-      `${monthSelect.value!.format('YYYY-MM-DD')}`,
-      '',
-      '',
-      '',
+      "",
+      `${monthSelect.value!.format("YYYY-MM-DD")}`,
+      "",
+      "",
+      "",
     ]);
     worksheet.eachRow((row, rowNumber) => {
       row.font = { size: 15 };
       row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
       });
     });
     // for (let i = 1; i < exportData.value.length + 6; i++) {
@@ -522,7 +574,7 @@ const exportExcel = () => {
     // 导出 Excel 文件
     downloadLink(
       workbook,
-      `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format('YYYY-MM')}`
+      `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format("YYYY-MM")}`
     );
     // workbook.xlsx.writeBuffer().then((buffer) => {
     //   const blob = new Blob([buffer], {
@@ -571,13 +623,13 @@ const pagination = computed(() => {
 });
 
 const onShowSizeChange = async (page: any) => {
-  console.log('showsizechangepage=>', page);
+  console.log("showsizechangepage=>", page);
 };
 
 onBeforeMount(() => {
   userStore.getUsers();
   if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(','), userInfo.username];
+    selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }
   getData();
 });
@@ -605,27 +657,27 @@ const getData = async (params?: any) => {
     params.isDeleted = 0;
   }
   if (Number(status.value) !== 8) {
-    console.log('!=8,', status.value);
+    console.log("!=8,", status.value);
     params.status = status.value;
   } else {
-    console.log('=8,', status.value);
+    console.log("=8,", status.value);
 
     params.status = null;
   }
-  if (reviewChecked.value == '0') {
-    params.verification = '0';
-  } else if (reviewChecked.value == '1') {
-    params.verification = '1';
+  if (reviewChecked.value == "0") {
+    params.verification = "0";
+  } else if (reviewChecked.value == "1") {
+    params.verification = "1";
   } else {
     params.verification = null;
   }
   if (monthSelect.value) {
     params = {
       ...params,
-      payDate: monthSelect.value.format('YYYY-MM-DD'),
+      payDate: monthSelect.value.format("YYYY-MM-DD"),
     };
   }
-  if (searchValue.value !== undefined && searchValue.value !== '') {
+  if (searchValue.value !== undefined && searchValue.value !== "") {
     params = {
       searchValue: searchValue.value,
       current: 1,
@@ -646,7 +698,9 @@ const getData = async (params?: any) => {
 };
 const getCorrectTime = (date: string) => {
   const originalDate = new Date(date);
-  const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
+  const updatedDate = new Date(
+    originalDate.getTime() + 8 * 60 * 60 * 1000
+  ).toISOString();
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
 
@@ -657,42 +711,66 @@ const deleteData = async (id: number) => {
 };
 const reviewData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '1' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "1",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const freezeData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '6' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "6",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const payFailData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '7' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "7",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const refuseData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '4' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "4",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const recoveryFromFreezeData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '1' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "1",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const cancelData = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '5' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "5",
+    })
     .then((res: any) => {
       getData();
     });
@@ -703,19 +781,23 @@ const payData = async (id: number) => {
       .updateZhuanyiData({
         id: id,
         reviewoperator: userInfo.username,
-        status: '2',
-        payDate: payDate.value!.format('YYYY-MM-DD'),
+        status: "2",
+        payDate: payDate.value!.format("YYYY-MM-DD"),
       })
       .then((res: any) => {
         getData();
       });
   } else {
-    message.info('请选择支付日期');
+    message.info("请选择支付日期");
   }
 };
 const paySuccess = async (id: number) => {
   await api
-    .updateZhuanyiData({ id: id, reviewoperator: userInfo.username, status: '3' })
+    .updateZhuanyiData({
+      id: id,
+      reviewoperator: userInfo.username,
+      status: "3",
+    })
     .then((res: any) => {
       getData();
     });
@@ -732,7 +814,6 @@ const showAddDataModal = async () => {
   open.value = true;
 };
 
-
 const handleOk = () => {
   formRef.value
     .onSubmit()
@@ -743,12 +824,11 @@ const handleOk = () => {
       confirmLoading.value = false;
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
+      message.info("数据格式错误，无法提交=>", error);
     });
 
   getData();
 };
-
 
 const handleCancel = () => {
   formRef.value.resetForm();
@@ -760,14 +840,14 @@ const columns = [
   //   key: 'id',
   // },
   {
-    title: '姓名',
-    dataIndex: 'personName',
-    key: 'personName',
+    title: "姓名",
+    dataIndex: "personName",
+    key: "personName",
   },
   {
-    title: '身份证号',
-    dataIndex: 'personID',
-    key: 'personID',
+    title: "身份证号",
+    dataIndex: "personID",
+    key: "personID",
   },
   // {
   //   title: '备注',
@@ -775,19 +855,19 @@ const columns = [
   //   key: 'note',
   // },
   {
-    title: '转出地\关系/金额',
-    dataIndex: 'isOnlyTransferRelation',
-    key: 'isOnlyTransferRelation',
+    title: "转出地\关系/金额",
+    dataIndex: "isOnlyTransferRelation",
+    key: "isOnlyTransferRelation",
   },
   {
-    title: '操作员',
-    dataIndex: 'checkoperator',
-    key: 'checkoperator',
+    title: "操作员",
+    dataIndex: "checkoperator",
+    key: "checkoperator",
   },
   {
-    title: '进度',
-    dataIndex: 'status',
-    key: 'status',
+    title: "进度",
+    dataIndex: "status",
+    key: "status",
   },
   // {
   //   title: '初核备注',
@@ -800,14 +880,14 @@ const columns = [
   //   key: 'reviewnote',
   // },
   {
-    title: '操作',
+    title: "操作",
     // dataIndex: 'action',
-    key: 'action',
+    key: "action",
   },
   {
-    title: '创建时间',
-    dataIndex: 'createtime',
-    key: 'createtime',
+    title: "创建时间",
+    dataIndex: "createtime",
+    key: "createtime",
   },
 ];
 

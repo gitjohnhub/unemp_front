@@ -247,13 +247,8 @@ import { pinyin } from "pinyin-pro";
 import NongbuAddFormView from "./NongbuAddFormView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import {
-  nongbuHeader,
-  colorList,
-  exportExcel,
-  formattedTime,
-} from "@/utils/util";
-import { jiezhens } from "@/types";
+import { nongbuHeader, exportExcel, formattedTime } from "@/utils/util";
+import { jiezhens, colorList } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
@@ -294,6 +289,7 @@ watch(
 );
 const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
+  getData();
 };
 
 //加载数据动画
@@ -320,13 +316,6 @@ const getProgress = (status: String) => {
 
   return percent; // 33.33
 };
-
-watch(
-  () => searchValue.value,
-  (newValue) => {
-    getData();
-  }
-);
 watch(
   () => showCancelUnemp.value,
   (newValue) => {

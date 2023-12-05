@@ -43,7 +43,7 @@ const router = createRouter({
             {
               path: "/unemp/applyTable",
               name: "失业金核定",
-              component: () => import("@/views/apply/ApplyTableView.vue"),
+              component: () => import("@/views/apply/UnempTableView.vue"),
               meta: {
                 requiresAuth: true,
                 icon: () => h(CheckCircleOutlined),

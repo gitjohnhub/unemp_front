@@ -67,6 +67,8 @@
         @change="handleChange"
         @showSizeChange="onShowSizeChange"
         :pagination="pagination"
+        bordered
+        size="small"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">

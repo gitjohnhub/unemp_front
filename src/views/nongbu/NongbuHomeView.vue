@@ -3,7 +3,7 @@
     <a-tab-pane key="1" tab="数据">
       <NongbuTableView />
     </a-tab-pane>
-    <a-tab-pane key="3" tab="统计">
+    <a-tab-pane key="2" tab="统计">
       <NongbuDataView />
     </a-tab-pane>
   </a-tabs>

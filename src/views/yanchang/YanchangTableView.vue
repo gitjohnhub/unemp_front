@@ -212,7 +212,7 @@
                 @cancel="handleEditCancel(record)"
               >
                 <YanchangEditFormView
-                  v-bind:edit-form="editForm"
+                  :edit-form="editForm"
                   ref="editableFormRef"
                 />
               </a-modal>
@@ -464,8 +464,6 @@ const reviewData = async (id: number) => {
 };
 
 // 增加数据弹窗
-const formRef = ref(null);
-const open = ref<boolean>(false);
 const confirmLoading = ref<boolean>(false);
 
 const columnsOriginal = [

@@ -4,42 +4,45 @@
       <a-space direction="vertical">
         <a-row>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary"
-              ><PlusCircleOutlined />添加</a-button
-            >
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
-              <ApplyAddFormView ref="formRef" />
-            </a-modal>
-
-            <a-select
-              v-model:value="selectedOp"
-              mode="multiple"
-              placeholder="选择初核对象"
-              style="width: 300px"
-              :options="userStore.checkoperators"
-            ></a-select>
-            <a-button @click="getData"> 刷新数据 </a-button>
+            <a-card>
+              <a-button @click="showEditModal(null)" type="primary"
+                >添加</a-button
+              >
+              <a-modal
+                v-model:open="addOpen"
+                title="增加"
+                :destroyOnClose="true"
+                @ok="handleEditOk(null)"
+                @cancel="handleEditCancel(null)"
+              >
+                <UnempEditFormView ref="editableFormRef" />
+              </a-modal>
+              <a-button @click="getData"> 刷新 </a-button>
+              <a-button @click="localExportExcel()">
+                <FileExcelOutlined />导出
+              </a-button>
+            </a-card>
             <FilterView
               v-bind:chosen-jiezhen="chosenJiezhen"
               @jiezhenSelectChange="jiezhenSelectChange"
               @hanle-change-search="hanleChangeSearch"
-            />
-          </a-space>
-        </a-row>
-        <a-row>
-          <a-space>
-            <a-range-picker v-model:value="monthRangeSelect" />
-            <a-button @click="localExportExcel()">
-              <FileExcelOutlined />导出
-            </a-button>
-            <a-checkbox v-model:checked="isIncludeCheckData"></a-checkbox
-            >是否包含初核
+            >
+              <template #otherFilter>
+                <a-select
+                  v-model:value="selectedOp"
+                  mode="multiple"
+                  placeholder="选择初核对象"
+                  style="width: 300px"
+                  :options="userStore.checkoperators"
+                ></a-select>
+                <a-range-picker v-model:value="monthRangeSelect" />
+              </template>
+              <template #footer>
+                <a-checkbox v-model:checked="isIncludeCheckData"
+                  >是否包含初核</a-checkbox
+                >
+              </template>
+            </FilterView>
           </a-space>
         </a-row>
         <a-row>
@@ -137,48 +140,21 @@
               <a-row>
                 <a-space>
                   <ApplyActionView :record="record" @get-data="getData" />
-                  <a-button @click="showEditModal(record)"
-                    ><EditOutlined
-                  /></a-button>
+                  <a-button @click="showEditModal(record)">
+                    <EditOutlined />
+                  </a-button>
                   <!-- 编辑模态框 -->
                   <a-modal
-                    v-model:visible="record.editVisible"
-                    @ok="handleEditOk"
-                    @cancel="handleEditCancel"
+                    :open="record.editVisible"
+                    title="编辑"
+                    :destroyOnClose="true"
+                    @ok="handleEditOk(record)"
+                    @cancel="handleEditCancel(record)"
                   >
-                    <a-form :model="editForm">
-                      <a-form-item
-                        label="身份证号"
-                        name="personID"
-                        has-feedback
-                      >
-                        <a-input v-model:value="editForm.personID"> </a-input>
-                      </a-form-item>
-                      <a-form-item label="姓名" name="personName" has-feedback>
-                        <a-input v-model:value="editForm.personName" />
-                      </a-form-item>
-                      <a-form-item label="街镇" name="jiezhen" has-feedback>
-                        <a-select
-                          ref="select"
-                          v-model:value="editForm.jiezhen"
-                          style="width: 120px"
-                          :options="jiezhens"
-                        ></a-select>
-                      </a-form-item>
-                      <a-form-item label="初核备注">
-                        <a-textarea v-model:value="editForm.checknote" />
-                      </a-form-item>
-                      <a-form-item label="复核备注">
-                        <a-textarea v-model:value="editForm.reviewnote" />
-                      </a-form-item>
-                      <a-form-item label="选择未初核">
-                        <a-radio-group v-model:value="editForm.verification">
-                          <a-radio value="0">已初核</a-radio>
-                          <!-- <a-radio value="1">已复核</a-radio> -->
-                          <a-radio value="2">待初核</a-radio>
-                        </a-radio-group>
-                      </a-form-item>
-                    </a-form>
+                    <UnempEditFormView
+                      :edit-form="editForm"
+                      ref="editableFormRef"
+                    />
                   </a-modal>
                 </a-space>
               </a-row>
@@ -209,7 +185,7 @@
   </div>
 </template>
 <script lang="ts" setup>
-import ApplyAddFormView from "./ApplyAddFormView.vue";
+import UnempEditFormView from "./UnempEditFormView.vue";
 import ApplyActionView from "./ApplyActionView.vue";
 import FilterView from "@/components/FilterView.vue";
 
@@ -389,61 +365,43 @@ const getData = async (params?: any) => {
   });
 };
 
-const deleteData = async (id: number) => {
-  await api
-    .updateUnempVeriData({ id: id, verification: "3" })
-    .then((res: any) => {
-      getData();
-    });
-};
-// 增加数据弹窗
-const formRef = ref(null);
-const open = ref<boolean>(false);
-const editOpen = ref<boolean>(false);
-
-const confirmLoading = ref<boolean>(false);
-const showAddDataModal = async () => {
-  open.value = true;
-};
 //编辑数据弹窗
 const editForm = ref();
-
-const showEditModal = (record) => {
-  editForm.value = record;
-  record.editVisible = true;
+const editableFormRef = ref(null);
+const addOpen = ref<boolean>(false);
+const showEditModal = (record: any) => {
+  if (record) {
+    record.editVisible = true;
+    editForm.value = record;
+  } else {
+    addOpen.value = true;
+  }
 };
-
-const handleOk = () => {
-  formRef.value
+const handleEditOk = async (record: any) => {
+  await editableFormRef.value
     .onSubmit()
     .then(() => {
+      message.info("成功");
+      addOpen.value = false;
+      if (record) {
+        record.editVisible = false;
+      } else {
+        addOpen.value = false;
+      }
       getData();
-      open.value = false;
     })
     .catch((error) => {
+      console.log("error==>", error);
       message.info("数据格式错误，无法提交=>", error);
     });
+};
+const handleEditCancel = (record) => {
+  if (record) {
+    record.editVisible = false;
+  }
+  addOpen.value = false;
+};
 
-  getData();
-};
-const handleEditOk = () => {
-  api
-    .updateUnempVeriData(editForm.value)
-    .then((res: any) => {
-      message.info("修改成功");
-      editOpen.value = false;
-      getData();
-    })
-    .catch((error) => {
-      message.info("数据格式错误，无法提交=>", error);
-    });
-};
-const handleEditCancel = () => {
-  editOpen.value = false;
-};
-const handleCancel = () => {
-  formRef.value.resetForm();
-};
 const columns = [
   // {
   //   title: 'ID',

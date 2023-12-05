@@ -1,6 +1,7 @@
 <template>
-  <a-row>
-    <a-space>
+  <a-card>
+    <a-space direction="vertical">
+      <slot name="otherFilter"></slot>
       <a-select
         v-model:value="localChosenJiezhen"
         mode="multiple"
@@ -15,9 +16,10 @@
         style="width: 200px"
         @search="hanleChangeSearch"
       />
+      <slot name="footer"></slot>
+      <a-button @click="resetSearch" block>重置搜索条件</a-button>
     </a-space>
-    <a-button @click="resetSearch">重置搜索条件</a-button>
-  </a-row>
+  </a-card>
 </template>
 <script lang="ts" setup>
 import { ref } from "vue";

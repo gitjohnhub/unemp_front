@@ -9,7 +9,7 @@
     <a-form-item label="身份证号" name="personID" has-feedback>
       <a-input v-model:value="localEditForm.personID">
         <template #suffix>
-          <a-tag>{{ personIDCount }}</a-tag>
+          <a-tag>{{ localEditForm.personID.length }}</a-tag>
         </template>
       </a-input>
     </a-form-item>
@@ -50,12 +50,11 @@
 </template>
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref, watch } from "vue";
-import { jiezhens } from "@/types";
 import api from "@/api/index";
 import { useUserStore } from "@/stores";
 import dayjs, { Dayjs } from "dayjs";
 import { calculateEndDate } from "@/utils/util";
-import locale from "ant-design-vue/es/locale-provider";
+import { jiezhens, rules, labelCol, wrapperCol } from "@/types";
 
 const checkoperator = useUserStore().userInfo.username;
 const props = defineProps({
@@ -92,7 +91,19 @@ watch(
     }
   }
 );
-const localEditForm = ref({ ...props.editForm });
+
+const localEditForm = ref(props.editForm);
+watch(
+  () => localEditForm.value.payMonth,
+  () => {
+    if (startDate.value) {
+      localEditForm.value.endDate = calculateEndDate(
+        startDate.value.format("YYYY-MM-DD"),
+        localEditForm.value.payMonth
+      );
+    }
+  }
+);
 onBeforeMount(() => {
   if (initialEditForm.personID !== "") {
     startDate.value = dayjs(localEditForm.value.startDate);
@@ -114,28 +125,16 @@ const onSubmit = () => {
   } else {
     localEditForm.value.startDate = startDate.value.format("YYYY-MM-DD");
     return editableFormRef.value.validate().then(() => {
-      console.log("localEditForm.value===>", localEditForm.value);
-      return api.updateYanchangData(localEditForm.value);
+      const editFormToPush = {
+        ...localEditForm.value,
+      };
+      delete editFormToPush.createtime;
+      delete editFormToPush.editVisible;
+      return api.updateYanchangData(editFormToPush);
     });
   }
 };
 
-const personIDCount = computed(() => {
-  return localEditForm.value.personID.length;
-});
-const rules = {
-  personID: [
-    { required: true, message: "请输入身份证号", trigger: "change" },
-    { min: 18, max: 18, message: "请填写18位身份证", trigger: "blur" },
-    // {type:'number', message:'请检查格式', trigger: 'change' }
-  ],
-  personName: [{ required: true, message: "请输入姓名", trigger: "change" }],
-};
-// const resetForm = () => {
-//   formRef.value.resetFields();
-// };
-const labelCol = { style: { width: "150px" } };
-const wrapperCol = { span: 14 };
 defineExpose({
   onSubmit,
 });

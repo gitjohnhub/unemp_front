@@ -14,6 +14,16 @@ export type editDataItem = Omit<
   DataItem,
   "id" | "checkoperator" | "reviewoperator" | "createtime"
 >;
+export const rules = {
+  personID: [
+    { required: true, message: "请输入身份证号", trigger: "change" },
+    { min: 18, max: 18, message: "请填写18位身份证", trigger: "blur" },
+    // {type:'number', message:'请检查格式', trigger: 'change' }
+  ],
+  personName: [{ required: true, message: "请输入姓名", trigger: "change" }],
+};
+export const labelCol = { style: { width: "150px" } };
+export const wrapperCol = { span: 14 };
 export const jiezhens = [
   { value: "江桥镇", label: "江桥镇" },
   { value: "马陆镇", label: "马陆镇" },

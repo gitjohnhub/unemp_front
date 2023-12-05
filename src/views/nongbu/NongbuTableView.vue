@@ -2,41 +2,69 @@
   <div>
     <div class="table-operations">
       <a-space direction="vertical">
+        <a-row> </a-row>
         <a-row>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
-            >
-              <NongbuAddFormView ref="formRef" />
-            </a-modal>
-            <a-button @click="getData"> 刷新 </a-button>
-            <a-button @click="localExportExcel()"> 导出 </a-button>
-            <a-divider type="vertical" />
-            <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
-          </a-space>
-        </a-row>
-        <a-row>
-          <a-space>
-            <a-range-picker v-model:value="monthRangeSelect" />
-            <a-checkbox v-model:checked="showCancelUnemp" />只显示取消失业登记
-            <a-checkbox v-model:checked="showRepeat" />只显示重复
-          </a-space>
-        </a-row>
-        <a-row>
-          <a-space>
-            <a-segmented v-model:value="status" :options="mapStatusList" />
-            <a-tag color="#108ee9">{{ count }}</a-tag>
+            <a-card>
+              <a-space direction="vertical">
+                <a-segmented
+                  v-model:value="showWithStatus"
+                  :options="withStatusOrMonthsList"
+                />
+
+                <a-segmented
+                  v-if="showWithStatus == 0"
+                  v-model:value="status"
+                  :options="mapStatusList"
+                />
+                <a-segmented
+                  v-if="showWithStatus == 1"
+                  v-model:value="monthSelect"
+                  :options="months"
+                />
+                <a-range-picker
+                  v-model:value="monthRangeSelect"
+                  v-if="showWithStatus == 0"
+                />
+                <a-space>
+                  <a-button @click="showAddDataModal" type="primary"
+                    >添加</a-button
+                  >
+                  <a-modal
+                    v-model:open="open"
+                    title="Title"
+                    :confirm-loading="confirmLoading"
+                    @ok="handleOk"
+                    @cancel="handleCancel"
+                  >
+                    <NongbuAddFormView ref="formRef" />
+                  </a-modal>
+                  <a-button @click="getData">
+                    刷新 <a-tag color="#108ee9">{{ count }}</a-tag>
+                  </a-button>
+                  <a-button @click="localExportExcel()"> 导出 </a-button>
+                </a-space>
+              </a-space>
+            </a-card>
 
             <FilterView
               v-bind:chosen-jiezhen="chosenJiezhen"
               @jiezhenSelectChange="jiezhenSelectChange"
               @hanle-change-search="hanleChangeSearch"
-            />
+            >
+              <template #otherFilter>
+                <a-segmented
+                  v-model:value="isCustomOrder"
+                  :options="customOrderList"
+                />
+              </template>
+              <template #footer>
+                <a-checkbox v-model:checked="showCancelUnemp"
+                  >只显示取消失业登记</a-checkbox
+                >
+                <a-checkbox v-model:checked="showRepeat">只显示重复</a-checkbox>
+              </template>
+            </FilterView>
           </a-space>
         </a-row>
       </a-space>
@@ -49,6 +77,7 @@
         @change="handleChange"
         @showSizeChange="onShowSizeChange"
         :pagination="pagination"
+        bordered
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
@@ -252,8 +281,14 @@ import { jiezhens, colorList } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
+
 const localExportExcel = () => {
-  exportExcel(nongbuHeader, "农民补助金", getData, monthRangeSelect.value)
+  exportExcel(
+    nongbuHeader,
+    "农民补助金",
+    getData,
+    monthRangeSelect.value ? monthRangeSelect.value : monthSelect.value
+  )
     .then(() => {
       message.info("导出成功");
     })
@@ -316,6 +351,55 @@ const getProgress = (status: String) => {
 
   return percent; // 33.33
 };
+
+// 排序选择
+const order = ref({
+  sortColumn: "jiezhen",
+  sortRule: "DESC",
+});
+const isCustomOrder = ref(0);
+const customOrderList = [
+  {
+    label: "按街镇排序",
+    value: 0,
+  },
+  {
+    label: "按时间排序",
+    value: 1,
+  },
+  {
+    label: "按原件未收到排序",
+    value: 2,
+  },
+];
+watch(
+  () => isCustomOrder.value,
+  () => {
+    console.log("isCustomOrder", isCustomOrder.value);
+    switch (isCustomOrder.value) {
+      case 0:
+        order.value = {
+          sortColumn: "jiezhen",
+          sortRule: "DESC",
+        };
+        break;
+      case 1:
+        order.value = {
+          sortColumn: "createtime",
+          sortRule: "DESC",
+        };
+        break;
+      case 2:
+        order.value = {
+          sortColumn: "originalFile",
+          sortRule: "ASC",
+        };
+      default:
+        break;
+    }
+    getData();
+  }
+);
 watch(
   () => showCancelUnemp.value,
   (newValue) => {
@@ -380,8 +464,48 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
+  getMonths();
   getData();
 });
+// 月视图
+const showWithStatus = ref(0);
+watch(
+  () => showWithStatus.value,
+  () => {
+    getData();
+  }
+);
+const withStatusOrMonthsList = [
+  {
+    label: "按审批状态显示",
+    value: 0,
+  },
+  {
+    label: "按月显示",
+    value: 1,
+  },
+];
+const months = ref([""]);
+const monthSelect = ref("");
+watch(
+  () => monthSelect.value,
+  () => {
+    getData();
+  }
+);
+const getMonths = (params?: any) => {
+  api
+    .getNongbuAllDate()
+    .then((res: any) => {
+      console.log("res", res);
+      months.value = res;
+      monthSelect.value = months.value[months.value.length - 1];
+      console.log("months===>", months.value);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 // 获取数据
 const getData = async (params?: any) => {
   spinning.value = true;
@@ -399,12 +523,19 @@ const getData = async (params?: any) => {
     ...pager.value,
     showRepeat: showRepeat.value ? 1 : null,
     cancelUnemp: showCancelUnemp.value ? 1 : null,
-    monthRangeSelect: monthRangeSelect.value ? monthRangeSelect.value : null,
+    monthRangeSelect:
+      monthRangeSelect.value && showWithStatus.value == 0
+        ? monthRangeSelect.value
+        : null,
+    monthSelect:
+      monthSelect.value && showWithStatus.value == 1 ? monthSelect.value : null,
     status:
-      Number(status.value) !== statusList.length - 1
+      Number(status.value) !== statusList.length - 1 &&
+      showWithStatus.value == 0
         ? Number(status.value)
         : null,
     jiezhen: chosenJiezhen.value.length > 0 ? chosenJiezhen.value : null,
+    customOrder: order.value,
   };
 
   if (searchValue.value !== undefined && searchValue.value !== "") {

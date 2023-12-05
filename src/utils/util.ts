@@ -230,9 +230,15 @@ export const nongbuHeader = [
   { header: "审批情况", key: "status", width: 22 },
   { header: "备注", key: "note", width: 22 },
 ];
+export const formattedTime = (date: string) => {
+  const originalDate = new Date(date);
+  const updatedDate = new Date(
+    originalDate.getTime() + 8 * 60 * 60 * 1000
+  ).toISOString();
+  return [`${updatedDate.slice(0, 10)}`, `${updatedDate.slice(11, 19)}`];
+};
 export const exportExcel = (
   headersWithWidth: any[],
-  dataSource: any[],
   fileName: string,
   getData: any,
   monthRangeSelect: any[] | string = []
@@ -255,8 +261,8 @@ export const exportExcel = (
         vertical: "middle",
         horizontal: "center",
       };
-      getData({ noindex: 1 }).then(() => {
-        dataSource.map((item, index) => {
+      getData({ noindex: 1 }).then((data: any) => {
+        data.map((item, index) => {
           const ItemList = [];
           headersWithWidth
             .map((header) => {
@@ -280,7 +286,7 @@ export const exportExcel = (
           worksheet.addRow(ItemList);
         });
         worksheet.pageSetup.printArea = `A1:${alpahbets[headers.length - 1]}${
-          dataSource.length + 4
+          data.length + 4
         }`;
         worksheet.eachRow((row, rowNumber) => {
           row.font = { size: 15 };

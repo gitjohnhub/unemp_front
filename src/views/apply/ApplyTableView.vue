@@ -4,7 +4,9 @@
       <a-space direction="vertical">
         <a-row>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary"><PlusCircleOutlined />添加</a-button>
+            <a-button @click="showAddDataModal" type="primary"
+              ><PlusCircleOutlined />添加</a-button
+            >
             <a-modal
               v-model:open="open"
               title="Title"
@@ -33,9 +35,12 @@
         </a-row>
         <a-row>
           <a-space>
-            <a-range-picker v-model:value="monthSelect" />
-            <a-button @click="exportExcel" type="primary"> <FileExcelOutlined />导出</a-button>
-            <a-switch v-model:checked="isIncludeCheckData"></a-switch>是否包含初核
+            <a-range-picker v-model:value="monthRangeSelect" />
+            <a-button @click="localExportExcel()">
+              <FileExcelOutlined />导出
+            </a-button>
+            <a-switch v-model:checked="isIncludeCheckData"></a-switch
+            >是否包含初核
           </a-space>
         </a-row>
         <a-row>
@@ -107,21 +112,23 @@
           </template>
           <!--  reviewoperator column -->
           <template v-if="column.key === 'reviewoperator'">
-            <a-tag :color="getColors(record.reviewoperator)" v-if="record.reviewoperator != null">
+            <a-tag
+              :color="getColors(record.reviewoperator)"
+              v-if="record.reviewoperator != null"
+            >
               {{ record.reviewoperator }}
             </a-tag>
-            <span v-if="record.reviewnote != null" v-html="`<br>${record.reviewnote}`"></span>
+            <span
+              v-if="record.reviewnote != null"
+              v-html="`<br>${record.reviewnote}`"
+            ></span>
           </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span
-                v-html="
-                  `${getCorrectTime(record.createtime)[0]}<br>${
-                    getCorrectTime(record.createtime)[1]
-                  }<br>id:${record.id}`
-                "
-              ></span>
+              <a-row> {{ formattedTime(record.createtime)[0] }} </a-row>
+              <a-row> {{ formattedTime(record.createtime)[1] }} </a-row>
+              <a-row> id:{{ record.id }} </a-row>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
@@ -130,26 +137,31 @@
                 <a-space>
                   <a-button
                     @click="reviewData(record.id)"
-                    v-if="record.verification == '0' && record.checkoperator !== userInfo.username"
+                    v-if="
+                      record.verification == '0' &&
+                      record.checkoperator !== userInfo.username
+                    "
                     type="primary"
                     ><CheckOutlined
                   /></a-button>
-                  <a-button @click="showEditModal(record)"><EditOutlined /></a-button>
+                  <a-button @click="showEditModal(record)"
+                    ><EditOutlined
+                  /></a-button>
 
                   <a-button
                     @click="chuheData(record.id)"
                     v-if="record.verification == '2'"
                     type="primary"
-                    ><RedoOutlined /></a-button
-                  >
+                    ><RedoOutlined
+                  /></a-button>
                   <a-tooltip title="删除">
-                  <a-button
-                    danger
-                    @click="deleteData(record.id)"
-                    type="primary"
-                    :disabled="record.verification == '3' ? true : false"
-                    ><DeleteOutlined
-                  /></a-button></a-tooltip>
+                    <a-button
+                      danger
+                      @click="deleteData(record.id)"
+                      type="primary"
+                      :disabled="record.verification == '3' ? true : false"
+                      ><DeleteOutlined /></a-button
+                  ></a-tooltip>
                   <!-- 编辑模态框 -->
                   <a-modal
                     v-model:visible="record.editVisible"
@@ -157,10 +169,12 @@
                     @cancel="handleEditCancel"
                   >
                     <a-form :model="editForm">
-                      <a-form-item label="身份证号" name="personID" has-feedback>
-                        <a-input v-model:value="editForm.personID">
-
-                        </a-input>
+                      <a-form-item
+                        label="身份证号"
+                        name="personID"
+                        has-feedback
+                      >
+                        <a-input v-model:value="editForm.personID"> </a-input>
                       </a-form-item>
                       <a-form-item label="姓名" name="personName" has-feedback>
                         <a-input v-model:value="editForm.personName" />
@@ -212,29 +226,36 @@
   </div>
 </template>
 <script lang="ts" setup>
-import ApplyAddFormView from './ApplyAddFormView.vue';
-import { computed, ref, onBeforeMount, watch } from 'vue';
-import { message } from 'ant-design-vue';
-import { FileExcelOutlined, CheckOutlined, DeleteOutlined, EditOutlined,PlusCircleOutlined,RedoOutlined } from '@ant-design/icons-vue';
-import api from '@/api';
-import { pinyin } from 'pinyin-pro';
-import { genWorkbook, downloadLink } from '@/utils/util';
-import { Dayjs } from 'dayjs';
-import { useUserStore } from '@/stores';
-import 'dayjs/locale/zh-cn';
-import { colorList } from '@/utils/util';
-import { editDataItem, jiezhens } from '@/types';
+import ApplyAddFormView from "./ApplyAddFormView.vue";
+import { computed, ref, onBeforeMount, watch } from "vue";
+import { message } from "ant-design-vue";
+import {
+  FileExcelOutlined,
+  CheckOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusCircleOutlined,
+  RedoOutlined,
+} from "@ant-design/icons-vue";
+import api from "@/api";
+import { pinyin } from "pinyin-pro";
+import { exportExcel, formattedTime } from "@/utils/util";
+import { Dayjs } from "dayjs";
+import { useUserStore } from "@/stores";
+import "dayjs/locale/zh-cn";
+import { colorList } from "@/utils/util";
+import { jiezhens } from "@/types";
 
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
-const monthSelect = ref<Dayjs[]>();
+type RangeValue = [Dayjs, Dayjs];
+const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
-const reviewChecked = ref('0');
-const exportData = ref();
-const isIncludeCheckData = ref(false)
-const verifications = ['已初核', '已复核', '待初核', '已删除', '全部'];
+const reviewChecked = ref("0");
+const isIncludeCheckData = ref(false);
+const verifications = ["已初核", "已复核", "待初核", "已删除", "全部"];
 // 搜索相关
 const searchValue = ref();
 const spinning = ref<boolean>(false);
@@ -246,11 +267,13 @@ const onSearch = () => {
     })
     .catch((e) => {
       console.log(e);
-      message.info('查询错误，联系管理员');
+      message.info("查询错误，联系管理员");
     });
 };
 const getColors = (user) => {
-  return colorList[userStore.checkoperators.map((item) => item.value).indexOf(user)];
+  return colorList[
+    userStore.checkoperators.map((item) => item.value).indexOf(user)
+  ];
 };
 watch(
   () => selectedOp.value,
@@ -265,7 +288,7 @@ watch(
   }
 );
 watch(
-  () => monthSelect.value,
+  () => monthRangeSelect.value,
   (newValue) => {
     pager.value.current = 1;
     // console.log(newValue.format('YYYY-MM-DD HH:mm:ss'))
@@ -285,11 +308,11 @@ const onSubmitNote = (id, note) => {
     .updateUnempVeriData({ id: id, checknote: note })
     .then((res) => {
       getData();
-      message.info('修改备注成功');
+      message.info("修改备注成功");
     })
     .catch((e) => {
       console.log(e);
-      message.info('修改备注失败，请联系管理员');
+      message.info("修改备注失败，请联系管理员");
     });
 };
 
@@ -300,50 +323,30 @@ const onSubmitRNote = (id, note) => {
     .then((res) => {
       console.log(res);
       getData();
-      message.info('添加复核备注成功');
+      message.info("添加复核备注成功");
     })
     .catch((e) => {
       console.log(e);
-      message.info('添加复核备注失败，请联系管理员');
+      message.info("添加复核备注失败，请联系管理员");
     });
 };
 //数据导出功能
-const exportExcel = () => {
-  getData({ noindex: 1}).then(() => {
-    const headersWithWidth = [
-      { header: '序号', width: 10 },
-      { header: '姓名', width: 12 },
-      { header: '身份证', width: 25 },
-      { header: '街镇', width: 25 },
-      { header: '提交时间', width: 35 },
-    ];
-    const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-    // worksheet.addRow(headers);
-    exportData.value.map((item, index) => {
-      worksheet.addRow([
-        index + 1,
-        item.personName,
-        item.personID,
-        item.jiezhen,
-        item.createtime.slice(0, 10),
-      ]);
+const unempHeader = [
+  { header: "序号", key: "index", width: 10 },
+  { header: "姓名", key: "personName", width: 12 },
+  { header: "身份证", key: "personID", width: 25 },
+  { header: "街镇", key: "jiezhen", width: 25 },
+  { header: "提交时间", key: "createtime", width: 35 },
+];
+const localExportExcel = () => {
+  exportExcel(unempHeader, "失业金", getData, monthRangeSelect.value)
+    .then(() => {
+      message.info("导出成功");
+    })
+    .catch((error) => {
+      console.log(error);
+      message.error("导出失败,请查看日期是否选择");
     });
-    worksheet.eachRow((row, rowNumber) => {
-      row.font = { size: 15 };
-      row.height = 20;
-      row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
-      });
-    });
-    worksheet.getRow(1).font = { size: 18, bold: true };
-
-    // 导出 Excel 文件
-    if (monthSelect.value) {
-      downloadLink(workbook, `失业金申领_${monthSelect.value[1].format('YYYY-MM-DD')}`);
-    } else {
-      downloadLink(workbook, `失业金申领_${new Date().toISOString().slice(0, 10)}`);
-    }
-  });
 };
 
 // 分页
@@ -365,13 +368,13 @@ const pagination = computed(() => {
 });
 
 const onShowSizeChange = async (page: any) => {
-  console.log('showsizechangepage=>', page);
+  console.log("showsizechangepage=>", page);
 };
 
 onBeforeMount(() => {
   userStore.getUsers();
   if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(','), userInfo.username];
+    selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }
   getData();
 });
@@ -400,65 +403,63 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
   };
-  if(isIncludeCheckData.value){
-    params.isIncludeCheckData = 1
-  }else{
-    params.isIncludeCheckData = null
+  if (isIncludeCheckData.value) {
+    params.isIncludeCheckData = 1;
+  } else {
+    params.isIncludeCheckData = null;
   }
 
-  if (reviewChecked.value !== '4') {
+  if (reviewChecked.value !== "4") {
     params.verification = reviewChecked.value;
   } else {
     params.verification = null;
   }
-  if (monthSelect.value) {
-    params.monthSelect = monthSelect.value;
+  if (monthRangeSelect.value) {
+    params.monthRangeSelect = monthRangeSelect.value;
     console.log(params);
   }
 
-  if (searchValue.value !== undefined && searchValue.value !== '') {
-    console.log('searchValue===>', searchValue.value);
+  if (searchValue.value !== undefined && searchValue.value !== "") {
+    console.log("searchValue===>", searchValue.value);
     params = {
       searchValue: searchValue.value,
       ...pager.value,
     };
-    console.log('params===>', params);
+    console.log("params===>", params);
   }
-  return await api
-    .getUnempVeriData(params)
-    .then((res: any) => {
-      console.log(res);
-      exportData.value = res.rows;
-      pager.value = res.page;
-      count.value = pager.value.total;
-      dataSource.value = res.rows;
-    })
-    .then(() => {
-      spinning.value = false;
-    });
-};
-const getCorrectTime = (date: string) => {
-  const originalDate = new Date(date);
-  const updatedDate = new Date(originalDate.getTime() + 8 * 60 * 60 * 1000).toISOString();
-  return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
+  return await api.getUnempVeriData(params).then((res: any) => {
+    pager.value = res.page;
+    count.value = pager.value.total;
+    dataSource.value = res.rows;
+    spinning.value = false;
+    return res.rows;
+  });
 };
 
 const deleteData = async (id: number) => {
-  await api.updateUnempVeriData({ id: id, verification: '3' }).then((res: any) => {
-    getData();
-  });
+  await api
+    .updateUnempVeriData({ id: id, verification: "3" })
+    .then((res: any) => {
+      getData();
+    });
 };
 const reviewData = async (id: number) => {
   await api
-    .updateUnempVeriData({ id: id, reviewoperator: userInfo.username, verification: '1' })
+    .updateUnempVeriData({
+      id: id,
+      reviewoperator: userInfo.username,
+      verification: "1",
+    })
     .then((res: any) => {
       getData();
     });
 };
 const chuheData = async (id: number) => {
-  await api.updateUnempVeriData({ id: id, verification: '0' }).then((res: any) => {
-    getData();
-  });
+  await api
+    .updateUnempVeriData({ id: id, verification: "0" })
+    .then((res: any) => {
+      getData();
+    });
 };
 
 // 增加数据弹窗
@@ -486,7 +487,7 @@ const handleOk = () => {
       open.value = false;
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
+      message.info("数据格式错误，无法提交=>", error);
     });
 
   getData();
@@ -495,12 +496,12 @@ const handleEditOk = () => {
   api
     .updateUnempVeriData(editForm.value)
     .then((res: any) => {
-      message.info('修改成功');
+      message.info("修改成功");
       editOpen.value = false;
       getData();
     })
     .catch((error) => {
-      message.info('数据格式错误，无法提交=>', error);
+      message.info("数据格式错误，无法提交=>", error);
     });
 };
 const handleEditCancel = () => {
@@ -516,14 +517,14 @@ const columns = [
   //   key: 'id',
   // },
   {
-    title: '姓名',
-    dataIndex: 'personName',
-    key: 'personName',
+    title: "姓名",
+    dataIndex: "personName",
+    key: "personName",
   },
   {
-    title: '身份证号',
-    dataIndex: 'personID',
-    key: 'personID',
+    title: "身份证号",
+    dataIndex: "personID",
+    key: "personID",
   },
   // {
   //   title: '街镇',
@@ -531,14 +532,14 @@ const columns = [
   //   key: 'jiezhen',
   // },
   {
-    title: '初核',
-    dataIndex: 'checkoperator',
-    key: 'checkoperator',
+    title: "初核",
+    dataIndex: "checkoperator",
+    key: "checkoperator",
   },
   {
-    title: '复核',
-    dataIndex: 'reviewoperator',
-    key: 'reviewoperator',
+    title: "复核",
+    dataIndex: "reviewoperator",
+    key: "reviewoperator",
   },
   // {
   //   title: '初核备注',
@@ -551,14 +552,14 @@ const columns = [
   //   key: 'reviewnote',
   // },
   {
-    title: '操作',
+    title: "操作",
     // dataIndex: 'action',
-    key: 'action',
+    key: "action",
   },
   {
-    title: '创建时间',
-    dataIndex: 'createtime',
-    key: 'createtime',
+    title: "创建时间",
+    dataIndex: "createtime",
+    key: "createtime",
   },
 ];
 

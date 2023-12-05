@@ -33,7 +33,6 @@
               @click="
                 exportExcel(
                   headersWithWidth,
-                  dataSource,
                   '延长失业金',
                   getData,
                   monthRangeSelect
@@ -430,21 +429,18 @@ const getData = async (params?: any) => {
       current: 1,
     };
   }
-  return await api
-    .getYanchangData(params)
-    .then((res: any) => {
-      pager.value = res.page;
-      count.value = pager.value.total;
-      dataSource.value = res.rows.map((item: any) => {
-        return {
-          editVisible: false,
-          ...item,
-        };
-      });
-    })
-    .then(() => {
-      spinning.value = false;
+  return await api.getYanchangData(params).then((res: any) => {
+    pager.value = res.page;
+    count.value = pager.value.total;
+    dataSource.value = res.rows.map((item: any) => {
+      return {
+        editVisible: false,
+        ...item,
+      };
     });
+    spinning.value = false;
+    return res.rows;
+  });
 };
 const getCorrectTime = (date: string) => {
   const originalDate = new Date(date);

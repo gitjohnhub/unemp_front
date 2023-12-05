@@ -307,13 +307,7 @@ const columns = columnsOriginal.map((item) => {
 });
 
 const localExportExcel = () => {
-  exportExcel(
-    nongbuHeader,
-    dataSource.value,
-    "农民补助金",
-    getData,
-    monthSelect.value
-  )
+  exportExcel(nongbuHeader, "农民补助金", getData, monthSelect.value)
     .then((res) => {
       message.info("导出成功");
     })

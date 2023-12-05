@@ -122,13 +122,9 @@
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
-              <span
-                v-html="
-                  `${getCorrectTime(record.createtime)[0]}<br>${
-                    getCorrectTime(record.createtime)[1]
-                  }<br>id:${record.id}`
-                "
-              ></span>
+              <a-row> {{ formattedTime(record.createtime)[0] }} </a-row>
+              <a-row> {{ formattedTime(record.createtime)[1] }} </a-row>
+              <a-row> id:{{ record.id }} </a-row>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
@@ -251,19 +247,18 @@ import { pinyin } from "pinyin-pro";
 import NongbuAddFormView from "./NongbuAddFormView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { nongbuHeader, colorList, exportExcel } from "@/utils/util";
+import {
+  nongbuHeader,
+  colorList,
+  exportExcel,
+  formattedTime,
+} from "@/utils/util";
 import { jiezhens } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
 const localExportExcel = () => {
-  exportExcel(
-    nongbuHeader,
-    dataSource.value,
-    "农民补助金",
-    getData,
-    monthRangeSelect.value
-  )
+  exportExcel(nongbuHeader, "农民补助金", getData, monthRangeSelect.value)
     .then(() => {
       message.info("导出成功");
     })
@@ -431,23 +426,13 @@ const getData = async (params?: any) => {
   } else {
     params.searchValue = null;
   }
-  return await api
-    .getNongbuData(params)
-    .then((res: any) => {
-      pager.value = res.page;
-      count.value = pager.value.total;
-      dataSource.value = res.rows;
-    })
-    .then(() => {
-      spinning.value = false;
-    });
-};
-const getCorrectTime = (date: string) => {
-  const originalDate = new Date(date);
-  const updatedDate = new Date(
-    originalDate.getTime() + 8 * 60 * 60 * 1000
-  ).toISOString();
-  return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
+  return await api.getNongbuData(params).then((res: any) => {
+    pager.value = res.page;
+    count.value = pager.value.total;
+    dataSource.value = res.rows;
+    spinning.value = false;
+    return res.rows;
+  });
 };
 
 // const deleteData = async (id: number) => {

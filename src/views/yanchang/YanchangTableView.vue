@@ -161,10 +161,7 @@
                     <CheckOutlined />
                   </a-button> -->
                   <ActionView
-                    :params="{
-                      id: record.id,
-                      status: record.status,
-                    }"
+                    :params="{ id: record.id, status: '1' }"
                     :get-data="getData"
                     table="yanchang"
                   />

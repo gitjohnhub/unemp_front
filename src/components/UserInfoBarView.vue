@@ -16,9 +16,7 @@
         <a-tag>
           {{ formattedDate }}
         </a-tag>
-        <a-tag v-if="dutyPerson">
-          {{ dutyPerson }}
-        </a-tag>
+        <a-tag v-if="dutyPerson"> 值班:{{ dutyPerson }} </a-tag>
         <a-button key="1" type="primary" danger @click="logout">登出</a-button>
       </template>
     </a-page-header>

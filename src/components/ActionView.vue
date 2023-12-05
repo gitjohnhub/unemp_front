@@ -2,7 +2,6 @@
   <a-button
     @click="updateStatus(props.params, props.getData, props.table)"
     type="primary"
-    v-if="props.params.status == '0'"
   >
     <CheckOutlined />
   </a-button>

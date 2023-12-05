@@ -20,7 +20,6 @@ import { message } from "ant-design-vue";
 import api from "@/api";
 import { useUserStore } from "@/stores";
 import { Icon } from "@/components/Icon";
-import { computed } from "vue";
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const props = defineProps({

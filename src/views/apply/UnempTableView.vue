@@ -141,7 +141,7 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <ApplyActionView :record="record" @get-data="getData" />
+                  <UnempActionView :record="record" @get-data="getData" />
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
@@ -188,7 +188,7 @@
 </template>
 <script lang="ts" setup>
 import UnempEditFormView from "./UnempEditFormView.vue";
-import ApplyActionView from "./ApplyActionView.vue";
+import UnempActionView from "./UnempActionView.vue";
 import FilterView from "@/components/FilterView.vue";
 
 import { computed, ref, onBeforeMount, watch } from "vue";

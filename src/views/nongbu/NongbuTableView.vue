@@ -15,7 +15,6 @@
                   v-model:value="showWithStatus"
                   :options="withStatusOrMonthsList"
                 />
-
                 <a-segmented
                   v-if="showWithStatus == 0"
                   v-model:value="status"

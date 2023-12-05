@@ -45,22 +45,34 @@
             </a-button>
           </a-space>
         </a-row>
-        <a-row>
-          <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button
-              v-for="(status, index) in statusCal"
-              :value="String(index)"
-              :key="index"
-              >{{ status.label }}
-              <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
-            </a-radio-button>
-          </a-radio-group>
-        </a-row>
         <FilterView
           v-bind:chosen-jiezhen="chosenJiezhen"
           @jiezhenSelectChange="jiezhenSelectChange"
           @hanle-change-search="hanleChangeSearch"
-        />
+        >
+          <template #otherFilter>
+            <a-space direction="vertical">
+              <a-segmented
+                v-model:value="isCustomOrder"
+                :options="customOrderList"
+              />
+              <a-segmented
+                v-model:value="showWithStatus"
+                :options="withStatusOrMonthsList"
+              />
+              <a-segmented
+                v-if="showWithStatus == 0"
+                v-model:value="status"
+                :options="mapStatusList"
+              />
+              <a-segmented
+                v-if="showWithStatus == 1"
+                v-model:value="monthSelect"
+                :options="months"
+              />
+            </a-space>
+          </template>
+        </FilterView>
       </a-space>
     </div>
     <a-spin :spinning="spinning">
@@ -101,6 +113,7 @@
             </a-row>
             <a-row>
               <a-tag> {{ record.endDate }}</a-tag>
+              <a-tag>{{ record.payMonth }}</a-tag>
             </a-row>
             <a-row>
               <a-tooltip :title="record.note" color="#f50">
@@ -135,7 +148,6 @@
             <a-tag color="red" v-if="record.wrongTag == '1'">
               <WarningOutlined></WarningOutlined>
             </a-tag>
-            <a-tag>{{ record.payMonth }}</a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
           </template>
           <!-- createtime column -->
@@ -154,54 +166,9 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <!-- <a-button
-                    @click="reviewData(record.id)"
-                    type="primary"
-                    v-if="record.status == '0'"
-                  >
-                    <CheckOutlined />
-                  </a-button> -->
-                  <ActionView
-                    :params="{ id: record.id, status: '1' }"
-                    :get-data="getData"
-                    table="yanchang"
-                  />
-
+                  <YanchangActionView :record="record" @get-data="getData" />
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
-                  </a-button>
-                  <a-button
-                    @click="tagWrong(record.id, getData, 'yanchang')"
-                    type="primary"
-                    danger
-                  >
-                    <WarningFilled />
-                  </a-button>
-
-                  <a-button
-                    @click="checkData(record.id, getData)"
-                    type="primary"
-                    v-if="record.status == '2'"
-                    >登记</a-button
-                  >
-                  <a-button
-                    @click="tagOriginalFile(record.id, getData, 'yanchang')"
-                    type="primary"
-                    danger
-                  >
-                    <FilePdfOutlined />
-                  </a-button>
-                </a-space>
-              </a-row>
-
-              <a-row>
-                <a-space>
-                  <a-button
-                    @click="cancelData(record.id, getData)"
-                    type="primary"
-                    danger
-                  >
-                    <DeleteOutlined />
                   </a-button>
                 </a-space>
               </a-row>
@@ -234,7 +201,7 @@ import { cancelData, getStatus, statusList, checkData } from "./utils";
 import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
 import YanchangEditFormView from "./YanchangEditFormView.vue";
-import ActionView from "@/components/ActionView.vue";
+import YanchangActionView from "./YanchangActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { exportExcel } from "@/utils/util";
@@ -248,6 +215,99 @@ import {
   FilePdfOutlined,
   WarningOutlined,
 } from "@ant-design/icons-vue";
+const mapStatusList = statusList.map((item, index) => {
+  return {
+    label: item,
+    value: index,
+  };
+});
+// 排序选择
+const order = ref({
+  sortColumn: "jiezhen",
+  sortRule: "DESC",
+});
+const isCustomOrder = ref(0);
+const customOrderList = [
+  {
+    label: "按时间排序",
+    value: 0,
+  },
+  {
+    label: "按街镇排序",
+    value: 1,
+  },
+  {
+    label: "按原件未收到排序",
+    value: 2,
+  },
+];
+watch(
+  () => isCustomOrder.value,
+  () => {
+    console.log("isCustomOrder", isCustomOrder.value);
+    switch (isCustomOrder.value) {
+      case 0:
+        order.value = {
+          sortColumn: "createtime",
+          sortRule: "DESC",
+        };
+        break;
+      case 1:
+        order.value = {
+          sortColumn: "jiezhen",
+          sortRule: "DESC",
+        };
+        break;
+      case 2:
+        order.value = {
+          sortColumn: "originalFile",
+          sortRule: "ASC",
+        };
+      default:
+        break;
+    }
+    getData();
+  }
+);
+// 月视图
+const showWithStatus = ref(1);
+watch(
+  () => showWithStatus.value,
+  () => {
+    getData();
+  }
+);
+const withStatusOrMonthsList = [
+  {
+    label: "按审批状态显示",
+    value: 0,
+  },
+  {
+    label: "按月显示",
+    value: 1,
+  },
+];
+const months = ref([""]);
+const monthSelect = ref("");
+watch(
+  () => monthSelect.value,
+  () => {
+    getData();
+  }
+);
+const getMonths = (params?: any) => {
+  api
+    .getYanchangAllDate()
+    .then((res: any) => {
+      console.log("res", res);
+      months.value = res;
+      monthSelect.value = months.value[months.value.length - 1];
+      console.log("months===>", months.value);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 // 按街镇选择子组件,搜索
 const jiezhenSelectChange = (selectJiezhens: any) => {
   chosenJiezhen.value = selectJiezhens;
@@ -279,7 +339,7 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref("0");
+const status = ref(0);
 const statusCal = ref([]);
 //编辑数据弹窗
 const editForm = ref();
@@ -396,6 +456,7 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
+  getMonths();
   getData();
 });
 // 获取数据
@@ -413,14 +474,17 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
+    monthRangeSelect:
+      monthRangeSelect.value && showWithStatus.value == 0
+        ? monthRangeSelect.value
+        : null,
+    customOrder: order.value,
+    monthSelect:
+      monthSelect.value && showWithStatus.value == 1 ? monthSelect.value : null,
   };
-  if (monthRangeSelect.value) {
-    params.monthRangeSelect = monthRangeSelect.value;
-  }
   if (chosenJiezhen.value.length > 0) {
     params.jiezhen = chosenJiezhen.value;
   }
-
   if (Number(status.value) !== statusList.length - 1) {
     params.status = status.value;
   } else {

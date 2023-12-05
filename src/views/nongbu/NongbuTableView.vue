@@ -8,6 +8,10 @@
             <a-card>
               <a-space direction="vertical">
                 <a-segmented
+                  v-model:value="isCustomOrder"
+                  :options="customOrderList"
+                />
+                <a-segmented
                   v-model:value="showWithStatus"
                   :options="withStatusOrMonthsList"
                 />
@@ -52,12 +56,6 @@
               @jiezhenSelectChange="jiezhenSelectChange"
               @hanle-change-search="hanleChangeSearch"
             >
-              <template #otherFilter>
-                <a-segmented
-                  v-model:value="isCustomOrder"
-                  :options="customOrderList"
-                />
-              </template>
               <template #footer>
                 <a-checkbox v-model:checked="showCancelUnemp"
                   >只显示取消失业登记</a-checkbox
@@ -78,6 +76,7 @@
         @showSizeChange="onShowSizeChange"
         :pagination="pagination"
         bordered
+        size="small"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'personID'">
@@ -105,10 +104,21 @@
           <template v-if="column.key === 'jiezhen'">
             <a-space direction="vertical">
               <a-row>
-                <a-tag color="red" v-if="record.wrongTag == '1'">
+                <a-tag color="#f50" v-if="record.wrongTag == '1'">
                   <WarningFilled />
                 </a-tag>
-                <a-tag>
+                <a-tag color="#f50" v-if="record.originalFile !== '0'"
+                  ><FilePdfFilled
+                /></a-tag>
+                <a-tag v-if="record.repeatTimes !== '0'" color="#f50"
+                  >R:{{ record.repeatTimes }}</a-tag
+                >
+                <a-tag color="red" v-if="record.cancelUnemp !== '0'"
+                  ><StopFilled
+                /></a-tag>
+              </a-row>
+              <a-row>
+                <a-tag :color="colorList[jiezhenList.indexOf(record.jiezhen)]">
                   {{ record.jiezhen }}
                 </a-tag>
                 <a-tag>
@@ -130,20 +140,10 @@
             <a-tag :color="colorList[Number(record.status)]">
               {{ getStatus(record.status) }}
             </a-tag>
+            <a-tag> {{ record.applyDate }}</a-tag>
             <a-progress :percent="getProgress(record.status)" size="small" />
           </template>
           <template v-if="column.key === 'note'">
-            <a-row>
-              <a-tag color="red" v-if="record.originalFile !== '0'"
-                ><FilePdfOutlined
-              /></a-tag>
-              <a-tag v-if="record.repeatTimes !== '0'">{{
-                record.repeatTimes
-              }}</a-tag>
-              <a-tag color="red" v-if="record.cancelUnemp !== '0'"
-                ><StopOutlined
-              /></a-tag>
-            </a-row>
             <a-row>
               {{ record.note }}
             </a-row>
@@ -168,14 +168,14 @@
                     <WarningFilled />
                   </a-button>
                   <a-button @click="showEditModal(record)"
-                    ><EditOutlined
+                    ><EditFilled
                   /></a-button>
                   <a-button
                     @click="tagOriginalFile(record.id, getData, 'nongbu')"
                     type="primary"
                     danger
                   >
-                    <FilePdfOutlined />
+                    <FilePdfFilled />
                   </a-button>
                 </a-space>
               </a-row>
@@ -191,10 +191,10 @@
                     @click="addRepeat(record.id, record.repeatTimes)"
                     type="primary"
                     danger
-                    ><PlusCircleOutlined />
+                    ><PlusCircleFilled />
                   </a-button>
                   <a-button @click="cancelData(record.id)" type="primary" danger
-                    ><DeleteOutlined
+                    ><DeleteFilled
                   /></a-button>
                   <a-button
                     @click="tagCancelUnemp(record.id, getData)"
@@ -202,7 +202,7 @@
                     danger
                     v-if="record.status == '1'"
                   >
-                    <StopOutlined />
+                    <StopFilled />
                   </a-button>
                 </a-space>
               </a-row>
@@ -265,11 +265,11 @@ import FilterView from "@/components/FilterView.vue";
 import {
   WarningFilled,
   CheckOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  StopOutlined,
-  PlusCircleOutlined,
-  FilePdfOutlined,
+  DeleteFilled,
+  EditFilled,
+  StopFilled,
+  PlusCircleFilled,
+  FilePdfFilled,
 } from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
@@ -277,7 +277,7 @@ import NongbuAddFormView from "./NongbuAddFormView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { nongbuHeader, exportExcel, formattedTime } from "@/utils/util";
-import { jiezhens, colorList } from "@/types";
+import { jiezhens, colorList, jiezhenList } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
@@ -360,11 +360,11 @@ const order = ref({
 const isCustomOrder = ref(0);
 const customOrderList = [
   {
-    label: "按街镇排序",
+    label: "按时间排序",
     value: 0,
   },
   {
-    label: "按时间排序",
+    label: "按街镇排序",
     value: 1,
   },
   {
@@ -379,13 +379,13 @@ watch(
     switch (isCustomOrder.value) {
       case 0:
         order.value = {
-          sortColumn: "jiezhen",
+          sortColumn: "createtime",
           sortRule: "DESC",
         };
         break;
       case 1:
         order.value = {
-          sortColumn: "createtime",
+          sortColumn: "jiezhen",
           sortRule: "DESC",
         };
         break;
@@ -468,7 +468,7 @@ onBeforeMount(() => {
   getData();
 });
 // 月视图
-const showWithStatus = ref(0);
+const showWithStatus = ref(1);
 watch(
   () => showWithStatus.value,
   () => {
@@ -658,6 +658,7 @@ const columnsOriginal = [
   {
     key: "personID",
     title: "身份证号",
+    width: "250",
   },
   {
     key: "chengPayMonth",
@@ -665,11 +666,8 @@ const columnsOriginal = [
   },
   {
     key: "jiezhen",
-    title: "街镇",
-  },
-  {
-    key: "applyDate",
-    title: "申请日期",
+    title: "街镇/原件/初核/复核",
+    width: "50",
   },
   {
     key: "note",
@@ -677,7 +675,7 @@ const columnsOriginal = [
   },
   {
     key: "status",
-    title: "进度",
+    title: "进度/申请日期",
   },
   {
     key: "createtime",

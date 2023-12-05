@@ -13,7 +13,6 @@
       <a-input-search
         v-model:value="localSearchValue"
         placeholder="输入姓名/身份证"
-        style="width: 200px"
         @search="hanleChangeSearch"
       />
       <slot name="footer"></slot>

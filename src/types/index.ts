@@ -24,22 +24,26 @@ export const rules = {
 };
 export const labelCol = { style: { width: "150px" } };
 export const wrapperCol = { span: 14 };
-export const jiezhens = [
-  { value: "江桥镇", label: "江桥镇" },
-  { value: "马陆镇", label: "马陆镇" },
-  { value: "外冈镇", label: "外冈镇" },
-  { value: "华亭镇", label: "华亭镇" },
-  { value: "安亭镇", label: "安亭镇" },
-  { value: "南翔镇", label: "南翔镇" },
-  { value: "徐行镇", label: "徐行镇" },
-  { value: "黄渡镇", label: "黄渡镇" },
-  { value: "嘉定镇", label: "嘉定镇" },
-  { value: "工业区", label: "工业区" },
-  { value: "真新街道", label: "真新街道" },
-  { value: "新成路街道", label: "新成路街道" },
-  { value: "菊园新区", label: "菊园新区" },
-  { value: "APP", label: "APP" },
+export const jiezhenList = [
+  "江桥镇",
+  "马陆镇",
+  "外冈镇",
+  "华亭镇",
+  "安亭镇",
+  "南翔镇",
+  "徐行镇",
+  "黄渡镇",
+  "嘉定镇",
+  "工业区",
+  "真新街道",
+  "新成路街道",
+  "菊园新区",
+  "APP",
 ];
+export const jiezhens = jiezhenList.map((item) => ({
+  value: item,
+  label: item,
+}));
 export type Xiecha = {
   personName: string;
   personID: string;
@@ -47,6 +51,14 @@ export type Xiecha = {
   unempInfo: Object;
 };
 export const colorList = [
+  "#25b1bf",
+  "#acc2ef",
+  "#3D5A80",
+  "#2E8B57",
+  "#c21d03",
+  "#fd5732",
+  "#fd5732",
+  "#fd5732",
   "#25b1bf",
   "#acc2ef",
   "#3D5A80",

@@ -14,17 +14,13 @@
         :map-status-list="mapStatusList"
         :headers-with-width="headersWithWidth"
         :months="months"
+        :monthSelect="monthSelect"
         file-name="延长失业金"
         :get-data="getData"
         :monthRangeSelect="monthRangeSelect ? monthRangeSelect : monthSelect"
       >
         <template #otherFilter>
           <a-space direction="vertical">
-            <a-segmented
-              v-if="showWithStatus == 1"
-              v-model:value="monthSelect"
-              :options="months"
-            />
             <a-range-picker
               v-model:value="monthRangeSelect"
               v-if="showWithStatus == 0"

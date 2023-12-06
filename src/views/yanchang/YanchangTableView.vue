@@ -113,7 +113,6 @@
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
               {{ getStatus(record.status) }}
-              {{ Number(record.status) }}
             </a-tag>
             <a-tag color="red" v-if="record.originalFile == '1'">
               <FilePdfOutlined></FilePdfOutlined>
@@ -197,15 +196,15 @@ const order = ref({
 const isCustomOrder = ref(0);
 const customOrderList = [
   {
-    label: "按时间排序",
+    label: "按时间",
     value: 0,
   },
   {
-    label: "按街镇排序",
+    label: "按街镇",
     value: 1,
   },
   {
-    label: "按原件未收到排序",
+    label: "按原件未收到",
     value: 2,
   },
 ];
@@ -474,8 +473,6 @@ const getData = async (params?: any) => {
         ? Number(status.value)
         : null,
   };
-  console.log("params===>", params);
-  console.log("statusList===>", statusList);
   if (chosenJiezhen.value.length > 0) {
     params.jiezhen = chosenJiezhen.value;
   }

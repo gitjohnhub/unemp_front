@@ -1,6 +1,7 @@
 import Excel from "exceljs";
 import { ImageLike, createWorker } from "tesseract.js";
 import { DataItem, months, alpahbets } from "@/types";
+import { get } from "http";
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
@@ -187,6 +188,9 @@ export const exportExcel = (
   getData: any,
   monthRangeSelect: any[] | string = []
 ) => {
+  console.log("getData==>", getData);
+  console.log("filename==>", fileName);
+  console.log("monthRangeSelect==>", monthRangeSelect);
   return new Promise((resolve, reject) => {
     try {
       // 写入文件
@@ -197,7 +201,7 @@ export const exportExcel = (
           : `${fileName}_${monthRangeSelect[0].format(
               "YYYY-MM-DD"
             )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
-
+      console.log("title===>", title);
       worksheet.addRow(headers);
       worksheet.mergeCells(`A1:${alpahbets[headers.length - 1]}1`);
       worksheet.getCell("A1").value = title;
@@ -205,7 +209,9 @@ export const exportExcel = (
         vertical: "middle",
         horizontal: "center",
       };
+      console.log("headerwithWidth===>", headersWithWidth);
       getData({ noindex: 1 }).then((data: any) => {
+        console.log("data===>", data);
         data.map((item, index) => {
           const ItemList = [];
           headersWithWidth

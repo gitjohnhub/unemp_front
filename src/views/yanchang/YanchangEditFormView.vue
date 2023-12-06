@@ -47,6 +47,18 @@
       <a-radio value="2">待登记</a-radio>
     </a-radio-group>
   </a-form-item>
+  <a-form-item label="原件">
+    <a-radio-group v-model:value="localEditForm.originalFile">
+      <a-radio value="0">未收到</a-radio>
+      <a-radio value="1">已收到</a-radio>
+    </a-radio-group>
+  </a-form-item>
+  <a-form-item label="是否错核">
+    <a-radio-group v-model:value="localEditForm.wrongTag">
+      <a-radio value="1">标记错核</a-radio>
+      <a-radio value="0">未错核</a-radio>
+    </a-radio-group>
+  </a-form-item>
 </template>
 <script lang="ts" setup>
 import { computed, onBeforeMount, ref, watch } from "vue";

@@ -1,8 +1,43 @@
 <template>
   <div>
     <div class="table-operations">
-      <a-space direction="vertical">
-        <a-row>
+      <FilterView
+        v-bind:chosen-jiezhen="chosenJiezhen"
+        @jiezhenSelectChange="jiezhenSelectChange"
+        @hanle-change-search="hanleChangeSearch"
+        @resetSearch="resetSearch"
+        :headers-with-width="headersWithWidth"
+        file-name="延长失业金"
+        :get-data="getData"
+        :monthRangeSelect="monthRangeSelect ? monthRangeSelect : monthSelect"
+      >
+        <template #otherFilter>
+          <a-space direction="vertical">
+            <a-segmented
+              v-model:value="isCustomOrder"
+              :options="customOrderList"
+            />
+            <a-segmented
+              v-model:value="showWithStatus"
+              :options="withStatusOrMonthsList"
+            />
+            <a-segmented
+              v-if="showWithStatus == 0"
+              v-model:value="status"
+              :options="mapStatusList"
+            />
+            <a-segmented
+              v-if="showWithStatus == 1"
+              v-model:value="monthSelect"
+              :options="months"
+            />
+            <a-range-picker
+              v-model:value="monthRangeSelect"
+              v-if="showWithStatus == 0"
+            />
+          </a-space>
+        </template>
+        <template #otherAction>
           <a-space>
             <a-button @click="showEditModal(null)" type="primary"
               >添加</a-button
@@ -15,65 +50,12 @@
               @ok="handleEditOk(null)"
               @cancel="handleEditCancel(null)"
             >
-              <!-- <YanchangAddFormView ref="formRef" /> -->
               <YanchangEditFormView ref="editableFormRef" />
             </a-modal>
             <a-tag color="#108ee9">{{ count }}</a-tag>
-            <a-button @click="getData"> 刷新数据 </a-button>
-            <a-divider type="vertical" />
-            <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
-        </a-row>
-        <a-row>
-          <!-- 数据导出操作 -->
-          <a-space>
-            <h5>导出操作：</h5>
-            <a-range-picker v-model:value="monthRangeSelect" />
-            <a-button
-              @click="
-                exportExcel(
-                  headersWithWidth,
-                  '延长失业金',
-                  getData,
-                  monthRangeSelect
-                )
-              "
-              type="primary"
-              style="background-color: #1e1e1e"
-            >
-              导出Excel
-            </a-button>
-          </a-space>
-        </a-row>
-        <FilterView
-          v-bind:chosen-jiezhen="chosenJiezhen"
-          @jiezhenSelectChange="jiezhenSelectChange"
-          @hanle-change-search="hanleChangeSearch"
-        >
-          <template #otherFilter>
-            <a-space direction="vertical">
-              <a-segmented
-                v-model:value="isCustomOrder"
-                :options="customOrderList"
-              />
-              <a-segmented
-                v-model:value="showWithStatus"
-                :options="withStatusOrMonthsList"
-              />
-              <a-segmented
-                v-if="showWithStatus == 0"
-                v-model:value="status"
-                :options="mapStatusList"
-              />
-              <a-segmented
-                v-if="showWithStatus == 1"
-                v-model:value="monthSelect"
-                :options="months"
-              />
-            </a-space>
-          </template>
-        </FilterView>
-      </a-space>
+        </template>
+      </FilterView>
     </div>
     <a-spin :spinning="spinning">
       <a-table
@@ -140,7 +122,7 @@
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
-              {{ getStatus(record.status) }}
+              {{ statusList[Number(status)] }}
             </a-tag>
             <a-tag color="red" v-if="record.originalFile == '1'">
               <FilePdfOutlined></FilePdfOutlined>
@@ -197,24 +179,19 @@ import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
 import api from "@/api";
 import FilterView from "@/components/FilterView.vue";
-import { cancelData, getStatus, statusList, checkData } from "./utils";
-import { tagWrong, tagOriginalFile } from "@/utils/tag";
 import { pinyin } from "pinyin-pro";
 import YanchangEditFormView from "./YanchangEditFormView.vue";
 import YanchangActionView from "./YanchangActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { exportExcel } from "@/utils/util";
 import { colorList } from "@/types";
 import "dayjs/locale/zh-cn";
 import {
-  WarningFilled,
-  CheckOutlined,
-  DeleteOutlined,
   EditOutlined,
   FilePdfOutlined,
   WarningOutlined,
 } from "@ant-design/icons-vue";
+const statusList = ["已登记", "已审批", "待登记", "已取消", "全部"];
 const mapStatusList = statusList.map((item, index) => {
   return {
     label: item,
@@ -244,7 +221,6 @@ const customOrderList = [
 watch(
   () => isCustomOrder.value,
   () => {
-    console.log("isCustomOrder", isCustomOrder.value);
     switch (isCustomOrder.value) {
       case 0:
         order.value = {
@@ -315,6 +291,12 @@ const jiezhenSelectChange = (selectJiezhens: any) => {
 const chosenJiezhen = ref([]);
 const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
+};
+const resetSearch = (resetItem: any) => {
+  showWithStatus.value = 1;
+  isCustomOrder.value = 0;
+  status.value = 0;
+  monthRangeSelect.value = null;
 };
 const searchValue = ref();
 watch(

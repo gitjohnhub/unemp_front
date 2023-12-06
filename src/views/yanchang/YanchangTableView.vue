@@ -2,30 +2,24 @@
   <div>
     <div class="table-operations">
       <FilterView
-        v-bind:chosen-jiezhen="chosenJiezhen"
         @jiezhenSelectChange="jiezhenSelectChange"
-        @hanle-change-search="hanleChangeSearch"
+        @handle-change-search="hanleChangeSearch"
+        @handle-change-custom-order="handleChangeCustomOrder"
+        @handle-change-show-with-status="handleChangeShowWithStatus"
+        @handle-change-status="handleChangeStatus"
+        @handle-change-month-select="handleChangeMonthSelect"
         @resetSearch="resetSearch"
+        :custom-order-list="customOrderList"
+        :with-status-or-months-list="withStatusOrMonthsList"
+        :map-status-list="mapStatusList"
         :headers-with-width="headersWithWidth"
+        :months="months"
         file-name="延长失业金"
         :get-data="getData"
         :monthRangeSelect="monthRangeSelect ? monthRangeSelect : monthSelect"
       >
         <template #otherFilter>
           <a-space direction="vertical">
-            <a-segmented
-              v-model:value="isCustomOrder"
-              :options="customOrderList"
-            />
-            <a-segmented
-              v-model:value="showWithStatus"
-              :options="withStatusOrMonthsList"
-            />
-            <a-segmented
-              v-if="showWithStatus == 0"
-              v-model:value="status"
-              :options="mapStatusList"
-            />
             <a-segmented
               v-if="showWithStatus == 1"
               v-model:value="monthSelect"
@@ -291,6 +285,18 @@ const jiezhenSelectChange = (selectJiezhens: any) => {
 const chosenJiezhen = ref([]);
 const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
+};
+const handleChangeCustomOrder = (childCustomOrder: number) => {
+  isCustomOrder.value = childCustomOrder;
+};
+const handleChangeShowWithStatus = (childShowWithStatus: number) => {
+  showWithStatus.value = childShowWithStatus;
+};
+const handleChangeStatus = (childStatus: number) => {
+  status.value = childStatus;
+};
+const handleChangeMonthSelect = (childMonthSelect: string) => {
+  monthSelect.value = childMonthSelect;
 };
 const resetSearch = (resetItem: any) => {
   showWithStatus.value = 1;

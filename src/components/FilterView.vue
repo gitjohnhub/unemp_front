@@ -2,8 +2,32 @@
   <a-card>
     <a-space direction="vertical">
       <slot name="otherFilter"></slot>
+      <a-space direction="vertical">
+        <a-segmented
+          v-model:value="localisCustomOrder"
+          :options="customOrderList"
+          @change="handleChangeCustomOrder"
+        />
+        <a-segmented
+          v-model:value="showWithStatus"
+          :options="withStatusOrMonthsList"
+          @change="handleChangeShowWithStatus"
+        />
+        <a-segmented
+          v-if="showWithStatus == 0"
+          v-model:value="status"
+          :options="mapStatusList"
+          @change="handleChangeStatus"
+        />
+        <a-segmented
+          v-if="showWithStatus == 1"
+          v-model:value="monthSelect"
+          :options="months"
+          @change="handleChangeMonthSelect"
+        />
+      </a-space>
       <a-select
-        v-model:value="localChosenJiezhen"
+        v-model:value="chosenJiezhen"
         mode="multiple"
         placeholder="选择街镇筛选"
         style="width: 300px"
@@ -11,7 +35,7 @@
         @change="handleChangeJiezhen"
       ></a-select>
       <a-input-search
-        v-model:value="localSearchValue"
+        v-model:value="searchValue"
         placeholder="输入姓名/身份证"
         @search="handleChangeSearch"
       />
@@ -41,7 +65,31 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  localSearchValue: {
+  isCustomOrder: {
+    type: Number,
+    default: 0,
+  },
+  customOrderList: {
+    type: Array,
+    default: () => [],
+  },
+  showWithStatus: {
+    type: Number,
+    default: 1,
+  },
+  status: {
+    type: Number,
+    default: 0,
+  },
+  mapStatusList: {
+    type: Array,
+    default: () => [],
+  },
+  withStatusOrMonthsList: {
+    type: Array,
+    default: () => [],
+  },
+  searchValue: {
     type: String,
     default: "",
   },
@@ -59,29 +107,55 @@ const props = defineProps({
     type: [Array, String],
     default: "",
   },
+  monthSelect: {
+    type: String,
+    default: "",
+  },
+  months: {
+    type: Array,
+    default: () => [],
+  },
 });
-const localChosenJiezhen = ref(props.chosenJiezhen.slice());
-const localSearchValue = ref(props.localSearchValue);
-const resetSearch = () => {
-  localChosenJiezhen.value = [];
-  localSearchValue.value = "";
-  emit("resetSearch");
+const chosenJiezhen = ref(props.chosenJiezhen.slice());
+const searchValue = ref(props.searchValue);
+const localisCustomOrder = ref(props.isCustomOrder);
+const showWithStatus = ref(props.showWithStatus);
+const status = ref(props.status);
+const monthSelect = ref(props.monthSelect);
 
+const resetSearch = () => {
+  chosenJiezhen.value = [];
+  searchValue.value = "";
+  emit("resetSearch");
   handleChangeSearch();
   handleChangeJiezhen();
 };
 const emit = defineEmits([
   "jiezhenSelectChange",
-  "hanleChangeSearch",
+  "handleChangeSearch",
   "handleExportExcel",
   "resetSearch",
+  "handleChangeCustomOrder",
+  "handleChangeShowWithStatus",
+  "handleChangeStatus",
+  "handleChangeMonthSelect",
 ]);
 const handleChangeJiezhen = () => {
-  console.log("localChosenJiezhen==>", localChosenJiezhen.value);
-  emit("jiezhenSelectChange", localChosenJiezhen.value);
+  emit("jiezhenSelectChange", chosenJiezhen.value);
 };
 const handleChangeSearch = () => {
-  console.log("localSearchValue==>", localSearchValue.value);
-  emit("hanleChangeSearch", localSearchValue.value);
+  emit("handleChangeSearch", searchValue.value);
+};
+const handleChangeCustomOrder = () => {
+  emit("handleChangeCustomOrder", localisCustomOrder.value);
+};
+const handleChangeShowWithStatus = () => {
+  emit("handleChangeShowWithStatus", showWithStatus.value);
+};
+const handleChangeStatus = () => {
+  emit("handleChangeStatus", status.value);
+};
+const handleChangeMonthSelect = () => {
+  emit("handleChangeMonthSelect", monthSelect.value);
 };
 </script>

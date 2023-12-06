@@ -112,7 +112,8 @@
           </template>
           <template v-if="column.key === 'status'">
             <a-tag :color="colorList[Number(record.status)]">
-              {{ statusList[Number(status)] }}
+              {{ getStatus(record.status) }}
+              {{ Number(record.status) }}
             </a-tag>
             <a-tag color="red" v-if="record.originalFile == '1'">
               <FilePdfOutlined></FilePdfOutlined>
@@ -265,13 +266,12 @@ const getMonths = (params?: any) => {
   api
     .getYanchangAllDate()
     .then((res: any) => {
-      console.log("res", res);
       months.value = res;
       monthSelect.value = months.value[months.value.length - 1];
-      console.log("months===>", months.value);
     })
     .catch((err) => {
       console.log(err);
+      message.info("错误,联系管理员");
     });
 };
 // 按街镇选择子组件,搜索
@@ -336,6 +336,9 @@ const showEditModal = (record: any) => {
   } else {
     addOpen.value = true;
   }
+};
+const getStatus = (status: number) => {
+  return statusList[Number(status)];
 };
 const handleEditOk = async (record: any) => {
   await editableFormRef.value
@@ -465,14 +468,16 @@ const getData = async (params?: any) => {
     customOrder: order.value,
     monthSelect:
       monthSelect.value && showWithStatus.value == 1 ? monthSelect.value : null,
+    status:
+      Number(status.value) !== statusList.length - 1 &&
+      showWithStatus.value == 0
+        ? Number(status.value)
+        : null,
   };
+  console.log("params===>", params);
+  console.log("statusList===>", statusList);
   if (chosenJiezhen.value.length > 0) {
     params.jiezhen = chosenJiezhen.value;
-  }
-  if (Number(status.value) !== statusList.length - 1) {
-    params.status = status.value;
-  } else {
-    params.status = null;
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params = {

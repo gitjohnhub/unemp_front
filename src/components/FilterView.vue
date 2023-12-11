@@ -19,6 +19,12 @@
           :options="mapStatusList"
           @change="handleChangeStatus"
         />
+        <a-range-picker
+          v-model:value="monthRangeSelect"
+          v-if="showWithStatus == 0"
+          @change="handleChangeMonthRange"
+        />
+
         <a-segmented
           v-if="showWithStatus == 1"
           v-model:value="monthSelect"
@@ -37,15 +43,22 @@
       <a-input-search
         v-model:value="searchValue"
         placeholder="输入姓名/身份证"
+        style="width: 300px"
         @search="handleChangeSearch"
       />
       <slot name="footer"></slot>
       <a-row>
         <a-space>
+          <a-tag color="#108ee9">{{ count }}</a-tag>
           <a-button @click="resetSearch">重置搜索条件</a-button>
           <a-button
             @click="
-              exportExcel(headersWithWidth, fileName, getData, monthRangeSelect)
+              exportExcel(
+                headersWithWidth,
+                fileName,
+                getData,
+                monthRangeSelect.length > 0 ? monthRangeSelect : monthSelect
+              )
             "
           >
             导出Excel
@@ -69,10 +82,6 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  customOrderList: {
-    type: Array,
-    default: () => [],
-  },
   showWithStatus: {
     type: Number,
     default: 1,
@@ -82,10 +91,6 @@ const props = defineProps({
     default: 0,
   },
   mapStatusList: {
-    type: Array,
-    default: () => [],
-  },
-  withStatusOrMonthsList: {
     type: Array,
     default: () => [],
   },
@@ -105,7 +110,7 @@ const props = defineProps({
   },
   monthRangeSelect: {
     type: [Array, String],
-    default: "",
+    default: () => [],
   },
   monthSelect: {
     type: String,
@@ -115,6 +120,10 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  count: {
+    type: Number,
+    default: 0,
+  },
 });
 const chosenJiezhen = ref(props.chosenJiezhen.slice());
 const searchValue = ref(props.searchValue);
@@ -122,7 +131,31 @@ const localisCustomOrder = ref(props.isCustomOrder);
 const showWithStatus = ref(props.showWithStatus);
 const status = ref(props.status);
 const monthSelect = ref(props.monthSelect);
-
+const monthRangeSelect = ref(props.monthRangeSelect);
+const customOrderList = [
+  {
+    label: "按时间排序",
+    value: 0,
+  },
+  {
+    label: "按街镇排序",
+    value: 1,
+  },
+  {
+    label: "按原件未收到排序",
+    value: 2,
+  },
+];
+const withStatusOrMonthsList = [
+  {
+    label: "按审批状态显示",
+    value: 0,
+  },
+  {
+    label: "按月显示",
+    value: 1,
+  },
+];
 const resetSearch = () => {
   chosenJiezhen.value = [];
   searchValue.value = "";
@@ -133,12 +166,12 @@ const resetSearch = () => {
 const emit = defineEmits([
   "jiezhenSelectChange",
   "handleChangeSearch",
-  "handleExportExcel",
   "resetSearch",
   "handleChangeCustomOrder",
   "handleChangeShowWithStatus",
   "handleChangeStatus",
   "handleChangeMonthSelect",
+  "handleChangeMonthRange",
 ]);
 const handleChangeJiezhen = () => {
   emit("jiezhenSelectChange", chosenJiezhen.value);
@@ -153,9 +186,13 @@ const handleChangeShowWithStatus = () => {
   emit("handleChangeShowWithStatus", showWithStatus.value);
 };
 const handleChangeStatus = () => {
+  console.log("child==>", status.value);
   emit("handleChangeStatus", status.value);
 };
 const handleChangeMonthSelect = () => {
   emit("handleChangeMonthSelect", monthSelect.value);
+};
+const handleChangeMonthRange = () => {
+  emit("handleChangeMonthRange", monthRangeSelect.value);
 };
 </script>

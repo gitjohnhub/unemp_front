@@ -1,71 +1,41 @@
 <template>
   <div>
-    <div class="table-operations">
-      <a-space direction="vertical">
-        <a-row> </a-row>
-        <a-row>
-          <a-space>
-            <a-card>
-              <a-space direction="vertical">
-                <a-segmented
-                  v-model:value="isCustomOrder"
-                  :options="customOrderList"
-                />
-                <a-segmented
-                  v-model:value="showWithStatus"
-                  :options="withStatusOrMonthsList"
-                />
-                <a-segmented
-                  v-if="showWithStatus == 0"
-                  v-model:value="status"
-                  :options="mapStatusList"
-                />
-                <a-segmented
-                  v-if="showWithStatus == 1"
-                  v-model:value="monthSelect"
-                  :options="months"
-                />
-                <a-range-picker
-                  v-model:value="monthRangeSelect"
-                  v-if="showWithStatus == 0"
-                />
-                <a-space>
-                  <a-button @click="showAddDataModal" type="primary"
-                    >添加</a-button
-                  >
-                  <a-modal
-                    v-model:open="open"
-                    title="Title"
-                    :confirm-loading="confirmLoading"
-                    @ok="handleOk"
-                    @cancel="handleCancel"
-                  >
-                    <NongbuAddFormView ref="formRef" />
-                  </a-modal>
-                  <a-button @click="getData">
-                    刷新 <a-tag color="#108ee9">{{ count }}</a-tag>
-                  </a-button>
-                  <a-button @click="localExportExcel()"> 导出 </a-button>
-                </a-space>
-              </a-space>
-            </a-card>
+    <FilterView
+      @jiezhenSelectChange="jiezhenSelectChange"
+      @handle-change-search="hanleChangeSearch"
+      @handle-change-custom-order="handleChangeCustomOrder"
+      @handle-change-show-with-status="handleChangeShowWithStatus"
+      @handle-change-status="handleChangeStatus"
+      @handle-change-month-select="handleChangeMonthSelect"
+      @handle-change-month-range="handleChangeMonthRange"
+      :map-status-list="mapStatusList"
+      :headers-with-width="nongbuHeader"
+      :months="months"
+      :monthSelect="monthSelect"
+      file-name="延长失业金"
+      :get-data="getData"
+      :count="count"
+    >
+      <template #footer>
+        <a-checkbox v-model:checked="showCancelUnemp"
+          >只显示取消失业登记</a-checkbox
+        >
+        <a-checkbox v-model:checked="showRepeat">只显示重复</a-checkbox>
+      </template>
+      <template #otherAction>
+        <a-button @click="showAddDataModal" type="primary">添加</a-button>
+        <a-modal
+          v-model:open="open"
+          title="Title"
+          :confirm-loading="confirmLoading"
+          @ok="handleOk"
+          @cancel="handleCancel"
+        >
+          <NongbuAddFormView ref="formRef" />
+        </a-modal>
+      </template>
+    </FilterView>
 
-            <FilterView
-              v-bind:chosen-jiezhen="chosenJiezhen"
-              @jiezhenSelectChange="jiezhenSelectChange"
-              @hanle-change-search="hanleChangeSearch"
-            >
-              <template #footer>
-                <a-checkbox v-model:checked="showCancelUnemp"
-                  >只显示取消失业登记</a-checkbox
-                >
-                <a-checkbox v-model:checked="showRepeat">只显示重复</a-checkbox>
-              </template>
-            </FilterView>
-          </a-space>
-        </a-row>
-      </a-space>
-    </div>
     <a-spin :spinning="spinning">
       <a-table
         row-class-name="custom-row"
@@ -314,6 +284,24 @@ const statusCal = ref([]);
 const jiezhenSelectChange = (selectJiezhens: any) => {
   chosenJiezhen.value = selectJiezhens;
 };
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+};
+const handleChangeCustomOrder = (childCustomOrder: number) => {
+  isCustomOrder.value = childCustomOrder;
+};
+const handleChangeShowWithStatus = (childShowWithStatus: number) => {
+  showWithStatus.value = childShowWithStatus;
+};
+const handleChangeStatus = (childStatus: number) => {
+  status.value = childStatus;
+};
+const handleChangeMonthSelect = (childMonthSelect: string) => {
+  monthSelect.value = childMonthSelect;
+};
+const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
+  monthRangeSelect.value = childMonthRange;
+};
 const chosenJiezhen = ref([]);
 watch(
   () => chosenJiezhen.value,
@@ -321,10 +309,6 @@ watch(
     getData();
   }
 );
-const hanleChangeSearch = (childSearchValue: any) => {
-  searchValue.value = childSearchValue;
-  getData();
-};
 
 //加载数据动画
 const spinning = ref<boolean>(false);

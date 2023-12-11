@@ -1,64 +1,50 @@
 <template>
   <div>
     <div class="table-operations">
-      <a-space direction="vertical">
-        <a-row>
-          <a-space>
-            <a-card>
-              <a-button @click="showEditModal(null)" type="primary"
-                >添加</a-button
-              >
-              <a-modal
-                v-model:open="addOpen"
-                title="增加"
-                :destroyOnClose="true"
-                @ok="handleEditOk(null)"
-                @cancel="handleEditCancel(null)"
-              >
-                <UnempEditFormView ref="editableFormRef" />
-              </a-modal>
-              <a-button @click="getData"> 刷新 </a-button>
-              <a-button @click="localExportExcel()">
-                <FileExcelOutlined />导出
-              </a-button>
-            </a-card>
-            <FilterView
-              v-bind:chosen-jiezhen="chosenJiezhen"
-              @jiezhenSelectChange="jiezhenSelectChange"
-              @hanle-change-search="hanleChangeSearch"
-            >
-              <template #otherFilter>
-                <a-select
-                  v-model:value="selectedOp"
-                  mode="multiple"
-                  placeholder="选择初核对象"
-                  style="width: 300px"
-                  :options="userStore.checkoperators"
-                ></a-select>
-                <a-range-picker v-model:value="monthRangeSelect" />
-              </template>
-              <template #footer>
-                <a-checkbox v-model:checked="isIncludeCheckData"
-                  >是否包含初核</a-checkbox
-                >
-              </template>
-            </FilterView>
-          </a-space>
-        </a-row>
-        <a-row>
-          <a-space>
-            <a-radio-group v-model:value="reviewChecked" button-style="solid">
-              <a-radio-button
-                v-for="(status, index) in verifications"
-                :value="String(index)"
-                :key="index"
-                >{{ status }}
-              </a-radio-button>
-            </a-radio-group>
-            <a-tag color="#108ee9">{{ count }}</a-tag>
-          </a-space>
-        </a-row>
-      </a-space>
+      <FilterView
+        @jiezhenSelectChange="jiezhenSelectChange"
+        @handle-change-search="hanleChangeSearch"
+        @handle-change-custom-order="handleChangeCustomOrder"
+        @handle-change-show-with-status="handleChangeShowWithStatus"
+        @handle-change-status="handleChangeStatus"
+        @handle-change-month-select="handleChangeMonthSelect"
+        @handle-change-month-range="handleChangeMonthRange"
+        :map-status-list="mapStatusList"
+        :headers-with-width="unempHeader"
+        :months="months"
+        :monthSelect="monthSelect"
+        file-name="延长失业金"
+        :get-data="getData"
+        :count="count"
+      >
+        <template #otherFilter>
+          <a-select
+            v-model:value="selectedOp"
+            mode="multiple"
+            placeholder="选择初核对象"
+            style="width: 300px"
+            :options="userStore.checkoperators"
+          ></a-select>
+          <a-range-picker v-model:value="monthRangeSelect" />
+        </template>
+        <template #footer>
+          <a-checkbox v-model:checked="isIncludeCheckData"
+            >是否包含初核</a-checkbox
+          >
+        </template>
+        <template #otherAction>
+          <a-button @click="showEditModal(null)" type="primary">添加</a-button>
+          <a-modal
+            v-model:open="addOpen"
+            title="增加"
+            :destroyOnClose="true"
+            @ok="handleEditOk(null)"
+            @cancel="handleEditCancel(null)"
+          >
+            <UnempEditFormView ref="editableFormRef" />
+          </a-modal>
+        </template>
+      </FilterView>
     </div>
     <a-spin :spinning="spinning">
       <a-table
@@ -205,7 +191,7 @@ import {
 import api from "@/api";
 import { useUserStore } from "@/stores";
 import { exportExcel, formattedTime } from "@/utils/util";
-import { jiezhens, colorList } from "@/types";
+import { colorList } from "@/types";
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -213,16 +199,26 @@ type RangeValue = [Dayjs, Dayjs];
 const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
-const reviewChecked = ref("0");
 const isIncludeCheckData = ref(false);
-const verifications = ["已初核", "已复核", "待初核", "已删除", "全部"];
+const statusList = ["已初核", "已复核", "待初核", "已删除", "全部"];
+const mapStatusList = statusList.map((item, index) => {
+  return {
+    label: item,
+    value: index,
+  };
+});
 // 搜索相关
 const searchValue = ref();
 // 按街镇选择子组件
 const jiezhenSelectChange = (selectJiezhens: any) => {
   chosenJiezhen.value = selectJiezhens;
 };
+const months = ref([""]);
 const chosenJiezhen = ref([]);
+const isCustomOrder = ref(0);
+const showWithStatus = ref(1);
+const monthSelect = ref("");
+const status = ref(0);
 watch(
   () => chosenJiezhen.value,
   () => {
@@ -232,6 +228,21 @@ watch(
 const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
   getData();
+};
+const handleChangeCustomOrder = (childCustomOrder: number) => {
+  isCustomOrder.value = childCustomOrder;
+};
+const handleChangeShowWithStatus = (childShowWithStatus: number) => {
+  showWithStatus.value = childShowWithStatus;
+};
+const handleChangeStatus = (childStatus: number) => {
+  status.value = childStatus;
+};
+const handleChangeMonthSelect = (childMonthSelect: string) => {
+  monthSelect.value = childMonthSelect;
+};
+const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
+  monthRangeSelect.value = childMonthRange;
 };
 const spinning = ref<boolean>(false);
 const getColors = (user) => {
@@ -260,7 +271,7 @@ watch(
   }
 );
 watch(
-  () => reviewChecked.value,
+  () => status.value,
   (newValue) => {
     pager.value.current = 1;
     getData();
@@ -342,8 +353,8 @@ const getData = async (params?: any) => {
     params.isIncludeCheckData = null;
   }
 
-  if (reviewChecked.value !== "4") {
-    params.verification = reviewChecked.value;
+  if (status.value !== 4) {
+    params.verification = status.value;
   } else {
     params.verification = null;
   }

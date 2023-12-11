@@ -6,8 +6,15 @@
           <a-button
             @click="item.action"
             v-if="item.show(props.record)"
-            :disabled="item.disabled(props.record)"
+            :disabled="
+              item.hasOwnProperty('disabled')
+                ? item.disabled(props.record)
+                : false
+            "
             :type="item.type"
+            :style="{
+              backgroundColor: item.hasOwnProperty('color') ? item.color : '',
+            }"
             ><Icon :icon="item.icon"
           /></a-button>
         </a-tooltip>
@@ -71,9 +78,8 @@ const buttonList = [
     type: "primary",
     show: (record: any) => {
       // return true;
-      return record.status == "0";
+      return record.status == "0" && record.checkoperator !== userInfo.username;
     },
-    disabled: () => false,
   },
   {
     text: "初核",
@@ -90,7 +96,6 @@ const buttonList = [
     show: (record: any) => {
       return record.status == "2";
     },
-    disabled: () => false,
   },
   {
     text: "删除",
@@ -103,13 +108,14 @@ const buttonList = [
         "删除成功"
       );
     },
-    type: "dashed",
+    type: "primary",
     show: () => {
       return true;
     },
     disabled: (record: any) => {
       return record.status == "3";
     },
+    color: "brown",
   },
   {
     text: "标记错登记",
@@ -124,7 +130,7 @@ const buttonList = [
     },
     type: "primary",
     show: () => true,
-    disabled: () => false,
+    color: "#c21d03",
   },
   {
     text: "收到原件",
@@ -139,7 +145,8 @@ const buttonList = [
     },
     type: "primary",
     show: () => true,
-    disabled: () => false,
+    color: "#fd5732",
   },
 ];
 </script>
+<style scoped></style>

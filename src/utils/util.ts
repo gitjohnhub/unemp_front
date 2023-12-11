@@ -2,6 +2,7 @@ import Excel from "exceljs";
 import { ImageLike, createWorker } from "tesseract.js";
 import { DataItem, months, alpahbets } from "@/types";
 import { get } from "http";
+import { message } from "ant-design-vue";
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
@@ -188,12 +189,11 @@ export const exportExcel = (
   getData: any,
   monthRangeSelect: any[] | string = []
 ) => {
-  console.log("getData==>", getData);
-  console.log("filename==>", fileName);
-  console.log("monthRangeSelect==>", monthRangeSelect);
   return new Promise((resolve, reject) => {
     try {
       // 写入文件
+      console.log("monthRangeSelect===>", monthRangeSelect);
+
       const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
       const title =
         typeof monthRangeSelect == "string"
@@ -252,6 +252,7 @@ export const exportExcel = (
         resolve("success");
       });
     } catch (error) {
+      message.info("导出失败");
       reject(error);
     }
   });

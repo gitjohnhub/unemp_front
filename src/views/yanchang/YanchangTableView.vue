@@ -8,25 +8,16 @@
         @handle-change-show-with-status="handleChangeShowWithStatus"
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
+        @handle-change-month-range="handleChangeMonthRange"
         @resetSearch="resetSearch"
-        :custom-order-list="customOrderList"
-        :with-status-or-months-list="withStatusOrMonthsList"
         :map-status-list="mapStatusList"
         :headers-with-width="headersWithWidth"
         :months="months"
         :monthSelect="monthSelect"
         file-name="延长失业金"
         :get-data="getData"
-        :monthRangeSelect="monthRangeSelect ? monthRangeSelect : monthSelect"
+        :count="count"
       >
-        <template #otherFilter>
-          <a-space direction="vertical">
-            <a-range-picker
-              v-model:value="monthRangeSelect"
-              v-if="showWithStatus == 0"
-            />
-          </a-space>
-        </template>
         <template #otherAction>
           <a-space>
             <a-button @click="showEditModal(null)" type="primary"
@@ -42,7 +33,6 @@
             >
               <YanchangEditFormView ref="editableFormRef" />
             </a-modal>
-            <a-tag color="#108ee9">{{ count }}</a-tag>
           </a-space>
         </template>
       </FilterView>
@@ -194,20 +184,6 @@ const order = ref({
   sortRule: "DESC",
 });
 const isCustomOrder = ref(0);
-const customOrderList = [
-  {
-    label: "按时间",
-    value: 0,
-  },
-  {
-    label: "按街镇",
-    value: 1,
-  },
-  {
-    label: "按原件未收到",
-    value: 2,
-  },
-];
 watch(
   () => isCustomOrder.value,
   () => {
@@ -243,16 +219,6 @@ watch(
     getData();
   }
 );
-const withStatusOrMonthsList = [
-  {
-    label: "按审批状态显示",
-    value: 0,
-  },
-  {
-    label: "按月显示",
-    value: 1,
-  },
-];
 const months = ref([""]);
 const monthSelect = ref("");
 watch(
@@ -292,6 +258,9 @@ const handleChangeStatus = (childStatus: number) => {
 };
 const handleChangeMonthSelect = (childMonthSelect: string) => {
   monthSelect.value = childMonthSelect;
+};
+const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
+  monthRangeSelect.value = childMonthRange;
 };
 const resetSearch = (resetItem: any) => {
   showWithStatus.value = 1;

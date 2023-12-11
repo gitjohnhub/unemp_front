@@ -13,7 +13,7 @@
         :headers-with-width="unempHeader"
         :months="months"
         :monthSelect="monthSelect"
-        file-name="延长失业金"
+        file-name="失业金"
         :get-data="getData"
         :count="count"
       >
@@ -207,6 +207,18 @@ const mapStatusList = statusList.map((item, index) => {
     value: index,
   };
 });
+const getMonths = (params?: any) => {
+  api
+    .getUnempVeriAllDate()
+    .then((res: any) => {
+      months.value = res;
+      monthSelect.value = months.value[months.value.length - 1];
+    })
+    .catch((err) => {
+      console.log(err);
+      message.info("错误,联系管理员");
+    });
+};
 // 搜索相关
 const searchValue = ref();
 // 按街镇选择子组件
@@ -332,6 +344,7 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
+  getMonths();
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }

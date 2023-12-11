@@ -31,6 +31,12 @@
           :options="months"
           @change="handleChangeMonthSelect"
         />
+        <a-cascader
+          v-model:value="monthSelect"
+          :options="months"
+          expand-trigger="hover"
+          placeholder="Please select"
+        />
       </a-space>
       <a-select
         v-model:value="chosenJiezhen"
@@ -70,9 +76,12 @@
   </a-card>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
+import { onBeforeMount, ref } from "vue";
 import { jiezhens } from "@/types";
 import { exportExcel } from "@/utils/util";
+onBeforeMount(() => {
+  getCascadeYear();
+});
 const props = defineProps({
   chosenJiezhen: {
     type: Array,
@@ -132,6 +141,8 @@ const showWithStatus = ref(props.showWithStatus);
 const status = ref(props.status);
 const monthSelect = ref(props.monthSelect);
 const monthRangeSelect = ref(props.monthRangeSelect);
+const months = ref(props.months);
+const cascaderMonths = ref([]);
 const customOrderList = [
   {
     label: "按时间排序",
@@ -194,5 +205,40 @@ const handleChangeMonthSelect = () => {
 };
 const handleChangeMonthRange = () => {
   emit("handleChangeMonthRange", monthRangeSelect.value);
+};
+const getCascadeYear = () => {
+  const result = [];
+
+  const yearMap = {};
+
+  months.value.forEach((month: string) => {
+    const [year, monthValue] = month.split("-");
+
+    if (yearMap.hasOwnProperty(year)) {
+      // Year already exists, add child
+      const parentIndex = yearMap[year];
+      result[parentIndex].children.push({
+        value: month,
+        label: monthValue,
+      });
+    } else {
+      // Year doesn't exist, create new parent
+      const parent = {
+        value: year,
+        label: year,
+        children: [
+          {
+            value: month,
+            label: monthValue,
+          },
+        ],
+      };
+      yearMap[year] = result.length;
+      result.push(parent);
+    }
+  });
+
+  console.log("Casresult==>", result);
+  cascaderMonths.value = result;
 };
 </script>

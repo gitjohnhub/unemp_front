@@ -58,7 +58,9 @@
                 headersWithWidth,
                 fileName,
                 getData,
-                monthRangeSelect.length > 0 ? monthRangeSelect : monthSelect
+                monthRangeSelect.length > 0
+                  ? monthRangeSelect
+                  : monthSelect[monthSelect.length - 1]
               )
             "
           >
@@ -134,6 +136,14 @@ watch(
   () => isCustomOrder.value,
   () => {
     console.log("isCustomOrder==>", isCustomOrder.value);
+  }
+);
+watch(
+  () => showWithStatus.value,
+  () => {
+    if (showWithStatus.value == 1) {
+      monthRangeSelect.value = [];
+    }
   }
 );
 onBeforeMount(() => {

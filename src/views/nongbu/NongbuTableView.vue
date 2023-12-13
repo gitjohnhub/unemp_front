@@ -289,12 +289,7 @@ const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
 const handleChangeCustomOrder = (value: number) => {
   order.value = value;
 };
-watch(
-  () => order.value,
-  () => {
-    getData();
-  }
-);
+
 const chosenJiezhen = ref([]);
 watch(
   () => chosenJiezhen.value,
@@ -330,6 +325,12 @@ const getProgress = (status: String) => {
 
 // 排序选择
 const order = ref();
+watch(
+  () => order.value,
+  () => {
+    getData();
+  }
+);
 watch(
   () => showCancelUnemp.value,
   (newValue) => {
@@ -394,7 +395,6 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
-  getMonths();
   getData();
 });
 // 月视图
@@ -424,17 +424,7 @@ watch(
   }
 );
 const getMonths = (params?: any) => {
-  api
-    .getNongbuAllDate()
-    .then((res: any) => {
-      console.log("res", res);
-      months.value = res;
-      monthSelect.value = months.value[months.value.length - 1];
-      console.log("months===>", months.value);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  return api.getNongbuAllDate();
 };
 // 获取数据
 const getData = async (params?: any) => {

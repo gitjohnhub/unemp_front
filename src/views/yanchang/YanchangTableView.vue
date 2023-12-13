@@ -4,17 +4,16 @@
       <FilterView
         @jiezhenSelectChange="jiezhenSelectChange"
         @handle-change-search="hanleChangeSearch"
-        @handle-change-custom-order="handleChangeCustomOrder"
         @handle-change-show-with-status="handleChangeShowWithStatus"
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
         @handle-change-month-range="handleChangeMonthRange"
-        @resetSearch="resetSearch"
+        @handle-change-custom-order="handleChangeCustomOrder"
+        :getMonths="getMonths"
         :map-status-list="mapStatusList"
         :headers-with-width="headersWithWidth"
-        :months="months"
         :monthSelect="monthSelect"
-        file-name="延长失业金"
+        file-name="失业金"
         :get-data="getData"
         :count="count"
       >
@@ -219,25 +218,19 @@ watch(
     getData();
   }
 );
-const months = ref([""]);
 const monthSelect = ref("");
 watch(
   () => monthSelect.value,
   () => {
+    resetPage();
     getData();
   }
 );
+const resetPage = () => {
+  pager.value.current = 1;
+};
 const getMonths = (params?: any) => {
-  api
-    .getYanchangAllDate()
-    .then((res: any) => {
-      months.value = res;
-      monthSelect.value = months.value[months.value.length - 1];
-    })
-    .catch((err) => {
-      console.log(err);
-      message.info("错误,联系管理员");
-    });
+  return api.getYanchangAllDate();
 };
 // 按街镇选择子组件,搜索
 const jiezhenSelectChange = (selectJiezhens: any) => {
@@ -367,7 +360,7 @@ watch(
 watch(
   () => status.value,
   (newValue) => {
-    pager.value.current = 1;
+    resetPage();
     getData();
   }
 );

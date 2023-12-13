@@ -341,7 +341,6 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
-  getMonths();
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }

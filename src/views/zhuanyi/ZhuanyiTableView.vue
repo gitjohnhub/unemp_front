@@ -516,10 +516,10 @@ const exportExcel = () => {
     { header: "序号", key: "index", width: 6 },
     { header: "姓名", key: "name", width: 10 },
     { header: "身份证", key: "personID", width: 26 },
-    { header: "转入省市", key: "fromArea", width: 22 },
+    { header: "转入省市", key: "fromArea", width: 24 },
     { header: "转出日期", key: "payDate", width: 14 },
     { header: "享受期限（月）", key: "month", width: 18 },
-    { header: "核发标准", key: "biaozhun", width: 40 },
+    { header: "核发标准", key: "biaozhun", width: 42 },
     { header: "转出金额", key: "pay", width: 12 },
   ];
   const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);

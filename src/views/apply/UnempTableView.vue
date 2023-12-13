@@ -4,14 +4,14 @@
       <FilterView
         @jiezhenSelectChange="jiezhenSelectChange"
         @handle-change-search="hanleChangeSearch"
-        @handle-change-custom-order="handleChangeCustomOrder"
         @handle-change-show-with-status="handleChangeShowWithStatus"
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
         @handle-change-month-range="handleChangeMonthRange"
+        @handle-change-custom-order="handleChangeCustomOrder"
+        :getMonths="getMonths"
         :map-status-list="mapStatusList"
         :headers-with-width="unempHeader"
-        :months="months"
         :monthSelect="monthSelect"
         file-name="失业金"
         :get-data="getData"
@@ -201,23 +201,24 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const isIncludeCheckData = ref(false);
 const statusList = ["已初核", "已复核", "待初核", "已删除", "全部"];
+const order = ref();
 const mapStatusList = statusList.map((item, index) => {
   return {
     label: item,
     value: index,
   };
 });
+const handleChangeCustomOrder = (value: number) => {
+  order.value = value;
+};
+watch(
+  () => order.value,
+  () => {
+    getData();
+  }
+);
 const getMonths = (params?: any) => {
-  api
-    .getUnempVeriAllDate()
-    .then((res: any) => {
-      months.value = res;
-      monthSelect.value = months.value[months.value.length - 1];
-    })
-    .catch((err) => {
-      console.log(err);
-      message.info("错误,联系管理员");
-    });
+  return api.getUnempVeriAllDate();
 };
 // 搜索相关
 const searchValue = ref();
@@ -225,9 +226,7 @@ const searchValue = ref();
 const jiezhenSelectChange = (selectJiezhens: any) => {
   chosenJiezhen.value = selectJiezhens;
 };
-const months = ref([""]);
 const chosenJiezhen = ref([]);
-const isCustomOrder = ref(0);
 const showWithStatus = ref(1);
 const monthSelect = ref("");
 const status = ref(0);
@@ -241,9 +240,7 @@ const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
   getData();
 };
-const handleChangeCustomOrder = (childCustomOrder: number) => {
-  isCustomOrder.value = childCustomOrder;
-};
+
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
 };
@@ -359,7 +356,11 @@ const getData = async (params?: any) => {
     ...pager.value,
     checkoperators: selectedOp.value,
     jiezhen: chosenJiezhen.value,
+    customOrder: order.value,
   };
+  if (monthSelect.value) {
+    params.monthSelect = monthSelect.value;
+  }
   if (isIncludeCheckData.value) {
     params.isIncludeCheckData = 1;
   } else {
@@ -382,6 +383,7 @@ const getData = async (params?: any) => {
       ...pager.value,
     };
   }
+  console.log("params==>", params);
   return await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

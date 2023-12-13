@@ -3,16 +3,16 @@
     <FilterView
       @jiezhenSelectChange="jiezhenSelectChange"
       @handle-change-search="hanleChangeSearch"
-      @handle-change-custom-order="handleChangeCustomOrder"
       @handle-change-show-with-status="handleChangeShowWithStatus"
       @handle-change-status="handleChangeStatus"
       @handle-change-month-select="handleChangeMonthSelect"
       @handle-change-month-range="handleChangeMonthRange"
+      @handle-change-custom-order="handleChangeCustomOrder"
+      :getMonths="getMonths"
       :map-status-list="mapStatusList"
       :headers-with-width="nongbuHeader"
-      :months="months"
       :monthSelect="monthSelect"
-      file-name="延长失业金"
+      file-name="农民补助金"
       :get-data="getData"
       :count="count"
     >
@@ -251,20 +251,6 @@ import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
 
-const localExportExcel = () => {
-  exportExcel(
-    nongbuHeader,
-    "农民补助金",
-    getData,
-    monthRangeSelect.value ? monthRangeSelect.value : monthSelect.value
-  )
-    .then(() => {
-      message.info("导出成功");
-    })
-    .catch(() => {
-      message.error("导出失败,请查看日期是否选择");
-    });
-};
 const editForm = ref();
 const showCancelUnemp = ref(false);
 const showRepeat = ref(false);
@@ -287,9 +273,7 @@ const jiezhenSelectChange = (selectJiezhens: any) => {
 const hanleChangeSearch = (childSearchValue: any) => {
   searchValue.value = childSearchValue;
 };
-const handleChangeCustomOrder = (childCustomOrder: number) => {
-  isCustomOrder.value = childCustomOrder;
-};
+
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
 };
@@ -302,6 +286,15 @@ const handleChangeMonthSelect = (childMonthSelect: string) => {
 const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
   monthRangeSelect.value = childMonthRange;
 };
+const handleChangeCustomOrder = (value: number) => {
+  order.value = value;
+};
+watch(
+  () => order.value,
+  () => {
+    getData();
+  }
+);
 const chosenJiezhen = ref([]);
 watch(
   () => chosenJiezhen.value,
@@ -336,53 +329,7 @@ const getProgress = (status: String) => {
 };
 
 // 排序选择
-const order = ref({
-  sortColumn: "jiezhen",
-  sortRule: "DESC",
-});
-const isCustomOrder = ref(0);
-const customOrderList = [
-  {
-    label: "按时间排序",
-    value: 0,
-  },
-  {
-    label: "按街镇排序",
-    value: 1,
-  },
-  {
-    label: "按原件未收到排序",
-    value: 2,
-  },
-];
-watch(
-  () => isCustomOrder.value,
-  () => {
-    console.log("isCustomOrder", isCustomOrder.value);
-    switch (isCustomOrder.value) {
-      case 0:
-        order.value = {
-          sortColumn: "createtime",
-          sortRule: "DESC",
-        };
-        break;
-      case 1:
-        order.value = {
-          sortColumn: "jiezhen",
-          sortRule: "DESC",
-        };
-        break;
-      case 2:
-        order.value = {
-          sortColumn: "originalFile",
-          sortRule: "ASC",
-        };
-      default:
-        break;
-    }
-    getData();
-  }
-);
+const order = ref();
 watch(
   () => showCancelUnemp.value,
   (newValue) => {

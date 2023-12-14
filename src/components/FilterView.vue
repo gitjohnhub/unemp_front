@@ -13,12 +13,20 @@
           :options="withStatusOrMonthsList"
           @change="handleChangeShowWithStatus"
         />
-        <a-segmented
+        <!-- <a-segmented
           v-if="showWithStatus == 0"
           v-model:value="status"
           :options="mapStatusList"
           @change="handleChangeStatus"
-        />
+        /> -->
+        <a-select
+          v-model:value="status"
+          mode="multiple"
+          placeholder="选择审批状态筛选"
+          style="width: 300px"
+          :options="mapStatusList"
+          @change="handleChangeStatus"
+        ></a-select>
         <a-range-picker
           v-model:value="monthRangeSelect"
           v-if="showWithStatus == 0"
@@ -86,10 +94,6 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
-  status: {
-    type: Number,
-    default: 0,
-  },
   mapStatusList: {
     type: Array,
     default: () => [],
@@ -124,7 +128,7 @@ const props = defineProps({
 const chosenJiezhen = ref(props.chosenJiezhen.slice());
 const searchValue = ref(props.searchValue);
 const showWithStatus = ref(props.showWithStatus);
-const status = ref(props.status);
+const status = ref([]);
 const months = ref();
 const monthRangeSelect = ref(props.monthRangeSelect);
 const cascaderMonthsList = ref([]);

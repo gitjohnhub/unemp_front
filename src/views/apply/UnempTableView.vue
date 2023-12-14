@@ -25,12 +25,6 @@
             style="width: 300px"
             :options="userStore.checkoperators"
           ></a-select>
-          <a-range-picker v-model:value="monthRangeSelect" />
-        </template>
-        <template #footer>
-          <a-checkbox v-model:checked="isIncludeCheckData"
-            >是否包含初核</a-checkbox
-          >
         </template>
         <template #otherAction>
           <a-button @click="showEditModal(null)" type="primary">添加</a-button>
@@ -199,8 +193,7 @@ type RangeValue = [Dayjs, Dayjs];
 const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
-const isIncludeCheckData = ref(false);
-const statusList = ["已初核", "已复核", "待初核", "已删除", "全部"];
+const statusList = ["已初核", "已复核", "待初核", "已删除"];
 const order = ref();
 const mapStatusList = statusList.map((item, index) => {
   return {
@@ -265,12 +258,7 @@ watch(
     getData();
   }
 );
-watch(
-  () => isIncludeCheckData.value,
-  (newValue) => {
-    getData();
-  }
-);
+
 watch(
   () => monthRangeSelect.value,
   (newValue) => {
@@ -359,11 +347,6 @@ const getData = async (params?: any) => {
   };
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
-  }
-  if (isIncludeCheckData.value) {
-    params.isIncludeCheckData = 1;
-  } else {
-    params.isIncludeCheckData = null;
   }
 
   if (status.value !== 4) {

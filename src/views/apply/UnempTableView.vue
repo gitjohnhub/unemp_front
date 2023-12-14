@@ -4,11 +4,11 @@
       <FilterView
         @jiezhenSelectChange="jiezhenSelectChange"
         @handle-change-search="hanleChangeSearch"
-        @handle-change-show-with-status="handleChangeShowWithStatus"
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
         @handle-change-month-range="handleChangeMonthRange"
         @handle-change-custom-order="handleChangeCustomOrder"
+        @handle-change-show-with-status="handleChangeShowWithStatus"
         :getMonths="getMonths"
         :map-status-list="mapStatusList"
         :headers-with-width="unempHeader"
@@ -56,7 +56,7 @@
               :style="{ fontSize: '18px' }"
               copyable
               keyboard
-              :class="{ deleted: record.verification == '3' }"
+              :class="{ deleted: record.status == '3' }"
               >{{ record.personID }}</a-typography-paragraph
             >
           </template>
@@ -65,7 +65,7 @@
               <a-typography-paragraph
                 :style="{ fontSize: '18px' }"
                 copyable
-                :class="{ deleted: record.verification == '3' }"
+                :class="{ deleted: record.status == '3' }"
                 >{{ record.personName }}</a-typography-paragraph
               >
             </a-tooltip>
@@ -177,11 +177,7 @@ import { Dayjs } from "dayjs";
 import { pinyin } from "pinyin-pro";
 
 import "dayjs/locale/zh-cn";
-import {
-  FileExcelOutlined,
-  EditOutlined,
-  PlusCircleOutlined,
-} from "@ant-design/icons-vue";
+import { EditOutlined } from "@ant-design/icons-vue";
 import api from "@/api";
 import { useUserStore } from "@/stores";
 import { exportExcel, formattedTime } from "@/utils/util";
@@ -222,7 +218,7 @@ const jiezhenSelectChange = (selectJiezhens: any) => {
 const chosenJiezhen = ref([]);
 const showWithStatus = ref(1);
 const monthSelect = ref("");
-const status = ref(0);
+const status = ref(null);
 watch(
   () => chosenJiezhen.value,
   () => {
@@ -236,9 +232,14 @@ const hanleChangeSearch = (childSearchValue: any) => {
 
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
+  pager.value.current = 1;
+
+  getData();
 };
 const handleChangeStatus = (childStatus: number) => {
   status.value = childStatus;
+  pager.value.current = 1;
+  getData();
 };
 const handleChangeMonthSelect = (childMonthSelect: string) => {
   monthSelect.value = childMonthSelect;
@@ -267,13 +268,13 @@ watch(
     getData();
   }
 );
-watch(
-  () => status.value,
-  (newValue) => {
-    pager.value.current = 1;
-    getData();
-  }
-);
+// watch(
+//   () => status.value,
+//   (newValue) => {
+//     pager.value.current = 1;
+//     getData();
+//   }
+// );
 // 提交初核备注
 const updateParams = (params: any) => {
   api
@@ -344,19 +345,13 @@ const getData = async (params?: any) => {
     checkoperators: selectedOp.value,
     jiezhen: chosenJiezhen.value,
     customOrder: order.value,
+    status: status.value,
   };
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
   }
-
-  if (status.value !== 4) {
-    params.verification = status.value;
-  } else {
-    params.verification = null;
-  }
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;
-    console.log(params);
   }
 
   if (searchValue.value !== undefined && searchValue.value !== "") {

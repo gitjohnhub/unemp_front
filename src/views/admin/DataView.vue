@@ -23,13 +23,25 @@
       </a-row>
       <a-row>
         <a-col :span="6">
-          <a-statistic title="农民补助金(已审批)" :value="NongbuTotalCurrentMonth" style="margin-right: 20px" />
+          <a-statistic
+            title="农民补助金(已审批)"
+            :value="NongbuTotalCurrentMonth"
+            style="margin-right: 20px"
+          />
         </a-col>
         <a-col :span="6">
-          <a-statistic title="延长失业金(已审批)" :value="YanchangTotalCurrentMonth" style="margin-right: 50px"  />
-          </a-col>
-          <a-col :span="6">
-          <a-statistic title="跨省市转移(转金额)" :value="ZhuanyiTotalCurrentMonth" style="margin-right: 50px"  />
+          <a-statistic
+            title="延长失业金(已审批)"
+            :value="YanchangTotalCurrentMonth"
+            style="margin-right: 50px"
+          />
+        </a-col>
+        <a-col :span="6">
+          <a-statistic
+            title="跨省市转移(转金额)"
+            :value="ZhuanyiTotalCurrentMonth"
+            style="margin-right: 50px"
+          />
         </a-col>
       </a-row>
     </a-space>
@@ -37,14 +49,14 @@
 </template>
 
 <script setup lang="ts">
-import api from '@/api';
-import { useUserStore } from '@/stores';
-import { onBeforeMount, ref, watch } from 'vue';
-import { Dayjs } from 'dayjs';
-import dayjs from 'dayjs';
-import 'dayjs/locale/zh-cn';
+import api from "@/api";
+import { useUserStore } from "@/stores";
+import { onBeforeMount, ref, watch } from "vue";
+import { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
 
-import { getMonthRange } from '@/utils/util';
+import { getMonthRange } from "@/utils/util";
 
 const userStore = useUserStore();
 const checkoperators = ref();
@@ -112,7 +124,7 @@ function getAllData() {
 const NongbuTotalCurrentMonth = ref();
 const getNongbuData = async () => {
   const params: any = {};
-  params.status = 1;
+  params.status = [1];
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
   }
@@ -124,7 +136,7 @@ const getNongbuData = async () => {
 const YanchangTotalCurrentMonth = ref();
 const getYanchangData = async () => {
   const params: any = {};
-  params.status = 1;
+  params.status = [1];
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
   }
@@ -136,12 +148,12 @@ const getYanchangData = async () => {
 const ZhuanyiTotalCurrentMonth = ref();
 const getZhuanyiData = async () => {
   const params: any = {};
-  params.status = 3;
-  params.isOnlyTransferRelation = '转金额'
+  params.status = [3];
+  params.isOnlyTransferRelation = "转金额";
   if (monthSelect.value) {
-    params.payDate = monthSelect.value.format('YYYY-MM');
+    params.payDate = monthSelect.value.format("YYYY-MM");
   }
-  console.log('paramsPayMonth===>',params)
+  console.log("paramsPayMonth===>", params);
   await api.getZhuanyiData(params).then((res: any) => {
     ZhuanyiTotalCurrentMonth.value = res.page.total;
   });

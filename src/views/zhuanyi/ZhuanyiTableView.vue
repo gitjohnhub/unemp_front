@@ -659,7 +659,6 @@ const getData = async (params?: any) => {
     params.isDeleted = 0;
   }
   if (Number(status.value) !== 8) {
-    console.log("!=8,", status.value);
     params.status = status.value;
   } else {
     console.log("=8,", status.value);

@@ -31,7 +31,7 @@
       <a-textarea v-model:value="localEditForm.reviewnote" />
     </a-form-item>
     <a-form-item label="选择未初核">
-      <a-radio-group v-model:value="localEditForm.verification">
+      <a-radio-group v-model:value="localEditForm.status">
         <a-radio value="0">已初核</a-radio>
         <a-radio value="2">待初核</a-radio>
       </a-radio-group>
@@ -51,7 +51,7 @@ const props = defineProps({
       return {
         personID: "",
         personName: "",
-        verification: "0",
+        status: "0",
         jiezhen: "",
         checknote: "",
         reviewnote: "",

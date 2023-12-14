@@ -60,16 +60,14 @@ const buttonList = [
     action: () => {
       return updateParams(
         props.record,
-        { verification: "1", reviewoperator: userInfo.username },
+        { status: "1", reviewoperator: userInfo.username },
         "复核失败,请联系管理员",
         "复核成功"
       );
     },
     type: "primary",
     show: (record: any) => {
-      return (
-        record.verification == "0" && record.checkoperator !== userInfo.username
-      );
+      return record.status == "0" && record.checkoperator !== userInfo.username;
     },
     disabled: () => false,
   },
@@ -79,14 +77,14 @@ const buttonList = [
     action: () => {
       return updateParams(
         props.record,
-        { verification: "0" },
+        { status: "0" },
         "加入初核失败,请联系管理员",
         "已加入初核"
       );
     },
     type: "primary",
     show: (record: any) => {
-      return record.verification == "2";
+      return record.status == "2";
     },
     disabled: () => false,
   },
@@ -96,7 +94,7 @@ const buttonList = [
     action: () => {
       return updateParams(
         props.record,
-        { verification: "3" },
+        { status: "3" },
         "删除失败",
         "删除成功"
       );
@@ -106,7 +104,7 @@ const buttonList = [
       return true;
     },
     disabled: (record: any) => {
-      return record.verification == "3";
+      return record.status == "3";
     },
   },
 ];

@@ -223,11 +223,15 @@ export const exportExcel = (
                 case "index":
                   ItemList.push(index + 1);
                   break;
+
                 case "status":
                   ItemList.push(item[header] == "1" ? "已审核" : "");
                   break;
                 case "originalFile":
                   ItemList.push(item[header] == "1" ? "已收到原件" : "无");
+                  break;
+                case "createtime":
+                  ItemList.push(item[header].slice(0, 10));
                   break;
                 default:
                   ItemList.push(item[header]);
@@ -252,7 +256,7 @@ export const exportExcel = (
         resolve("success");
       });
     } catch (error) {
-      message.info("导出失败");
+      message.info("导出失败,请选择日期或者月份");
       reject(error);
     }
   });

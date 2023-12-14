@@ -170,7 +170,7 @@ import {
   FilePdfOutlined,
   WarningOutlined,
 } from "@ant-design/icons-vue";
-const statusList = ["已登记", "已审批", "待登记", "已取消", "全部"];
+const statusList = ["已登记", "已审批", "待登记", "已取消"];
 const mapStatusList = statusList.map((item, index) => {
   return {
     label: item,
@@ -245,9 +245,13 @@ const handleChangeCustomOrder = (childCustomOrder: number) => {
 };
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
+  pager.value.current = 1;
+  getData();
 };
-const handleChangeStatus = (childStatus: number) => {
+const handleChangeStatus = (childStatus: Array<number>) => {
   status.value = childStatus;
+  pager.value.current = 1;
+  getData();
 };
 const handleChangeMonthSelect = (childMonthSelect: string) => {
   monthSelect.value = childMonthSelect;
@@ -258,7 +262,7 @@ const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
 const resetSearch = (resetItem: any) => {
   showWithStatus.value = 1;
   isCustomOrder.value = 0;
-  status.value = 0;
+  status.value = [];
   monthRangeSelect.value = null;
 };
 const searchValue = ref();
@@ -284,7 +288,7 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref(0);
+const status = ref([]);
 const statusCal = ref([]);
 //编辑数据弹窗
 const editForm = ref();
@@ -422,19 +426,16 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    monthRangeSelect:
-      monthRangeSelect.value && showWithStatus.value == 0
-        ? monthRangeSelect.value
-        : null,
     customOrder: order.value,
-    monthSelect:
-      monthSelect.value && showWithStatus.value == 1 ? monthSelect.value : null,
-    status:
-      Number(status.value) !== statusList.length - 1 &&
-      showWithStatus.value == 0
-        ? Number(status.value)
-        : null,
+    status: status.value,
   };
+  if (monthSelect.value) {
+    params.monthSelect = monthSelect.value;
+  }
+  if (monthRangeSelect.value) {
+    params.monthRangeSelect = monthRangeSelect.value;
+  }
+
   if (chosenJiezhen.value.length > 0) {
     params.jiezhen = chosenJiezhen.value;
   }

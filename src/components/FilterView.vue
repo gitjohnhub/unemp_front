@@ -3,6 +3,14 @@
     <a-space direction="vertical">
       <slot name="otherFilter"></slot>
       <a-space direction="vertical">
+        <a-select
+          v-model:value="status"
+          mode="multiple"
+          placeholder="选择审批状态筛选"
+          style="width: 300px"
+          :options="mapStatusList"
+          @change="handleChangeStatus"
+        ></a-select>
         <a-segmented
           v-model:value="isCustomOrder"
           :options="customOrderList"
@@ -13,20 +21,7 @@
           :options="withStatusOrMonthsList"
           @change="handleChangeShowWithStatus"
         />
-        <!-- <a-segmented
-          v-if="showWithStatus == 0"
-          v-model:value="status"
-          :options="mapStatusList"
-          @change="handleChangeStatus"
-        /> -->
-        <a-select
-          v-model:value="status"
-          mode="multiple"
-          placeholder="选择审批状态筛选"
-          style="width: 300px"
-          :options="mapStatusList"
-          @change="handleChangeStatus"
-        ></a-select>
+
         <a-range-picker
           v-model:value="monthRangeSelect"
           v-if="showWithStatus == 0"
@@ -147,6 +142,11 @@ watch(
   () => {
     if (showWithStatus.value == 1) {
       monthRangeSelect.value = [];
+      handleChangeMonthRange();
+    }
+    if (showWithStatus.value == 0) {
+      monthSelect.value = [];
+      handleChangeMonthSelect();
     }
   }
 );
@@ -181,18 +181,18 @@ const customOrderList = [
     label: "按街镇排序",
     value: 1,
   },
-  {
-    label: "按原件未收到排序",
-    value: 2,
-  },
+  // {
+  //   label: "按原件未收到排序",
+  //   value: 2,
+  // },
 ];
 const withStatusOrMonthsList = [
   {
-    label: "按审批状态显示",
+    label: "日期",
     value: 0,
   },
   {
-    label: "按月显示",
+    label: "月份",
     value: 1,
   },
 ];

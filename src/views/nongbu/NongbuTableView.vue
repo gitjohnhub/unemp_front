@@ -264,7 +264,7 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref(0);
+const status = ref(null);
 const statusCal = ref([]);
 // 按街镇选择子组件
 const jiezhenSelectChange = (selectJiezhens: any) => {
@@ -443,18 +443,10 @@ const getData = async (params?: any) => {
     ...pager.value,
     showRepeat: showRepeat.value ? 1 : null,
     cancelUnemp: showCancelUnemp.value ? 1 : null,
-    monthRangeSelect:
-      monthRangeSelect.value && showWithStatus.value == 0
-        ? monthRangeSelect.value
-        : null,
-    monthSelect:
-      monthSelect.value && showWithStatus.value == 1 ? monthSelect.value : null,
-    status:
-      Number(status.value) !== statusList.length - 1 &&
-      showWithStatus.value == 0
-        ? Number(status.value)
-        : null,
-    jiezhen: chosenJiezhen.value.length > 0 ? chosenJiezhen.value : null,
+    monthRangeSelect: monthRangeSelect.value ? monthRangeSelect.value : [],
+    monthSelect: monthSelect.value ? monthSelect.value : null,
+    status: status.value,
+    jiezhen: chosenJiezhen.value.length > 0 ? chosenJiezhen.value : [],
     customOrder: order.value,
   };
 

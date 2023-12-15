@@ -8,7 +8,8 @@
         @handle-change-month-select="handleChangeMonthSelect"
         @handle-change-month-range="handleChangeMonthRange"
         :getMonths="getMonths"
-        :map-status-list="mapStatusList"
+        :status-list="statusList"
+        :custom-order-list="customOrderList"
         :headers-with-width="headersWithWidth"
         :monthSelect="monthSelect"
         file-name="非上海户籍失业保险转移支付汇总表"
@@ -317,12 +318,7 @@ const statusList = [
   "支付失败",
   "全部",
 ];
-const mapStatusList = statusList.map((item, index) => {
-  return {
-    label: item,
-    value: index,
-  };
-});
+const customOrderList = ["按时间排序", "按转移关系/金额"];
 const hanleChangeSearch = (childSearchValue: string) => {
   searchValue.value = childSearchValue;
 };

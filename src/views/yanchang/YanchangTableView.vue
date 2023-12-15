@@ -10,7 +10,8 @@
         @handle-change-month-range="handleChangeMonthRange"
         @handle-change-custom-order="handleChangeCustomOrder"
         :getMonths="getMonths"
-        :map-status-list="mapStatusList"
+        :status-list="statusList"
+        :custom-order-list="customOrderList"
         :headers-with-width="headersWithWidth"
         :monthSelect="monthSelect"
         file-name="失业金"
@@ -171,42 +172,14 @@ import {
   WarningOutlined,
 } from "@ant-design/icons-vue";
 const statusList = ["已登记", "已审批", "待登记", "已取消"];
-const mapStatusList = statusList.map((item, index) => {
-  return {
-    label: item,
-    value: index,
-  };
-});
+const customOrderList = ["按时间排序", "按街镇排序", "按原件未收到排序"];
+
 // 排序选择
-const order = ref({
-  sortColumn: "jiezhen",
-  sortRule: "DESC",
-});
-const isCustomOrder = ref(0);
+const isCustomOrder = ref(null);
 watch(
   () => isCustomOrder.value,
   () => {
-    switch (isCustomOrder.value) {
-      case 0:
-        order.value = {
-          sortColumn: "createtime",
-          sortRule: "DESC",
-        };
-        break;
-      case 1:
-        order.value = {
-          sortColumn: "jiezhen",
-          sortRule: "DESC",
-        };
-        break;
-      case 2:
-        order.value = {
-          sortColumn: "originalFile",
-          sortRule: "ASC",
-        };
-      default:
-        break;
-    }
+    console.log("isCustomOrder==>", isCustomOrder.value);
     getData();
   }
 );
@@ -420,7 +393,7 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
-    customOrder: order.value,
+    customOrder: isCustomOrder.value,
     status: status.value,
   };
   if (monthSelect.value) {

@@ -9,7 +9,8 @@
       @handle-change-month-range="handleChangeMonthRange"
       @handle-change-custom-order="handleChangeCustomOrder"
       :getMonths="getMonths"
-      :map-status-list="mapStatusList"
+      :status-list="statusList"
+      :custom-order-list="customOrderList"
       :headers-with-width="nongbuHeader"
       :monthSelect="monthSelect"
       file-name="农民补助金"
@@ -304,12 +305,8 @@ const spinning = ref<boolean>(false);
 // 搜索相关
 const searchValue = ref();
 const statusList = ["已登记", "已审批", "已取消", "全部"];
-const mapStatusList = statusList.map((item, index) => {
-  return {
-    label: item,
-    value: index,
-  };
-});
+const customOrderList = ["按时间排序", "按街镇排序", "按原件未收到排序"];
+
 const getStatus = (status: String) => {
   return statusList[Number(status)];
 };

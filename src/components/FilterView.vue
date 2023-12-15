@@ -13,7 +13,7 @@
         ></a-select>
         <a-segmented
           v-model:value="isCustomOrder"
-          :options="customOrderList"
+          :options="mapCustomOrderList"
           @change="handleChangeCustomOrder"
         />
         <a-space direction="horizontal">
@@ -96,7 +96,11 @@ const props = defineProps({
     type: Number,
     default: 1,
   },
-  mapStatusList: {
+  customOrderList: {
+    type: Array,
+    default: () => [],
+  },
+  statusList: {
     type: Array,
     default: () => [],
   },
@@ -131,15 +135,6 @@ const months = ref();
 const monthRangeSelect = ref(props.monthRangeSelect);
 const cascaderMonthsList = ref([]);
 const monthSelect = ref([]);
-const isCustomOrder = ref(0);
-// 排序选择
-const order = ref();
-// watch(
-//   () => isCustomOrder.value,
-//   () => {
-//     console.log("isCustomOrder==>", isCustomOrder.value);
-//   }
-// );
 watch(
   () => showWithStatus.value,
   () => {
@@ -170,20 +165,43 @@ watch(
     props.getData();
   }
 );
-const customOrderList = [
+const sortMap = [
   {
     label: "按时间排序",
-    value: 0,
+    sortColumn: "createtime",
+    sortRule: "DESC",
   },
   {
     label: "按街镇排序",
-    value: 1,
+    sortColumn: "jiezhen",
+    sortRule: "DESC",
   },
-  // {
-  //   label: "按原件未收到排序",
-  //   value: 2,
-  // },
+  {
+    label: "按原件未收到排序",
+    sortColumn: "originalFile",
+    sortRule: "ASC",
+  },
+  {
+    label: "按转移关系/金额",
+    sortColumn: "isOnlyTransferRelation",
+    sortRule: "ASC",
+  },
 ];
+const mapCustomOrderList = props.customOrderList.map((item) => {
+  return {
+    label: item,
+    value: item,
+  };
+});
+
+const mapStatusList = props.statusList.map((item, index) => {
+  return {
+    label: item,
+    value: index,
+  };
+});
+const isCustomOrder = ref(mapCustomOrderList[0].value);
+
 const withStatusOrMonthsList = [
   {
     label: "日期",
@@ -227,28 +245,8 @@ const handleChangeMonthRange = () => {
   emit("handleChangeMonthRange", monthRangeSelect.value);
 };
 const handleChangeCustomOrder = () => {
-  switch (isCustomOrder.value) {
-    case 0:
-      order.value = {
-        sortColumn: "createtime",
-        sortRule: "DESC",
-      };
-      break;
-    case 1:
-      order.value = {
-        sortColumn: "jiezhen",
-        sortRule: "DESC",
-      };
-      break;
-    case 2:
-      order.value = {
-        sortColumn: "originalFile",
-        sortRule: "ASC",
-      };
-    default:
-      break;
-  }
-  emit("handleChangeCustomOrder", order.value);
+  const sortValue = sortMap.find((item) => item.label == isCustomOrder.value);
+  emit("handleChangeCustomOrder", sortValue);
 };
 const handleChangeMonthSelect = () => {
   emit(

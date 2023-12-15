@@ -53,7 +53,9 @@
               :style="{ fontSize: '18px' }"
               copyable
               keyboard
-              :class="{ deleted: record.status == 4 }"
+              :class="{
+                deleted: record.status == statusList.indexOf('已取消'),
+              }"
               >{{ record.personID }}</a-typography-paragraph
             >
           </template>
@@ -63,7 +65,9 @@
                 <a-typography-paragraph
                   :style="{ fontSize: '18px' }"
                   copyable
-                  :class="{ deleted: record.isDeleted == 2 }"
+                  :class="{
+                    deleted: record.status == statusList.indexOf('已取消'),
+                  }"
                   >{{ record.personName }}</a-typography-paragraph
                 >
               </a-tooltip>
@@ -128,7 +132,12 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <YanchangActionView :record="record" @get-data="getData" />
+                  <ActionView
+                    :record="record"
+                    :button-list="buttonList"
+                    :action="updateAction"
+                    @get-data="getData"
+                  />
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
@@ -161,7 +170,6 @@ import api from "@/api";
 import FilterView from "@/components/FilterView.vue";
 import { pinyin } from "pinyin-pro";
 import YanchangEditFormView from "./YanchangEditFormView.vue";
-import YanchangActionView from "./YanchangActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { colorList } from "@/types";
@@ -171,6 +179,7 @@ import {
   FilePdfOutlined,
   WarningOutlined,
 } from "@ant-design/icons-vue";
+import ActionView from "@/components/ActionView.vue";
 const statusList = ["已登记", "已审批", "待登记", "已取消"];
 const customOrderList = ["按时间排序", "按街镇排序", "按原件未收到排序"];
 
@@ -433,18 +442,6 @@ const getCorrectTime = (date: string) => {
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
 
-const reviewData = async (id: number) => {
-  await api
-    .updateYanchangData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "1",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-
 // 增加数据弹窗
 const confirmLoading = ref<boolean>(false);
 
@@ -485,6 +482,81 @@ const columns = columnsOriginal.map((item) => {
     align: "center",
   };
 });
+const updateAction = (params: any) => {
+  return api.updateYanchangData(params);
+};
+const buttonList = [
+  {
+    text: "复核",
+    icon: "CheckOutlined",
+    params: {
+      status: statusList.indexOf("已审批"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "复核失败,请联系管理员",
+    successMsg: "复核成功",
+    type: "primary",
+    show: (record: any) => {
+      // return true;
+      return record.status == "0" && record.checkoperator !== userInfo.username;
+    },
+  },
+  {
+    text: "初核",
+    icon: "RedoOutlined",
+    params: {
+      status: statusList.indexOf("已登记"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "初核失败,请联系管理员",
+    successMsg: "初核成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == "2";
+    },
+  },
+  {
+    text: "删除",
+    icon: "DeleteOutlined",
+    params: {
+      status: statusList.indexOf("已取消"),
+    },
+    errMsg: "删除失败,请联系管理员",
+    successMsg: "删除成功",
+    type: "primary",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == statusList.indexOf("已取消");
+    },
+    color: "brown",
+  },
+  {
+    text: "标记错登记",
+    icon: "WarningFilled",
+    params: {
+      wrongTag: 1,
+    },
+    errMsg: "标识失败,请联系管理员",
+    successMsg: "标识成功",
+    type: "primary",
+    show: () => true,
+    color: "#c21d03",
+  },
+  {
+    text: "收到原件",
+    icon: "FilePdfFilled",
+    params: {
+      originalFile: 1,
+    },
+    errMsg: "标识失败,请联系管理员",
+    successMsg: "标识成功",
+    type: "primary",
+    show: () => true,
+    color: "#fd5732",
+  },
+];
 </script>
 <style scoped>
 .deleted {

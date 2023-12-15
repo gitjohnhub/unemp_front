@@ -10,7 +10,8 @@
         @handle-change-custom-order="handleChangeCustomOrder"
         @handle-change-show-with-status="handleChangeShowWithStatus"
         :getMonths="getMonths"
-        :map-status-list="mapStatusList"
+        :status-list="statusList"
+        :custom-order-list="customOrderList"
         :headers-with-width="unempHeader"
         :monthSelect="monthSelect"
         file-name="失业金"
@@ -121,7 +122,12 @@
             <a-space direction="vertical">
               <a-row>
                 <a-space>
-                  <UnempActionView :record="record" @get-data="getData" />
+                  <ActionView
+                    :record="record"
+                    :button-list="buttonList"
+                    :action="updateAction"
+                    @get-data="getData"
+                  />
                   <a-button @click="showEditModal(record)">
                     <EditOutlined />
                   </a-button>
@@ -169,6 +175,7 @@
 <script lang="ts" setup>
 import UnempEditFormView from "./UnempEditFormView.vue";
 import UnempActionView from "./UnempActionView.vue";
+import ActionView from "@/components/ActionView.vue";
 import FilterView from "@/components/FilterView.vue";
 
 import { computed, ref, onBeforeMount, watch } from "vue";
@@ -190,13 +197,9 @@ const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const statusList = ["已初核", "已复核", "待初核", "已删除"];
+const customOrderList = ["按时间排序", "按街镇排序"];
+
 const order = ref();
-const mapStatusList = statusList.map((item, index) => {
-  return {
-    label: item,
-    value: index,
-  };
-});
 const handleChangeCustomOrder = (value: number) => {
   order.value = value;
 };
@@ -408,11 +411,6 @@ const handleEditCancel = (record) => {
 };
 
 const columns = [
-  // {
-  //   title: 'ID',
-  //   dataIndex: 'id',
-  //   key: 'id',
-  // },
   {
     title: "姓名",
     dataIndex: "personName",
@@ -423,11 +421,6 @@ const columns = [
     dataIndex: "personID",
     key: "personID",
   },
-  // {
-  //   title: '街镇',
-  //   dataIndex: 'jiezhen',
-  //   key: 'jiezhen',
-  // },
   {
     title: "初核",
     dataIndex: "checkoperator",
@@ -447,6 +440,57 @@ const columns = [
     title: "创建时间",
     dataIndex: "createtime",
     key: "createtime",
+  },
+];
+const updateAction = (params: any) => {
+  return api.updateUnempVeriData(params);
+};
+const buttonList = [
+  {
+    text: "复核",
+    icon: "CheckOutlined",
+    params: {
+      status: statusList.indexOf("已复核"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "复核失败,请联系管理员",
+    successMsg: "复核成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == 0 && record.checkoperator !== userInfo.username;
+    },
+    disabled: () => false,
+  },
+  {
+    text: "初核",
+    icon: "RedoOutlined",
+    params: {
+      status: statusList.indexOf("已初核"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "初核失败,请联系管理员",
+    successMsg: "初核成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == "2";
+    },
+    disabled: () => false,
+  },
+  {
+    text: "删除",
+    icon: "DeleteOutlined",
+    params: {
+      status: statusList.indexOf("已删除"),
+    },
+    errMsg: "删除失败,请联系管理员",
+    successMsg: "删除成功",
+    type: "dashed",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == "3";
+    },
   },
 ];
 </script>

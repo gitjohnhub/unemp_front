@@ -45,6 +45,7 @@
     <a-radio-group v-model:value="localEditForm.status">
       <a-radio value="0">已登记</a-radio>
       <a-radio value="2">待登记</a-radio>
+      <a-radio value="3">已取消</a-radio>
     </a-radio-group>
   </a-form-item>
   <a-form-item label="原件">

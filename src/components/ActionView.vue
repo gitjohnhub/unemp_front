@@ -1,54 +1,66 @@
 <template>
-  <a-button
-    @click="updateStatus(props.params, props.getData, props.table)"
-    type="primary"
-  >
-    <CheckOutlined />
-  </a-button>
+  <a-row>
+    <a-space>
+      <span v-for="item in buttonList">
+        <a-tooltip :title="item.text">
+          <a-button
+            @click="localButtonAction(item)"
+            v-if="item.show(props.record)"
+            :disabled="
+              item.hasOwnProperty('disabled')
+                ? item.disabled(props.record)
+                : false
+            "
+            :type="item.type"
+            :style="{
+              backgroundColor: item.hasOwnProperty('color') ? item.color : '',
+            }"
+            ><Icon :icon="item.icon"
+          /></a-button>
+        </a-tooltip>
+      </span>
+    </a-space>
+  </a-row>
 </template>
 <script setup lang="ts">
-import api from "@/api";
-import { CheckOutlined } from "@ant-design/icons-vue";
+import { message } from "ant-design-vue";
+import { Icon } from "@/components/Icon";
 const props = defineProps({
-  params: {
+  record: {
     type: Object,
     default: {},
   },
-  getData: {
+  buttonList: {
+    type: Array<any>,
+    default: [],
+  },
+  action: {
     type: Function,
     default: () => {},
   },
-  table: {
-    type: String,
-    default: "",
-  },
 });
-const updateStatus = async (params: any, callBack: any, table: string) => {
-  console.log("button click");
-  console.log(table);
-  switch (table) {
-    case "unemp":
-      params.status = 1;
-      await api
-        .updateUnempVeriData({
-          ...params,
-        })
-        .then((res: any) => {
-          callBack();
-        });
-      break;
-    case "yanchang":
-      await api.updateYanchangData(params).then((res: any) => {
-        callBack();
-      });
-      break;
-    case "nongbu":
-      await api.updateNongbuData(params).then((res: any) => {
-        callBack();
-      });
-      break;
-    default:
-      callBack();
-  }
+const emit = defineEmits(["getData"]);
+const localGetData = () => {
+  emit("getData");
+};
+
+const localButtonAction = async (item: any) => {
+  const params = {
+    ...item.params,
+    id: props.record.id,
+  };
+  return await props
+    .action(params)
+    .then(() => {
+      localGetData();
+    })
+    .then(() => {
+      message.info(item.successMsg);
+    })
+    .catch((e) => {
+      console.log(e);
+      message.info(item.errMsg);
+    });
 };
 </script>
+<style scoped></style>

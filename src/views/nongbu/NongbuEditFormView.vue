@@ -16,6 +16,12 @@
     <a-form-item label="姓名" name="personName" has-feedback>
       <a-input v-model:value="localEditForm.personName" />
     </a-form-item>
+    <a-form-item label="城保" name="chengPayMonth" has-feedback>
+      <a-input v-model:value="localEditForm.chengPayMonth" />
+    </a-form-item>
+    <a-form-item label="镇保" name="zhenPayMonth" has-feedback>
+      <a-input v-model:value="localEditForm.zhenPayMonth" />
+    </a-form-item>
     <a-form-item label="街镇" name="jiezhen" has-feedback>
       <a-select
         ref="select"
@@ -24,25 +30,34 @@
         :options="jiezhens"
       ></a-select>
     </a-form-item>
-    <a-form-item label="初核备注">
-      <a-textarea v-model:value="localEditForm.checknote" />
+    <a-form-item label="申请日期" name="applyDate" has-feedback>
+      <a-date-picker v-model:value="applyDate" />
     </a-form-item>
-    <a-form-item label="复核备注">
-      <a-textarea v-model:value="localEditForm.reviewnote" />
+
+    <a-form-item label="备注">
+      <a-textarea v-model:value="localEditForm.note" />
     </a-form-item>
-    <a-form-item label="选择未初核">
-      <a-radio-group v-model:value="localEditForm.status">
-        <a-radio value="0">已初核</a-radio>
-        <a-radio value="2">待初核</a-radio>
+    <a-form-item label="是否错核">
+      <a-radio-group v-model:value="localEditForm.wrongTag">
+        <a-radio value="1">标记错核</a-radio>
+        <a-radio value="0">未错核</a-radio>
       </a-radio-group>
     </a-form-item>
   </a-form>
 </template>
 <script lang="ts" setup>
-import { ref } from "vue";
-import { jiezhens, rules, wrapperCol, labelCol } from "@/types";
-import api from "@/api/index";
+import { onBeforeMount, ref } from "vue";
 import { useUserStore } from "@/stores";
+import api from "@/api";
+import { jiezhens, rules, wrapperCol, labelCol } from "@/types";
+import dayjs, { Dayjs } from "dayjs";
+onBeforeMount(() => {
+  if (initialEditForm.id !== undefined) {
+    applyDate.value = dayjs(localEditForm.value.startDate);
+  }
+});
+
+const editableFormRef = ref(null);
 const checkoperator = useUserStore().userInfo.username;
 const props = defineProps({
   editForm: {
@@ -51,34 +66,38 @@ const props = defineProps({
       return {
         personID: "",
         personName: "",
+        chengPayMonth: "",
+        zhenPayMonth: "",
         status: "0",
+        note: "",
         jiezhen: "",
-        checknote: "",
-        reviewnote: "",
+        wrongTag: "0",
+        repeatTimes: "0",
+        originalFile: "0",
+        cancelUnemp: "0",
       };
     },
   },
 });
-const editableFormRef = ref(null);
 const initialEditForm = { ...props.editForm };
-
 const localEditForm = ref(props.editForm);
+const applyDate = ref<Dayjs>();
 const onSubmit = () => {
   if (initialEditForm.id == undefined) {
     return editableFormRef.value.validate().then(async () => {
       localEditForm.value.checkoperator = checkoperator;
-      console.log("localAddForm.value===>", localEditForm.value);
-      return await api.addUnempVeriData(localEditForm.value);
+      localEditForm.value.applyDate = applyDate.value.format("YYYY-MM-DD");
+      return await api.addNongbuData(localEditForm.value);
     });
   } else {
+    localEditForm.value.applyDate = applyDate.value.format("YYYY-MM-DD");
     return editableFormRef.value.validate().then(() => {
-      console.log("localEditForm.value===>", localEditForm.value);
       const editFormToPush = {
         ...localEditForm.value,
       };
       delete editFormToPush.createtime;
       delete editFormToPush.editVisible;
-      return api.updateUnempVeriData(editFormToPush);
+      return api.updateNongbuData(editFormToPush);
     });
   }
 };

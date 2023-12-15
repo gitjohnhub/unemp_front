@@ -24,15 +24,16 @@
         <a-checkbox v-model:checked="showRepeat">只显示重复</a-checkbox>
       </template>
       <template #otherAction>
-        <a-button @click="showAddDataModal" type="primary">添加</a-button>
+        <a-button @click="showEditModal(null)" type="primary">添加</a-button>
         <a-modal
-          v-model:open="open"
-          title="Title"
+          v-model:open="addOpen"
+          title="增加"
           :confirm-loading="confirmLoading"
-          @ok="handleOk"
-          @cancel="handleCancel"
+          :destroyOnClose="true"
+          @ok="handleEditOk(null)"
+          @cancel="handleEditCancel(null)"
         >
-          <NongbuAddFormView ref="formRef" />
+          <NongbuEditFormView ref="editableFormRef" />
         </a-modal>
       </template>
     </FilterView>
@@ -54,7 +55,9 @@
               :style="{ fontSize: '18px' }"
               copyable
               keyboard
-              :class="{ deleted: record.status == 4 }"
+              :class="{
+                deleted: record.status == statusList.indexOf('已取消'),
+              }"
               >{{ record.personID }}</a-typography-paragraph
             >
           </template>
@@ -64,7 +67,9 @@
                 <a-typography-paragraph
                   :style="{ fontSize: '18px' }"
                   copyable
-                  :class="{ deleted: record.isDeleted == 2 }"
+                  :class="{
+                    deleted: record.status == statusList.indexOf('已取消'),
+                  }"
                 >
                   {{ record.personName }}
                 </a-typography-paragraph>
@@ -179,47 +184,16 @@
 
               <!-- 编辑模态框 -->
               <a-modal
-                v-model:visible="record.editVisible"
-                @ok="handleEditOk"
-                @cancel="handleEditCancel"
+                :open="record.editVisible"
+                title="编辑"
+                :destroyOnClose="true"
+                @ok="handleEditOk(record)"
+                @cancel="handleEditCancel(record)"
               >
-                <a-form :model="editForm">
-                  <a-form-item label="身份证号" name="personID" has-feedback>
-                    <a-input v-model:value="editForm.personID"> </a-input>
-                  </a-form-item>
-                  <a-form-item label="姓名" name="personName" has-feedback>
-                    <a-input v-model:value="editForm.personName" />
-                  </a-form-item>
-                  <a-form-item label="街镇" name="jiezhen">
-                    <a-select
-                      ref="select"
-                      v-model:value="editForm.jiezhen"
-                      style="width: 120px"
-                      :options="jiezhens"
-                    ></a-select>
-                  </a-form-item>
-                  <a-form-item label="城保" name="chengPayMonth">
-                    <a-input v-model:value="editForm.chengPayMonth" />
-                  </a-form-item>
-                  <a-form-item label="镇保" name="zhenPayMonth">
-                    <a-input v-model:value="editForm.zhenPayMonth" />
-                  </a-form-item>
-                  <a-form-item label="备注">
-                    <a-textarea v-model:value="editForm.note" />
-                  </a-form-item>
-                  <a-form-item label="重复次数">
-                    <a-input
-                      type="number"
-                      v-model:value="editForm.repeatTimes"
-                    />
-                  </a-form-item>
-                  <a-form-item label="是否错核">
-                    <a-radio-group v-model:value="editForm.wrongTag">
-                      <a-radio value="1">标记错核</a-radio>
-                      <a-radio value="0">未错核</a-radio>
-                    </a-radio-group>
-                  </a-form-item>
-                </a-form>
+                <NongbuEditFormView
+                  :edit-form="editForm"
+                  ref="editableFormRef"
+                />
               </a-modal>
             </a-space>
           </template>
@@ -243,14 +217,15 @@ import {
 } from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
-import NongbuAddFormView from "./NongbuAddFormView.vue";
+import NongbuEditFormView from "./NongbuEditFormView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-import { nongbuHeader, exportExcel, formattedTime } from "@/utils/util";
+import { nongbuHeader, formattedTime } from "@/utils/util";
 import { jiezhens, colorList, jiezhenList } from "@/types";
 import "dayjs/locale/zh-cn";
 import { tagCancelUnemp } from "@/views/nongbu/utils";
 import { tagOriginalFile, tagWrong } from "@/utils/tag";
+const addOpen = ref<boolean>(false);
 
 const editForm = ref();
 const showCancelUnemp = ref(false);
@@ -511,53 +486,39 @@ const cancelData = async (id: number) => {
 };
 
 // 增加数据弹窗
-const formRef = ref(null);
-const open = ref<boolean>(false);
-const editOpen = ref<boolean>(false);
-
+const editableFormRef = ref(null);
 const confirmLoading = ref<boolean>(false);
-const showAddDataModal = async () => {
-  open.value = true;
-};
-
 const showEditModal = (record) => {
-  editForm.value = record;
-  record.editVisible = true;
+  if (record) {
+    record.editVisible = true;
+    editForm.value = record;
+  } else {
+    addOpen.value = true;
+  }
 };
-
-const handleOk = () => {
-  formRef.value
+const handleEditOk = async (record: any) => {
+  await editableFormRef.value
     .onSubmit()
     .then(() => {
-      confirmLoading.value = true;
-      getData();
-      open.value = false;
-      confirmLoading.value = false;
-    })
-    .catch((error) => {
-      message.info("数据格式错误，无法提交=>", error);
-    });
-
-  getData();
-};
-
-const handleEditOk = () => {
-  api
-    .updateNongbuData(editForm.value)
-    .then((res: any) => {
-      message.info("修改成功");
-      editOpen.value = false;
+      message.info("成功");
+      addOpen.value = false;
+      if (record) {
+        record.editVisible = false;
+      } else {
+        addOpen.value = false;
+      }
       getData();
     })
     .catch((error) => {
+      console.log("error==>", error);
       message.info("数据格式错误，无法提交=>", error);
     });
 };
-const handleEditCancel = () => {
-  editOpen.value = false;
-};
-const handleCancel = () => {
-  formRef.value.resetForm();
+const handleEditCancel = (record) => {
+  if (record) {
+    record.editVisible = false;
+  }
+  addOpen.value = false;
 };
 const columnsOriginal = [
   {

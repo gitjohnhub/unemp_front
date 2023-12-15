@@ -15,6 +15,13 @@
         :count="count"
         :show-jiezhen-chosen-view="false"
       >
+        <template #otherFilter>
+          <a-date-picker v-model:value="payDate">
+            <template #suffixIcon>
+              <div>支付日期</div>
+            </template>
+          </a-date-picker>
+        </template>
         <template #otherAction>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
@@ -30,29 +37,6 @@
           </a-space>
         </template>
       </FilterView>
-      <a-space direction="vertical">
-        <a-row>
-          <a-space>
-            <h5>复核支付操作：</h5>
-            <a-date-picker v-model:value="payDate">
-              <template #suffixIcon>
-                <div>支付日期</div>
-              </template>
-            </a-date-picker>
-          </a-space>
-        </a-row>
-        <a-row>
-          <a-radio-group v-model:value="status" button-style="solid">
-            <a-radio-button
-              v-for="(status, index) in statusCal"
-              :value="String(index)"
-              :key="index"
-              >{{ status.label }}
-              <a-tag :color="colorList[index]">{{ status.count }}</a-tag>
-            </a-radio-button>
-          </a-radio-group>
-        </a-row>
-      </a-space>
     </div>
     <a-spin :spinning="spinning">
       <a-table
@@ -335,7 +319,7 @@ const mapStatusList = statusList.map((item, index) => {
     value: index,
   };
 });
-const hanleChangeSearch = (childSearchValue: any) => {
+const hanleChangeSearch = (childSearchValue: string) => {
   searchValue.value = childSearchValue;
 };
 // 月视图
@@ -487,9 +471,7 @@ watch(
 watch(
   () => searchValue.value,
   (newValue) => {
-    if (searchValue.value == "") {
-      getData();
-    }
+    getData();
   }
 );
 watch(
@@ -621,10 +603,7 @@ const getData = async (params?: any) => {
     };
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
-    params = {
-      searchValue: searchValue.value,
-      current: 1,
-    };
+    params.searchValue = searchValue.value;
   }
   return await api.getZhuanyiData(params).then((res: any) => {
     exportData.value = res.rows;

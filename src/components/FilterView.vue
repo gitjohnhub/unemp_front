@@ -98,10 +98,6 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  searchValue: {
-    type: String,
-    default: "",
-  },
   // 导出excel
   headersWithWidth: Array,
   fileName: {
@@ -126,7 +122,7 @@ const props = defineProps({
   },
 });
 const chosenJiezhen = ref(props.chosenJiezhen.slice());
-const searchValue = ref(props.searchValue);
+const searchValue = ref();
 const showWithStatus = ref(props.showWithStatus);
 const status = ref([]);
 const months = ref();

@@ -6,6 +6,7 @@
         @handle-change-show-with-status="handleChangeShowWithStatus"
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
+        @handle-change-month-range="handleChangeMonthRange"
         :getMonths="getMonths"
         :map-status-list="mapStatusList"
         :headers-with-width="headersWithWidth"
@@ -16,11 +17,10 @@
         :show-jiezhen-chosen-view="false"
       >
         <template #otherFilter>
-          <a-date-picker v-model:value="payDate">
-            <template #suffixIcon>
-              <div>支付日期</div>
-            </template>
-          </a-date-picker>
+          <a-space direction="horizontal">
+            <div>支付时请先选择日期:</div>
+            <a-date-picker v-model:value="payDate" />
+          </a-space>
         </template>
         <template #otherAction>
           <a-space>
@@ -54,7 +54,9 @@
               :style="{ fontSize: '18px' }"
               copyable
               keyboard
-              :class="{ deleted: record.isDeleted == 0 }"
+              :class="{
+                deleted: record.status == statusList.indexOf('已取消'),
+              }"
               >{{ record.personID }}</a-typography-paragraph
             >
           </template>
@@ -64,7 +66,9 @@
                 <a-typography-paragraph
                   :style="{ fontSize: '18px' }"
                   copyable
-                  :class="{ deleted: record.isDeleted == 2 }"
+                  :class="{
+                    deleted: record.status == statusList.indexOf('已取消'),
+                  }"
                   >{{ record.personName }}</a-typography-paragraph
                 >
               </a-tooltip>
@@ -180,7 +184,7 @@
                   <a-button
                     danger
                     @click="deleteData(record.id)"
-                    v-if="record.isDeleted == 1 ? true : false"
+                    v-if="record.status !== statusList.indexOf('已取消')"
                   >
                     <DeleteOutlined />
                   </a-button>
@@ -323,7 +327,14 @@ const hanleChangeSearch = (childSearchValue: string) => {
   searchValue.value = childSearchValue;
 };
 // 月视图
-const monthRangeSelect = ref();
+type RangeValue = [Dayjs, Dayjs];
+const monthRangeSelect = ref<RangeValue>();
+watch(
+  () => monthRangeSelect.value,
+  () => {
+    getData();
+  }
+);
 const showWithStatus = ref(1);
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
@@ -574,33 +585,14 @@ const getData = async (params?: any) => {
   params = {
     ...params,
     ...pager.value,
+    status: status.value,
     checkoperators: selectedOp.value,
   };
-
-  if (checked.value == false) {
-    params.isDeleted = 1;
-  } else {
-    params.isDeleted = 0;
-  }
-  if (Number(status.value) !== 8) {
-    params.status = status.value;
-  } else {
-    console.log("=8,", status.value);
-
-    params.status = null;
-  }
-  if (reviewChecked.value == "0") {
-    params.verification = "0";
-  } else if (reviewChecked.value == "1") {
-    params.verification = "1";
-  } else {
-    params.verification = null;
-  }
   if (monthSelect.value) {
-    params = {
-      ...params,
-      payDate: monthSelect.value[0],
-    };
+    params.monthSelect = monthSelect.value;
+  }
+  if (monthRangeSelect.value) {
+    params.monthRangeSelect = monthRangeSelect.value;
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params.searchValue = searchValue.value;
@@ -624,9 +616,11 @@ const getCorrectTime = (date: string) => {
 };
 
 const deleteData = async (id: number) => {
-  await api.updateZhuanyiData({ id: id, isDeleted: 0 }).then((res: any) => {
-    getData();
-  });
+  await api
+    .updateZhuanyiData({ id: id, status: statusList.indexOf("已取消") })
+    .then((res: any) => {
+      getData();
+    });
 };
 const reviewData = async (id: number) => {
   await api

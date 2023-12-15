@@ -16,25 +16,27 @@
           :options="customOrderList"
           @change="handleChangeCustomOrder"
         />
-        <a-segmented
-          v-model:value="showWithStatus"
-          :options="withStatusOrMonthsList"
-          @change="handleChangeShowWithStatus"
-        />
+        <a-space direction="horizontal">
+          <a-segmented
+            v-model:value="showWithStatus"
+            :options="withStatusOrMonthsList"
+            @change="handleChangeShowWithStatus"
+          />
 
-        <a-range-picker
-          v-model:value="monthRangeSelect"
-          v-if="showWithStatus == 0"
-          @change="handleChangeMonthRange"
-        />
-        <a-cascader
-          v-if="showWithStatus == 1"
-          v-model:value="monthSelect"
-          :options="cascaderMonthsList"
-          expand-trigger="hover"
-          placeholder="选择月份"
-          @change="handleChangeMonthSelect"
-        />
+          <a-range-picker
+            v-model:value="monthRangeSelect"
+            v-if="showWithStatus == 0"
+            @change="handleChangeMonthRange"
+          />
+          <a-cascader
+            v-if="showWithStatus == 1"
+            v-model:value="monthSelect"
+            :options="cascaderMonthsList"
+            expand-trigger="hover"
+            placeholder="选择月份"
+            @change="handleChangeMonthSelect"
+          />
+        </a-space>
       </a-space>
       <a-select
         v-if="showJiezhenChosenView"
@@ -47,7 +49,7 @@
       ></a-select>
       <a-input-search
         v-model:value="searchValue"
-        placeholder="输入姓名/身份证"
+        placeholder="输入搜索条件"
         style="width: 300px"
         @search="handleChangeSearch"
       />

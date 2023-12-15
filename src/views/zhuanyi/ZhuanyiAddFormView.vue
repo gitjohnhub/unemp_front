@@ -40,36 +40,35 @@
   </a-form>
 </template>
 <script lang="ts" setup>
-import { computed, ref,watch } from 'vue';
-import { useUserStore } from '@/stores';
-import api from '@/api/index';
+import { computed, ref, watch } from "vue";
+import { useUserStore } from "@/stores";
+import api from "@/api/index";
 const formRef = ref(null);
 const checkoperator = useUserStore().userInfo.username;
 const formState = ref({
-  personID: '',
-  personName: '',
-  fromArea: '',
-  isOnlyTransferRelation: '转金额',
-  status: '0',
-  payDate: '',
-  reviewnote: '',
-  note: '',
-  isDeleted: 1,
-  payMonth: '',
-  pay:''
+  personID: "",
+  personName: "",
+  fromArea: "",
+  isOnlyTransferRelation: "转金额",
+  status: "0",
+  payDate: "",
+  reviewnote: "",
+  note: "",
+  payMonth: "",
+  pay: "",
 });
 const isOnlyTransferRelationOp = [
   {
-    value: '只转关系',
+    value: "只转关系",
   },
   {
-    value: '转金额',
+    value: "转金额",
   },
 ];
 watch(
   () => formState.value.personID,
   (newValue) => {
-    console.log('formState.value==>', newValue);
+    console.log("formState.value==>", newValue);
   }
 );
 const onSubmit = () => {
@@ -95,16 +94,16 @@ const personIDCount = computed(() => {
 });
 const rules = {
   personID: [
-    { required: true, message: '请输入身份证号', trigger: 'change' },
-    { min: 18, max: 18, message: '请填写18位身份证', trigger: 'blur' },
+    { required: true, message: "请输入身份证号", trigger: "change" },
+    { min: 18, max: 18, message: "请填写18位身份证", trigger: "blur" },
     // {type:'number', message:'请检查格式', trigger: 'change' }
   ],
-  personName: [{ required: true, message: '请输入姓名', trigger: 'change' }],
+  personName: [{ required: true, message: "请输入姓名", trigger: "change" }],
 };
 const resetForm = () => {
   formRef.value.resetFields();
 };
-const labelCol = { style: { width: '150px' } };
+const labelCol = { style: { width: "150px" } };
 const wrapperCol = { span: 14 };
 // 计算核发标准
 const CalPayMonth = (payMonth) => {
@@ -116,7 +115,7 @@ const CalPayMonth = (payMonth) => {
       return String(12 * 2175 * 1.5 + (numPayMonth - 12) * 1740 * 1.5);
     }
   } else {
-    return '0';
+    return "0";
   }
 };
 defineExpose({

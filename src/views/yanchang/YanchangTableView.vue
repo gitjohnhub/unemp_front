@@ -259,12 +259,6 @@ const handleChangeMonthSelect = (childMonthSelect: Array<string>) => {
 const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
   monthRangeSelect.value = childMonthRange;
 };
-const resetSearch = (resetItem: any) => {
-  showWithStatus.value = 1;
-  isCustomOrder.value = 0;
-  status.value = [];
-  monthRangeSelect.value = null;
-};
 const searchValue = ref();
 watch(
   () => searchValue.value,

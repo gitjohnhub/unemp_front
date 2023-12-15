@@ -1,8 +1,21 @@
 <template>
   <div>
     <div class="table-operations">
-      <a-space direction="vertical">
-        <a-row>
+      <FilterView
+        @handle-change-search="hanleChangeSearch"
+        @handle-change-show-with-status="handleChangeShowWithStatus"
+        @handle-change-status="handleChangeStatus"
+        @handle-change-month-select="handleChangeMonthSelect"
+        :getMonths="getMonths"
+        :map-status-list="mapStatusList"
+        :headers-with-width="headersWithWidth"
+        :monthSelect="monthSelect"
+        file-name="非上海户籍失业保险转移支付汇总表"
+        :get-data="getData"
+        :count="count"
+        :show-jiezhen-chosen-view="false"
+      >
+        <template #otherAction>
           <a-space>
             <a-button @click="showAddDataModal" type="primary">添加</a-button>
             <a-modal
@@ -14,18 +27,10 @@
             >
               <ZhuanyiAddFormView ref="formRef" />
             </a-modal>
-            <a-tag color="#108ee9">{{ count }}</a-tag>
-            <a-button @click="getData"> 刷新数据 </a-button>
-            <a-divider type="vertical" />
-            <a-input-search
-              v-model:value="searchValue"
-              placeholder="输入姓名/身份证/金额"
-              style="width: 200px"
-              @search="onSearch"
-            />
-            <!-- <a-button type="primary" @click="()=>searchValue=''">重置搜索</a-button> -->
           </a-space>
-        </a-row>
+        </template>
+      </FilterView>
+      <a-space direction="vertical">
         <a-row>
           <a-space>
             <h5>复核支付操作：</h5>
@@ -34,21 +39,6 @@
                 <div>支付日期</div>
               </template>
             </a-date-picker>
-            <a-checkbox v-model:checked="checked">显示删除</a-checkbox>
-          </a-space>
-        </a-row>
-        <a-row>
-          <!-- 数据导出操作 -->
-          <a-space>
-            <h5>导出操作：</h5>
-            <a-date-picker v-model:value="monthSelect" />
-            <a-button
-              @click="exportExcel"
-              type="primary"
-              style="background-color: #1e1e1e"
-            >
-              导出Excel
-            </a-button>
           </a-space>
         </a-row>
         <a-row>
@@ -320,25 +310,75 @@ import {
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
 import ZhuanyiAddFormView from "./ZhuanyiAddFormView.vue";
+import FilterView from "@/components/FilterView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
+
 import { downloadLink, genWorkbook } from "@/utils/util";
 import {} from "@/utils/util";
 import { colorList } from "@/types";
 import "dayjs/locale/zh-cn";
-
+const statusList = [
+  "已初核",
+  "已复核",
+  "支付中",
+  "已支付",
+  "已驳回",
+  "已取消",
+  "未确认冻结",
+  "支付失败",
+  "全部",
+];
+const mapStatusList = statusList.map((item, index) => {
+  return {
+    label: item,
+    value: index,
+  };
+});
+const hanleChangeSearch = (childSearchValue: any) => {
+  searchValue.value = childSearchValue;
+};
+// 月视图
+const monthRangeSelect = ref();
+const showWithStatus = ref(1);
+const handleChangeShowWithStatus = (childShowWithStatus: number) => {
+  showWithStatus.value = childShowWithStatus;
+  pager.value.current = 1;
+  getData();
+};
+watch(
+  () => showWithStatus.value,
+  () => {
+    getData();
+  }
+);
+const handleChangeStatus = (childStatus: Array<number>) => {
+  status.value = childStatus;
+  pager.value.current = 1;
+  getData();
+};
+const handleChangeMonthSelect = (childMonthSelect: Array<string>) => {
+  monthSelect.value = childMonthSelect;
+};
+const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
+  monthRangeSelect.value = childMonthRange;
+};
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
-const monthSelect = ref<Dayjs>();
+const monthSelect = ref([]);
 const payDate = ref<Dayjs>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
 const exportData = ref();
-const status = ref("0");
+const status = ref(null);
 const statusCal = ref([]);
+// 获得月份序列
+const getMonths = (params?: any) => {
+  return api.getZhuanyiAllDate();
+};
 //编辑相关
 const editForm = ref();
 const firstPayMonth = ref(0);
@@ -411,17 +451,6 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const statusList = [
-  "已初核",
-  "已复核",
-  "支付中",
-  "已支付",
-  "已驳回",
-  "已取消",
-  "未确认冻结",
-  "支付失败",
-  "全部",
-];
 
 const getStatus = (status: String) => {
   return statusList[Number(status)];
@@ -509,103 +538,16 @@ const onSubmitNote = (id, note) => {
       message.info("修改备注失败，请联系管理员");
     });
 };
-//数据导出功能
-const exportExcel = () => {
-  // 写入文件
-  const headersWithWidth = [
-    { header: "序号", key: "index", width: 6 },
-    { header: "姓名", key: "name", width: 10 },
-    { header: "身份证", key: "personID", width: 26 },
-    { header: "转入省市", key: "fromArea", width: 24 },
-    { header: "转出日期", key: "payDate", width: 14 },
-    { header: "享受期限（月）", key: "month", width: 18 },
-    { header: "核发标准", key: "biaozhun", width: 42 },
-    { header: "转出金额", key: "pay", width: 12 },
-  ];
-  const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-  worksheet.addRow(headers);
-  worksheet.mergeCells("A1:H1");
-  worksheet.getCell("A1").value = "非上海户籍失业保险转移支付汇总表";
-  worksheet.getCell("H1").alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
-
-  getData({ noindex: 1, isOnlyTransferRelation: "转金额" }).then((res) => {
-    let totalPayNum = 0;
-    exportData.value.map((item, index) => {
-      worksheet.addRow([
-        index + 1,
-        item.personName,
-        item.personID,
-        item.fromArea,
-        item.payDate,
-        item.payMonth,
-        Number(item.payMonth) < 12
-          ? "2175.00/1-12月"
-          : "2175.00/1-12月，1740.00/13-24月",
-        CalPayMonth(item.payMonth),
-      ]);
-      totalPayNum = totalPayNum + CalPayMonth(item.payMonth);
-    });
-    worksheet.pageSetup.printArea = `A1:H${exportData.value.length + 4}`;
-    console.log(`A1:H${exportData.value.length + 2}`);
-    worksheet.addRow(["合计", "", "", "", "", "", "", `${totalPayNum}`]);
-    worksheet.addRow([
-      "",
-      "",
-      `打印人:${userInfo.username}`,
-      "",
-      `${monthSelect.value!.format("YYYY-MM-DD")}`,
-      "",
-      "",
-      "",
-    ]);
-    worksheet.eachRow((row, rowNumber) => {
-      row.font = { size: 15 };
-      row.eachCell((cell, colNumber) => {
-        cell.alignment = { vertical: "middle", horizontal: "center" };
-      });
-    });
-    // for (let i = 1; i < exportData.value.length + 6; i++) {
-    //   worksheet.getRow(i).font = { size: 15 };
-    // }
-    worksheet.getRow(2).font = { size: 15, bold: true };
-    worksheet.getRow(1).font = { size: 18, bold: true };
-
-    // 导出 Excel 文件
-    downloadLink(
-      workbook,
-      `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format("YYYY-MM")}`
-    );
-    // workbook.xlsx.writeBuffer().then((buffer) => {
-    //   const blob = new Blob([buffer], {
-    //     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    //   });
-    //   const url = window.URL.createObjectURL(blob);
-    //   const link = document.createElement('a');
-    //   link.href = url;
-    //   link.download = `非上海户籍失业保险转移支付汇总表_${monthSelect.value!.format(
-    //     'YYYY-MM'
-    //   )}.xlsx`;
-    //   link.click();
-    //   window.URL.revokeObjectURL(url);
-    // });
-  });
-};
-// 计算核发标准
-const CalPayMonth = (payMonth) => {
-  if (payMonth) {
-    const numPayMonth = Number(payMonth);
-    if (numPayMonth <= 12) {
-      return numPayMonth * 2175 * 1.5;
-    } else {
-      return 12 * 2175 * 1.5 + (numPayMonth - 12) * 1740 * 1.5;
-    }
-  } else {
-    return 0;
-  }
-};
+const headersWithWidth = [
+  { header: "序号", key: "index", width: 6 },
+  { header: "姓名", key: "personName", width: 10 },
+  { header: "身份证", key: "personID", width: 26 },
+  { header: "转入省市", key: "fromArea", width: 40 },
+  { header: "转出日期", key: "payDate", width: 14 },
+  { header: "享受期限（月）", key: "payMonth", width: 18 },
+  { header: "核发标准", key: "rule", width: 42 },
+  { header: "转出金额", key: "pay", width: 12 },
+];
 // 分页
 const pager = ref({
   current: 1,
@@ -638,14 +580,14 @@ onBeforeMount(() => {
 // 获取数据
 const getData = async (params?: any) => {
   spinning.value = true;
-  api.getZhuanyiDataCal().then((res: any) => {
-    statusCal.value = statusList.map((item, index) => {
-      return {
-        label: item,
-        count: res.find((item) => Number(item.status) === index)?.count || 0,
-      };
-    });
-  });
+  // api.getZhuanyiDataCal().then((res: any) => {
+  //   statusCal.value = statusList.map((item, index) => {
+  //     return {
+  //       label: item,
+  //       count: res.find((item) => Number(item.status) === index)?.count || 0,
+  //     };
+  //   });
+  // });
 
   params = {
     ...params,
@@ -675,7 +617,7 @@ const getData = async (params?: any) => {
   if (monthSelect.value) {
     params = {
       ...params,
-      payDate: monthSelect.value.format("YYYY-MM-DD"),
+      payDate: monthSelect.value[0],
     };
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
@@ -684,18 +626,15 @@ const getData = async (params?: any) => {
       current: 1,
     };
   }
-  return await api
-    .getZhuanyiData(params)
-    .then((res: any) => {
-      exportData.value = res.rows;
-      console.log(exportData.value);
-      pager.value = res.page;
-      count.value = pager.value.total;
-      dataSource.value = res.rows;
-    })
-    .then(() => {
-      spinning.value = false;
-    });
+  return await api.getZhuanyiData(params).then((res: any) => {
+    exportData.value = res.rows;
+    console.log(exportData.value);
+    pager.value = res.page;
+    count.value = pager.value.total;
+    dataSource.value = res.rows;
+    spinning.value = false;
+    return res.rows;
+  });
 };
 const getCorrectTime = (date: string) => {
   const originalDate = new Date(date);

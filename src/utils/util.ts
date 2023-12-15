@@ -1,8 +1,8 @@
 import Excel from "exceljs";
 import { ImageLike, createWorker } from "tesseract.js";
 import { DataItem, months, alpahbets } from "@/types";
-import { get } from "http";
 import { message } from "ant-design-vue";
+import { useUserStore } from "@/stores";
 
 // 通过月份获得月尾和月头的日期
 export function getMonthRange(monthSelect) {
@@ -193,14 +193,20 @@ export const exportExcel = (
     try {
       // 写入文件
       console.log("monthRangeSelect===>", monthRangeSelect);
-
       const { workbook, headers, worksheet } = genWorkbook(headersWithWidth);
-      const title =
-        typeof monthRangeSelect == "string"
-          ? `${fileName}_${monthRangeSelect}`
-          : `${fileName}_${monthRangeSelect[0].format(
-              "YYYY-MM-DD"
-            )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
+
+      let title = `${fileName}`;
+      if (typeof monthRangeSelect == "string") {
+        if (monthRangeSelect !== "") {
+          title = `${fileName}_${monthRangeSelect}`;
+        }
+      } else if (Array.isArray(monthRangeSelect)) {
+        if (monthRangeSelect.length !== 0) {
+          title = `${fileName}_${monthRangeSelect[0].format(
+            "YYYY-MM-DD"
+          )}_${monthRangeSelect[1].format("YYYY-MM-DD")}`;
+        }
+      }
       console.log("title===>", title);
       worksheet.addRow(headers);
       worksheet.mergeCells(`A1:${alpahbets[headers.length - 1]}1`);
@@ -211,7 +217,7 @@ export const exportExcel = (
       };
       console.log("headerwithWidth===>", headersWithWidth);
       getData({ noindex: 1 }).then((data: any) => {
-        console.log("data===>", data);
+        let totalPayNum = 0;
         data.map((item, index) => {
           const ItemList = [];
           headersWithWidth
@@ -223,7 +229,6 @@ export const exportExcel = (
                 case "index":
                   ItemList.push(index + 1);
                   break;
-
                 case "status":
                   ItemList.push(item[header] == "1" ? "已审核" : "");
                   break;
@@ -233,12 +238,37 @@ export const exportExcel = (
                 case "createtime":
                   ItemList.push(item[header].slice(0, 10));
                   break;
+                case "rule":
+                  ItemList.push(
+                    Number(item.payMonth) < 12
+                      ? "2175.00/1-12月"
+                      : "2175.00/1-12月，1740.00/13-24月"
+                  );
+                  break;
+                case "pay":
+                  ItemList.push(CalPayMonth(item.payMonth));
+                  totalPayNum += CalPayMonth(item.payMonth);
+                  break;
                 default:
                   ItemList.push(item[header]);
               }
             });
           worksheet.addRow(ItemList);
         });
+        if (fileName == "非上海户籍失业保险转移支付汇总表") {
+          worksheet.addRow(["合计", "", "", "", "", "", "", `${totalPayNum}`]);
+          worksheet.addRow([
+            "",
+            "",
+            `打印人:${userInfo.username}`,
+            "打印日期:",
+            `${new Date().toLocaleDateString()}`,
+            "",
+            "",
+            "",
+          ]);
+        }
+
         worksheet.pageSetup.printArea = `A1:${alpahbets[headers.length - 1]}${
           data.length + 4
         }`;
@@ -256,8 +286,23 @@ export const exportExcel = (
         resolve("success");
       });
     } catch (error) {
-      message.info("导出失败,请选择日期或者月份");
+      message.info("导出失败,请联系管理员");
       reject(error);
     }
   });
 };
+// 计算核发标准
+const CalPayMonth = (payMonth) => {
+  if (payMonth) {
+    const numPayMonth = Number(payMonth);
+    if (numPayMonth <= 12) {
+      return numPayMonth * 2175 * 1.5;
+    } else {
+      return 12 * 2175 * 1.5 + (numPayMonth - 12) * 1740 * 1.5;
+    }
+  } else {
+    return 0;
+  }
+};
+const userStore = useUserStore();
+const userInfo = userStore.userInfo;

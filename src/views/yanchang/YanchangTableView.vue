@@ -218,7 +218,7 @@ watch(
     getData();
   }
 );
-const monthSelect = ref("");
+const monthSelect = ref([]);
 watch(
   () => monthSelect.value,
   () => {
@@ -253,7 +253,7 @@ const handleChangeStatus = (childStatus: Array<number>) => {
   pager.value.current = 1;
   getData();
 };
-const handleChangeMonthSelect = (childMonthSelect: string) => {
+const handleChangeMonthSelect = (childMonthSelect: Array<string>) => {
   monthSelect.value = childMonthSelect;
 };
 const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
@@ -408,7 +408,7 @@ const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
-  getMonths();
+  // getMonths();
   getData();
 });
 // 获取数据

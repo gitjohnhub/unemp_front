@@ -37,6 +37,7 @@
         />
       </a-space>
       <a-select
+        v-if="showJiezhenChosenView"
         v-model:value="chosenJiezhen"
         mode="multiple"
         placeholder="选择街镇筛选"
@@ -81,6 +82,10 @@ import { jiezhens } from "@/types";
 import { exportExcel } from "@/utils/util";
 import { message } from "ant-design-vue";
 const props = defineProps({
+  showJiezhenChosenView: {
+    type: Boolean,
+    default: true,
+  },
   chosenJiezhen: {
     type: Array,
     default: () => [],
@@ -131,12 +136,12 @@ const monthSelect = ref([]);
 const isCustomOrder = ref(0);
 // 排序选择
 const order = ref();
-watch(
-  () => isCustomOrder.value,
-  () => {
-    console.log("isCustomOrder==>", isCustomOrder.value);
-  }
-);
+// watch(
+//   () => isCustomOrder.value,
+//   () => {
+//     console.log("isCustomOrder==>", isCustomOrder.value);
+//   }
+// );
 watch(
   () => showWithStatus.value,
   () => {
@@ -155,21 +160,16 @@ onBeforeMount(() => {
     .getMonths()
     .then((res: any) => {
       months.value = res;
-      console.log("months==>", months.value);
       getCascadeYear();
     })
     .catch((err) => {
-      console.log(err);
       message.info("错误,联系管理员");
     });
 });
 watch(
   () => monthSelect.value,
   () => {
-    props.getData().then((res: any) => {
-      console.log("res==>", res);
-    });
-    console.log("monthSelect==>", monthSelect.value);
+    props.getData();
   }
 );
 const customOrderList = [
@@ -223,15 +223,12 @@ const handleChangeShowWithStatus = () => {
   emit("handleChangeShowWithStatus", showWithStatus.value);
 };
 const handleChangeStatus = () => {
-  console.log("child==>", status.value);
   emit("handleChangeStatus", status.value);
 };
 const handleChangeMonthRange = () => {
   emit("handleChangeMonthRange", monthRangeSelect.value);
 };
 const handleChangeCustomOrder = () => {
-  console.log("isCums==>", isCustomOrder.value);
-  console.log("order==>", order.value);
   switch (isCustomOrder.value) {
     case 0:
       order.value = {
@@ -266,7 +263,6 @@ const handleChangeMonthSelect = () => {
 const getCascadeYear = () => {
   const result = [];
   const yearMap = {};
-  console.log("months===>", months.value);
   months.value.forEach((month: string) => {
     const [year, monthValue] = month.split("-");
 
@@ -293,8 +289,6 @@ const getCascadeYear = () => {
       result.push(parent);
     }
   });
-
-  console.log("Casresult==>", result);
   cascaderMonthsList.value = result;
 };
 </script>

@@ -25,15 +25,18 @@
         </template>
         <template #otherAction>
           <a-space>
-            <a-button @click="showAddDataModal" type="primary">添加</a-button>
-            <a-modal
-              v-model:open="open"
-              title="Title"
-              :confirm-loading="confirmLoading"
-              @ok="handleOk"
-              @cancel="handleCancel"
+            <a-button @click="showEditModal(null)" type="primary"
+              >添加</a-button
             >
-              <ZhuanyiAddFormView ref="formRef" />
+            <a-modal
+              v-model:open="addOpen"
+              title="增加"
+              :confirm-loading="confirmLoading"
+              :destroyOnClose="true"
+              @ok="handleEditOk(null)"
+              @cancel="handleEditCancel(null)"
+            >
+              <ZhuanyiEditFormView ref="editableFormRef" />
             </a-modal>
           </a-space>
         </template>
@@ -224,60 +227,16 @@
 
               <!-- 编辑模态框 -->
               <a-modal
-                v-model:visible="record.editVisible"
-                @ok="handleEditOk"
-                @cancel="handleEditCancel"
+                :open="record.editVisible"
+                title="编辑"
+                :destroyOnClose="true"
+                @ok="handleEditOk(record)"
+                @cancel="handleEditCancel(record)"
               >
-                <a-form :model="editForm">
-                  <a-form-item label="身份证号" name="personID" has-feedback>
-                    <a-input v-model:value="editForm.personID"> </a-input>
-                  </a-form-item>
-                  <a-form-item label="姓名" name="personName" has-feedback>
-                    <a-input v-model:value="editForm.personName" />
-                  </a-form-item>
-                  <a-form-item label="转入地" name="fromArea" has-feedback>
-                    <a-input v-model:value="editForm.fromArea" />
-                  </a-form-item>
-
-                  <a-form-item label="手动计算" name="paySplitMonth">
-                    <a-row>
-                      <a-space>
-                        标准一：<a-input
-                          v-model:value="firstPayMonth"
-                          style="width: 40px"
-                        />
-                        二:<a-input
-                          v-model:value="secondPayMonth"
-                          style="width: 40px"
-                        />
-                        享受期限:<a-input
-                          v-model:value="editForm.payMonth"
-                          disabled
-                          style="width: 40px"
-                        />
-                      </a-space>
-                    </a-row>
-                  </a-form-item>
-                  <a-form-item label="转出金额" name="pay" has-feedback>
-                    <a-input v-model:value="editForm.pay" />
-                  </a-form-item>
-
-                  <a-form-item
-                    label="转关系"
-                    name="isOnlyTransferRelation"
-                    has-feedback
-                  >
-                    <a-select
-                      ref="select"
-                      v-model:value="editForm.isOnlyTransferRelation"
-                      style="width: 120px"
-                      :options="isOnlyTransferRelationOp"
-                    ></a-select>
-                  </a-form-item>
-                  <a-form-item label="备注">
-                    <a-textarea v-model:value="editForm.note" />
-                  </a-form-item>
-                </a-form>
+                <ZhuanyiEditFormView
+                  :edit-form="editForm"
+                  ref="editableFormRef"
+                />
               </a-modal>
             </a-space>
           </template>
@@ -298,13 +257,10 @@ import {
 } from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
-import ZhuanyiAddFormView from "./ZhuanyiAddFormView.vue";
+import ZhuanyiEditFormView from "./ZhuanyiEditFormView.vue";
 import FilterView from "@/components/FilterView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
-
-import { downloadLink, genWorkbook } from "@/utils/util";
-import {} from "@/utils/util";
 import { colorList } from "@/types";
 import "dayjs/locale/zh-cn";
 const statusList = [
@@ -363,78 +319,47 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const exportData = ref();
 const status = ref(null);
-const statusCal = ref([]);
 // 获得月份序列
 const getMonths = (params?: any) => {
   return api.getZhuanyiAllDate();
 };
 //编辑相关
 const editForm = ref();
-const firstPayMonth = ref(0);
-const secondPayMonth = ref(0);
-watch(
-  () => firstPayMonth.value,
-  () => {
-    editForm.value.payMonth =
-      Number(firstPayMonth.value) + Number(secondPayMonth.value);
-    editForm.value.pay =
-      (Number(firstPayMonth.value) * 2175 +
-        Number(secondPayMonth.value) * 1740) *
-      1.5;
+const editableFormRef = ref(null);
+const addOpen = ref<boolean>(false);
+
+const showEditModal = (record: any) => {
+  if (record) {
+    editForm.value = record;
+    record.editVisible = true;
+  } else {
+    addOpen.value = true;
   }
-);
-watch(
-  () => secondPayMonth.value,
-  () => {
-    editForm.value.payMonth =
-      Number(firstPayMonth.value) + Number(secondPayMonth.value);
-    editForm.value.pay =
-      (Number(firstPayMonth.value) * 2175 +
-        Number(secondPayMonth.value) * 1740) *
-      1.5;
-  }
-);
-const isOnlyTransferRelationOp = [
-  {
-    value: "只转关系",
-  },
-  {
-    value: "转金额",
-  },
-];
-const showEditModal = (record) => {
-  editForm.value = record;
-  firstPayMonth.value =
-    Number(editForm.value.payMonth) < 12 ? editForm.value.payMonth : 12;
-  secondPayMonth.value =
-    Number(editForm.value.payMonth) <= 12
-      ? 0
-      : Number(editForm.value.payMonth) - 12;
-  record.editVisible = true;
 };
-const resetEditForm = () => {
-  firstPayMonth.value = 0;
-  secondPayMonth.value = 0;
-};
-const handleEditOk = () => {
-  api
-    .updateZhuanyiData(editForm.value)
-    .then((res: any) => {
-      message.info("修改成功");
-      editOpen.value = false;
-      resetEditForm();
+const handleEditOk = async (record: any) => {
+  await editableFormRef.value
+    .onSubmit()
+    .then(() => {
+      message.info("成功");
+      addOpen.value = false;
+      if (record) {
+        record.editVisible = false;
+      } else {
+        addOpen.value = false;
+      }
       getData();
     })
     .catch((error) => {
+      console.log("error==>", error);
       message.info("数据格式错误，无法提交=>", error);
-      resetEditForm();
     });
 };
-const handleEditCancel = () => {
-  editOpen.value = false;
-  resetEditForm();
+const handleEditCancel = (record) => {
+  if (record) {
+    record.editVisible = false;
+  }
+  addOpen.value = false;
 };
 
 //加载数据动画
@@ -454,12 +379,6 @@ const getProgress = (status: String) => {
   const percent = (currentIndex / total) * 100;
 
   return percent; // 33.33
-};
-const onSearch = () => {
-  getData().catch((e) => {
-    console.log(e);
-    message.info("查询错误，联系管理员");
-  });
 };
 const getColors = (user) => {
   const findColor = userStore.userColors.filter((u) => u.username === user);
@@ -567,17 +486,19 @@ onBeforeMount(() => {
   getData();
 });
 // 获取数据
+const statusCal = ref();
+const getCount = () => {
+  api.getZhuanyiDataCal().then((res: any) => {
+    statusCal.value = statusList.map((item, index) => {
+      return {
+        label: item,
+        count: res.find((item) => Number(item.status) === index)?.count || 0,
+      };
+    });
+  });
+};
 const getData = async (params?: any) => {
   spinning.value = true;
-  // api.getZhuanyiDataCal().then((res: any) => {
-  //   statusCal.value = statusList.map((item, index) => {
-  //     return {
-  //       label: item,
-  //       count: res.find((item) => Number(item.status) === index)?.count || 0,
-  //     };
-  //   });
-  // });
-
   params = {
     ...params,
     ...pager.value,
@@ -594,8 +515,6 @@ const getData = async (params?: any) => {
     params.searchValue = searchValue.value;
   }
   return await api.getZhuanyiData(params).then((res: any) => {
-    exportData.value = res.rows;
-    console.log(exportData.value);
     pager.value = res.page;
     count.value = pager.value.total;
     dataSource.value = res.rows;
@@ -743,11 +662,6 @@ const handleCancel = () => {
   formRef.value.resetForm();
 };
 const columns = [
-  // {
-  //   title: 'ID',
-  //   dataIndex: 'id',
-  //   key: 'id',
-  // },
   {
     title: "姓名",
     dataIndex: "personName",
@@ -758,11 +672,7 @@ const columns = [
     dataIndex: "personID",
     key: "personID",
   },
-  // {
-  //   title: '备注',
-  //   dataIndex: 'note',
-  //   key: 'note',
-  // },
+
   {
     title: "转出地\关系/金额",
     dataIndex: "isOnlyTransferRelation",
@@ -778,16 +688,6 @@ const columns = [
     dataIndex: "status",
     key: "status",
   },
-  // {
-  //   title: '初核备注',
-  //   dataIndex: 'checknote',
-  //   key: 'checknote',
-  // },
-  // {
-  //   title: '复核备注',
-  //   dataIndex: 'reviewnote',
-  //   key: 'reviewnote',
-  // },
   {
     title: "操作",
     // dataIndex: 'action',
@@ -799,25 +699,6 @@ const columns = [
     key: "createtime",
   },
 ];
-
-// const handleChange: TableProps['onChange'] = (pagination, filters, sorter) => {
-//   // console.log('Various parameters', pagination, filters, sorter);
-//   filteredInfo.value = filters;
-//   sortedInfo.value = sorter;
-// };
-// const clearFilters = () => {
-//   filteredInfo.value = null;
-// };
-// const clearAll = () => {
-//   filteredInfo.value = null;
-//   sortedInfo.value = null;
-// };
-// const setAgeSort = () => {
-//   sortedInfo.value = {
-//     order: 'descend',
-//     columnKey: 'age',
-//   };
-// };
 </script>
 <style scoped>
 .deleted {

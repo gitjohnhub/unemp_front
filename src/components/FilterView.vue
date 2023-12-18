@@ -1,82 +1,96 @@
 <template>
-  <a-card>
-    <a-space direction="vertical">
-      <slot name="otherFilter"></slot>
-      <a-space direction="vertical">
-        <a-select
-          v-model:value="status"
-          mode="multiple"
-          placeholder="选择审批状态筛选"
-          style="width: 300px"
-          :options="mapStatusList"
-          @change="handleChangeStatus"
-        ></a-select>
-        <a-segmented
-          v-model:value="isCustomOrder"
-          :options="mapCustomOrderList"
-          @change="handleChangeCustomOrder"
-        />
-        <a-space direction="horizontal">
-          <a-segmented
-            v-model:value="showWithStatus"
-            :options="withStatusOrMonthsList"
-            @change="handleChangeShowWithStatus"
-          />
+  <a-row>
+    <a-col :span="12">
+      <a-card>
+        <a-space direction="vertical">
+          <slot name="otherFilter"></slot>
+          <a-space direction="vertical">
+            <a-select
+              v-model:value="status"
+              mode="multiple"
+              placeholder="选择审批状态筛选"
+              style="width: 300px"
+              :options="mapStatusList"
+              @change="handleChangeStatus"
+            ></a-select>
+            <a-segmented
+              v-model:value="isCustomOrder"
+              :options="mapCustomOrderList"
+              @change="handleChangeCustomOrder"
+            />
+            <a-space direction="horizontal">
+              <a-segmented
+                v-model:value="showWithStatus"
+                :options="withStatusOrMonthsList"
+                @change="handleChangeShowWithStatus"
+              />
 
-          <a-range-picker
-            v-model:value="monthRangeSelect"
-            v-if="showWithStatus == 0"
-            @change="handleChangeMonthRange"
+              <a-range-picker
+                v-model:value="monthRangeSelect"
+                v-if="showWithStatus == 0"
+                @change="handleChangeMonthRange"
+              />
+              <a-cascader
+                v-if="showWithStatus == 1"
+                v-model:value="monthSelect"
+                :options="cascaderMonthsList"
+                expand-trigger="hover"
+                placeholder="选择月份"
+                @change="handleChangeMonthSelect"
+              />
+            </a-space>
+          </a-space>
+          <a-select
+            v-if="showJiezhenChosenView"
+            v-model:value="chosenJiezhen"
+            mode="multiple"
+            placeholder="选择街镇筛选"
+            style="width: 300px"
+            :options="jiezhens"
+            @change="handleChangeJiezhen"
+          ></a-select>
+          <a-input-search
+            v-model:value="searchValue"
+            placeholder="输入搜索条件"
+            style="width: 300px"
+            @search="handleChangeSearch"
           />
-          <a-cascader
-            v-if="showWithStatus == 1"
-            v-model:value="monthSelect"
-            :options="cascaderMonthsList"
-            expand-trigger="hover"
-            placeholder="选择月份"
-            @change="handleChangeMonthSelect"
-          />
-        </a-space>
-      </a-space>
-      <a-select
-        v-if="showJiezhenChosenView"
-        v-model:value="chosenJiezhen"
-        mode="multiple"
-        placeholder="选择街镇筛选"
-        style="width: 300px"
-        :options="jiezhens"
-        @change="handleChangeJiezhen"
-      ></a-select>
-      <a-input-search
-        v-model:value="searchValue"
-        placeholder="输入搜索条件"
-        style="width: 300px"
-        @search="handleChangeSearch"
-      />
-      <slot name="footer"></slot>
-      <a-row>
-        <a-space>
-          <a-tag color="#108ee9">{{ count }}</a-tag>
-          <a-button @click="resetSearch">重置搜索条件</a-button>
-          <a-button
-            @click="
-              exportExcel(
-                headersWithWidth,
-                fileName,
-                getData,
-                monthRangeSelect.length > 0
-                  ? monthRangeSelect
-                  : monthSelect[monthSelect.length - 1]
-              )
-            "
+          <slot name="footer"></slot>
+          <a-row>
+            <a-space>
+              <a-tag color="#108ee9">{{ count }}</a-tag>
+              <a-button @click="resetSearch">重置搜索条件</a-button>
+              <a-button
+                @click="
+                  exportExcel(
+                    headersWithWidth,
+                    fileName,
+                    getData,
+                    monthRangeSelect.length > 0
+                      ? monthRangeSelect
+                      : monthSelect[monthSelect.length - 1]
+                  )
+                "
+              >
+                导出Excel
+              </a-button>
+              <slot name="otherAction"></slot>
+            </a-space>
+          </a-row>
+        </a-space> </a-card
+    ></a-col>
+    <a-col :span="12">
+      <a-card>
+        <a-descriptions title="Info" bordered>
+          <a-descriptions-item
+            v-for="item in statisticsData"
+            :label="item.label"
+            >{{ item.count }}</a-descriptions-item
           >
-            导出Excel
-          </a-button>
-          <slot name="otherAction"></slot>
-        </a-space>
-      </a-row>
-    </a-space>
-  </a-card>
+        </a-descriptions>
+      </a-card>
+    </a-col>
+  </a-row>
 </template>
 <script lang="ts" setup>
 import { onBeforeMount, ref, watch } from "vue";
@@ -101,6 +115,10 @@ const props = defineProps({
     default: () => [],
   },
   statusList: {
+    type: Array,
+    default: () => [],
+  },
+  statisticsData: {
     type: Array,
     default: () => [],
   },

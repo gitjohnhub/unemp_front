@@ -99,7 +99,7 @@ const router = createRouter({
             {
               path: "unempContact",
               name: "失业保险科通讯录",
-              component: () => import("@/views/contacts/UnempContactView.vue"),
+              component: () => import("@/views/contacts/ContactView.vue"),
               meta: {
                 requiresAuth: true,
               },

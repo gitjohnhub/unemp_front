@@ -10,6 +10,7 @@
         @handle-change-custom-order="handleChangeCustomOrder"
         :getMonths="getMonths"
         :status-list="statusList"
+        :statistics-data="statusCal"
         :custom-order-list="customOrderList"
         :headers-with-width="headersWithWidth"
         :monthSelect="monthSelect"
@@ -437,6 +438,7 @@ onBeforeMount(() => {
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }
+  getCount();
   getData();
 });
 // 获取数据
@@ -449,6 +451,7 @@ const getCount = () => {
         count: res.find((item) => Number(item.status) === index)?.count || 0,
       };
     });
+    console.log("statusCal===>", statusCal.value);
   });
 };
 const getData = async (params?: any) => {
@@ -484,80 +487,6 @@ const getCorrectTime = (date: string) => {
   ).toISOString();
   return [updatedDate.slice(0, 10), updatedDate.slice(11, 19)];
 };
-
-const deleteData = async (id: number) => {
-  await api
-    .updateZhuanyiData({ id: id, status: statusList.indexOf("已取消") })
-    .then((res: any) => {
-      getData();
-    });
-};
-const reviewData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "1",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const freezeData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "6",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const payFailData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "7",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const refuseData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "4",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const recoveryFromFreezeData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "1",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-const cancelData = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "5",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
 const payData = async (id: number) => {
   if (payDate.value) {
     await api
@@ -574,44 +503,8 @@ const payData = async (id: number) => {
     message.info("请选择支付日期");
   }
 };
-const paySuccess = async (id: number) => {
-  await api
-    .updateZhuanyiData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "3",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-
 // 增加数据弹窗
-const formRef = ref(null);
-const editFormRef = ref(null);
-const open = ref<boolean>(false);
-const editOpen = ref<boolean>(false);
-
 const confirmLoading = ref<boolean>(false);
-const showAddDataModal = async () => {
-  open.value = true;
-};
-
-const handleOk = () => {
-  formRef.value
-    .onSubmit()
-    .then(() => {
-      confirmLoading.value = true;
-      getData();
-      open.value = false;
-      confirmLoading.value = false;
-    })
-    .catch((error) => {
-      message.info("数据格式错误，无法提交=>", error);
-    });
-
-  getData();
-};
 const columns = [
   {
     title: "姓名",

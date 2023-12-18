@@ -132,70 +132,35 @@
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
-            <a-space direction="vertical">
-              <a-row>
-                <a-space>
-                  <a-button
-                    @click="tagWrong(record.id, getData, 'nongbu')"
-                    type="primary"
-                    danger
-                  >
-                    <WarningFilled />
-                  </a-button>
-                  <a-button @click="showEditModal(record)"
-                    ><EditFilled
-                  /></a-button>
-                  <a-button
-                    @click="tagOriginalFile(record.id, getData, 'nongbu')"
-                    type="primary"
-                    danger
-                  >
-                    <FilePdfFilled />
-                  </a-button>
-                </a-space>
-              </a-row>
-              <a-row>
-                <a-space>
-                  <a-button
-                    @click="reviewData(record.id)"
-                    type="primary"
-                    v-if="record.status == '0'"
-                    ><CheckOutlined
-                  /></a-button>
-                  <a-button
-                    @click="addRepeat(record.id, record.repeatTimes)"
-                    type="primary"
-                    danger
-                    ><PlusCircleFilled />
-                  </a-button>
-                  <a-button @click="cancelData(record.id)" type="primary" danger
-                    ><DeleteFilled
-                  /></a-button>
-                  <a-button
-                    @click="tagCancelUnemp(record.id, getData)"
-                    type="primary"
-                    danger
-                    v-if="record.status == '1'"
-                  >
-                    <StopFilled />
-                  </a-button>
-                </a-space>
-              </a-row>
+            <ActionView
+              :record="record"
+              :button-list="buttonList"
+              :action="updateAction"
+              @get-data="getData"
+            >
+              <template #otherAction>
+                <a-button
+                  @click="addRepeat(record.id, record.repeatTimes)"
+                  type="primary"
+                  danger
+                  ><PlusCircleFilled />
+                </a-button>
+                <a-button @click="showEditModal(record)"
+                  ><EditFilled
+                /></a-button>
+              </template>
+            </ActionView>
 
-              <!-- 编辑模态框 -->
-              <a-modal
-                :open="record.editVisible"
-                title="编辑"
-                :destroyOnClose="true"
-                @ok="handleEditOk(record)"
-                @cancel="handleEditCancel(record)"
-              >
-                <NongbuEditFormView
-                  :edit-form="editForm"
-                  ref="editableFormRef"
-                />
-              </a-modal>
-            </a-space>
+            <!-- 编辑模态框 -->
+            <a-modal
+              :open="record.editVisible"
+              title="编辑"
+              :destroyOnClose="true"
+              @ok="handleEditOk(record)"
+              @cancel="handleEditCancel(record)"
+            >
+              <NongbuEditFormView :edit-form="editForm" ref="editableFormRef" />
+            </a-modal>
           </template>
         </template>
       </a-table>
@@ -218,13 +183,12 @@ import {
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
 import NongbuEditFormView from "./NongbuEditFormView.vue";
+import ActionView from "@/components/ActionView.vue";
 import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { nongbuHeader, formattedTime } from "@/utils/util";
-import { jiezhens, colorList, jiezhenList } from "@/types";
+import { colorList, jiezhenList } from "@/types";
 import "dayjs/locale/zh-cn";
-import { tagCancelUnemp } from "@/views/nongbu/utils";
-import { tagOriginalFile, tagWrong } from "@/utils/tag";
 const addOpen = ref<boolean>(false);
 
 const editForm = ref();
@@ -279,7 +243,7 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
-const statusList = ["已登记", "已审批", "已取消", "全部"];
+const statusList = ["已登记", "已审批", "已取消"];
 const customOrderList = ["按时间排序", "按街镇排序", "按原件未收到排序"];
 
 const getStatus = (status: String) => {
@@ -439,23 +403,6 @@ const getData = async (params?: any) => {
   });
 };
 
-// const deleteData = async (id: number) => {
-//   await api.updateNongbuData({ id: id, status: statusList.indexOf('已删除') }).then((res: any) => {
-//     getData();
-//   });
-// };
-const reviewData = async (id: number) => {
-  await api
-    .updateNongbuData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: "1",
-    })
-    .then((res: any) => {
-      getData();
-    });
-};
-
 const addRepeat = async (id: number, repeatTimes: string) => {
   if (repeatTimes === "0") {
     repeatTimes = "1";
@@ -469,18 +416,6 @@ const addRepeat = async (id: number, repeatTimes: string) => {
     })
     .then((res: any) => {
       message.info("增加重复成功");
-      getData();
-    });
-};
-
-const cancelData = async (id: number) => {
-  await api
-    .updateNongbuData({
-      id: id,
-      reviewoperator: userInfo.username,
-      status: statusList.indexOf("已取消"),
-    })
-    .then((res: any) => {
       getData();
     });
 };
@@ -563,6 +498,124 @@ const columns = columnsOriginal.map((item) => {
     align: "center",
   };
 });
+const updateAction = (params: any) => {
+  return api.updateNongbuData(params);
+};
+const buttonList = [
+  {
+    text: "复核",
+    icon: "CheckOutlined",
+    params: {
+      status: statusList.indexOf("已审批"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "复核失败,请联系管理员",
+    successMsg: "复核成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == 0 && record.checkoperator !== userInfo.username;
+    },
+    disabled: () => false,
+  },
+  {
+    text: "初核",
+    icon: "RedoOutlined",
+    params: {
+      status: statusList.indexOf("已登记"),
+    },
+    errMsg: "初核失败,请联系管理员",
+    successMsg: "初核成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == "2";
+    },
+    disabled: () => false,
+  },
+  {
+    text: "取消",
+    icon: "DeleteOutlined",
+    params: {
+      status: statusList.indexOf("已取消"),
+    },
+    errMsg: "删除失败,请联系管理员",
+    successMsg: "删除成功",
+    type: "dashed",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == "3";
+    },
+  },
+  {
+    text: "取消失业登记",
+    icon: "StopFilled",
+    params: {
+      cancelUnemp: "1",
+    },
+    errMsg: "取消失业登记失败,请联系管理员",
+    successMsg: "取消失业登记成功",
+    type: "primary",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == "3";
+    },
+    color: "red",
+  },
+  {
+    text: "收到原件",
+    icon: "FilePdfFilled",
+    params: {
+      originalFile: "1",
+    },
+    errMsg: "标记失败,请联系管理员",
+    successMsg: "标记原件成功",
+    type: "primary",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == "3";
+    },
+    color: "red",
+  },
+  {
+    text: "街镇错误登记",
+    icon: "WarningFilled",
+    params: {
+      wrongTag: "1",
+    },
+    errMsg: "标记失败,请联系管理员",
+    successMsg: "标记错核成功",
+    type: "primary",
+    show: () => {
+      return true;
+    },
+    disabled: (record: any) => {
+      return record.status == "3";
+    },
+    color: "red",
+  },
+  // {
+  //   text: "重复计数",
+  //   icon: "PlusCircleFilled",
+  //   params: {
+  //     repeatTimes: 0,
+  //   },
+  //   errMsg: "计数失败,请联系管理员",
+  //   successMsg: "计数成功",
+  //   type: "primary",
+  //   show: () => {
+  //     return true;
+  //   },
+  //   disabled: (record: any) => {
+  //     return record.status == "3";
+  //   },
+  //   color: "red",
+  // },
+];
 </script>
 <style scoped>
 .ant-tag {

@@ -270,7 +270,6 @@ const userStore = useUserStore();
 const userInfo = userStore.userInfo;
 const monthSelect = ref([]);
 const payDate = ref<Dayjs>();
-const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
@@ -343,12 +342,7 @@ const getColors = (user) => {
     return "#344D70";
   }
 };
-watch(
-  () => selectedOp.value,
-  (newValue) => {
-    getData();
-  }
-);
+
 watch(
   () => searchValue.value,
   (newValue) => {
@@ -435,16 +429,13 @@ const onShowSizeChange = async (page: any) => {
 
 onBeforeMount(() => {
   userStore.getUsers();
-  if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
-  }
-  getCount();
+
   getData();
 });
 // 获取数据
 const statusCal = ref();
-const getCount = () => {
-  api.getZhuanyiDataCal().then((res: any) => {
+const getCount = (params?: any) => {
+  api.getZhuanyiDataCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -460,7 +451,6 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
     status: status.value,
-    checkoperators: selectedOp.value,
     customOrder: isCustomOrder.value,
   };
   if (monthSelect.value) {
@@ -472,6 +462,7 @@ const getData = async (params?: any) => {
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params.searchValue = searchValue.value;
   }
+  getCount(params);
   return await api.getZhuanyiData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

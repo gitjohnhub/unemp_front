@@ -81,7 +81,7 @@
     ></a-col>
     <a-col :span="12">
       <a-card>
-        <a-descriptions title="Info" bordered>
+        <a-descriptions title="统计看板" bordered>
           <a-descriptions-item
             v-for="item in statisticsData"
             :label="item.label"
@@ -119,7 +119,7 @@ const props = defineProps({
     default: () => [],
   },
   statisticsData: {
-    type: Array,
+    type: Array<any>,
     default: () => [],
   },
   // 导出excel

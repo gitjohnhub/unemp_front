@@ -152,93 +152,37 @@
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
-            <a-space direction="vertical">
-              <a-row>
-                <a-space>
-                  <a-button
-                    @click="reviewData(record.id)"
-                    type="primary"
-                    v-if="record.status == '0'"
-                  >
-                    <CheckOutlined />
-                  </a-button>
-                  <a-button @click="showEditModal(record)">
-                    <EditOutlined />
-                  </a-button>
-
-                  <a-button
-                    @click="payData(record.id)"
-                    type="primary"
-                    v-if="record.status == '1'"
-                    ><PayCircleOutlined
-                  /></a-button>
-                  <a-button
-                    @click="paySuccess(record.id)"
-                    type="primary"
-                    v-if="record.status == '2'"
-                    >支付成功</a-button
-                  >
-                  <a-button
-                    @click="recoveryFromFreezeData(record.id)"
-                    type="primary"
-                    v-if="record.status == '6'"
-                    >恢复冻结</a-button
-                  >
-
-                  <a-button
-                    danger
-                    @click="deleteData(record.id)"
-                    v-if="record.status !== statusList.indexOf('已取消')"
-                  >
-                    <DeleteOutlined />
-                  </a-button>
-                </a-space>
-              </a-row>
-
-              <a-row>
-                <a-space>
-                  <a-button
-                    @click="refuseData(record.id)"
-                    v-if="record.status == '0' || record.status == '1'"
-                    type="primary"
-                    danger
-                    ><ExclamationCircleOutlined
-                  /></a-button>
-                  <a-button
-                    @click="freezeData(record.id)"
-                    v-if="record.status == '1'"
-                    type="primary"
-                    danger
-                    >冻结</a-button
-                  >
-
-                  <a-button @click="cancelData(record.id)" type="primary" danger
-                    >取消</a-button
-                  >
-                  <a-button
-                    @click="payFailData(record.id)"
-                    v-if="record.status == '2'"
-                    type="primary"
-                    danger
-                    >支付失败</a-button
-                  >
-                </a-space>
-              </a-row>
-
-              <!-- 编辑模态框 -->
-              <a-modal
-                :open="record.editVisible"
-                title="编辑"
-                :destroyOnClose="true"
-                @ok="handleEditOk(record)"
-                @cancel="handleEditCancel(record)"
-              >
-                <ZhuanyiEditFormView
-                  :edit-form="editForm"
-                  ref="editableFormRef"
-                />
-              </a-modal>
-            </a-space>
+            <ActionView
+              :record="record"
+              :button-list="buttonList"
+              :action="updateAction"
+              @get-data="getData"
+            >
+              <template #otherAction>
+                <a-button
+                  @click="payData(record.id)"
+                  v-if="record.status == statusList.indexOf('已复核')"
+                >
+                  <AlipayOutlined />
+                </a-button>
+                <a-button @click="showEditModal(record)">
+                  <EditOutlined />
+                </a-button>
+              </template>
+            </ActionView>
+            <!-- 编辑模态框 -->
+            <a-modal
+              :open="record.editVisible"
+              title="编辑"
+              :destroyOnClose="true"
+              @ok="handleEditOk(record)"
+              @cancel="handleEditCancel(record)"
+            >
+              <ZhuanyiEditFormView
+                :edit-form="editForm"
+                ref="editableFormRef"
+              />
+            </a-modal>
           </template>
         </template>
       </a-table>
@@ -248,13 +192,8 @@
 <script lang="ts" setup>
 import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
-import {
-  CheckOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  PayCircleOutlined,
-  ExclamationCircleOutlined,
-} from "@ant-design/icons-vue";
+import ActionView from "@/components/ActionView.vue";
+import { AlipayOutlined, EditOutlined } from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
 import ZhuanyiEditFormView from "./ZhuanyiEditFormView.vue";
@@ -268,12 +207,14 @@ const statusList = [
   "已复核",
   "支付中",
   "已支付",
-  "已驳回",
   "已取消",
   "未确认冻结",
   "支付失败",
-  "全部",
 ];
+const updateAction = (params: any) => {
+  return api.updateZhuanyiData(params);
+};
+
 const customOrderList = ["按时间排序", "按转移关系/金额"];
 const hanleChangeSearch = (childSearchValue: string) => {
   searchValue.value = childSearchValue;
@@ -657,10 +598,6 @@ const handleOk = () => {
 
   getData();
 };
-
-const handleCancel = () => {
-  formRef.value.resetForm();
-};
 const columns = [
   {
     title: "姓名",
@@ -697,6 +634,113 @@ const columns = [
     title: "创建时间",
     dataIndex: "createtime",
     key: "createtime",
+  },
+];
+const buttonList = [
+  {
+    text: "复核",
+    icon: "CheckOutlined",
+    params: {
+      status: statusList.indexOf("已复核"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "复核失败,请联系管理员",
+    successMsg: "复核成功",
+    type: "primary",
+    show: (record: any) => {
+      // return true;
+      return record.status == "0" && record.checkoperator !== userInfo.username;
+    },
+    color: "#ffd299",
+  },
+  {
+    text: "恢复冻结变支付中",
+    icon: "RedoOutlined",
+    params: {
+      status: statusList.indexOf("支付中"),
+      reviewoperator: userInfo.username,
+    },
+    errMsg: "恢复失败,请联系管理员",
+    successMsg: "恢复成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == statusList.indexOf("未确认冻结");
+    },
+  },
+
+  // {
+  //   text: "标记支付",
+  //   icon: "AlipayOutlined",
+  //   params: {
+  //     payDate:
+  //       payDate.value !== undefined ? payDate.value.format("YYYY-MM-DD") : "",
+  //     status: statusList.indexOf("支付中"),
+  //   },
+  //   errMsg: "标记支付失败,请联系管理员",
+  //   successMsg: "标识支付中成功",
+  //   type: "primary",
+  //   show: (record: any) => {
+  //     return record.status == statusList.indexOf("已复核");
+  //   },
+  //   color: "#2E8B57",
+  // },
+  {
+    text: "支付成功",
+    icon: "MoneyCollectOutlined",
+    params: {
+      status: statusList.indexOf("已支付"),
+    },
+    errMsg: "标识失败,请联系管理员",
+    successMsg: "标识已支付成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == statusList.indexOf("支付中");
+    },
+  },
+  {
+    text: "取消申请",
+    icon: "DeleteOutlined",
+    params: {
+      status: statusList.indexOf("已取消"),
+    },
+    errMsg: "取消申请失败,请联系管理员",
+    successMsg: "取消申请成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status != statusList.indexOf("已支付");
+    },
+    disabled: (record: any) => {
+      return record.status == statusList.indexOf("已取消");
+    },
+    color: "brown",
+  },
+  {
+    text: "支付失败",
+    icon: "MoneyCollectOutlined",
+    params: {
+      status: statusList.indexOf("支付失败"),
+    },
+    errMsg: "标识失败,请联系管理员",
+    successMsg: "标识已支付成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == statusList.indexOf("支付中");
+    },
+    color: "#de283b",
+  },
+  {
+    text: "冻结",
+    icon: "FileZipOutlined",
+    params: {
+      status: statusList.indexOf("未确认冻结"),
+    },
+    errMsg: "标识失败,请联系管理员",
+    successMsg: "冻结成功",
+    type: "primary",
+    show: (record: any) => {
+      return record.status == statusList.indexOf("已复核");
+    },
+    color: "#71c4ef",
   },
 ];
 </script>

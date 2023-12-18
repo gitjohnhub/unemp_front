@@ -127,10 +127,14 @@
                     :button-list="buttonList"
                     :action="updateAction"
                     @get-data="getData"
-                  />
-                  <a-button @click="showEditModal(record)">
-                    <EditOutlined />
-                  </a-button>
+                  >
+                    <template #otherAction>
+                      <a-button @click="showEditModal(record)">
+                        <EditOutlined />
+                      </a-button>
+                    </template>
+                  </ActionView>
+
                   <!-- 编辑模态框 -->
                   <a-modal
                     :open="record.editVisible"

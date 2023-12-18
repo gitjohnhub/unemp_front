@@ -157,7 +157,43 @@ export function genWorkbook(headersWithWidth) {
     worksheet,
   };
 }
-export function calculateEndDate(startDate: string, months: String): string {
+function calculateAge(idNumber) {
+  // 提取出生日期
+  var birthday = idNumber.substr(6, 8);
+
+  // 获取当前日期
+  var currentDate = new Date();
+  var currentYear = currentDate.getFullYear();
+  var currentMonth = currentDate.getMonth() + 1;
+  var currentDay = currentDate.getDate();
+
+  // 计算年龄
+  var birthYear = parseInt(birthday.substr(0, 4));
+  var birthMonth = parseInt(birthday.substr(4, 2));
+  var birthDay = parseInt(birthday.substr(6, 2));
+
+  var age = currentYear - birthYear;
+
+  // 根据出生月份和日期判断是否已过生日
+  if (
+    currentMonth < birthMonth ||
+    (currentMonth === birthMonth && currentDay < birthDay)
+  ) {
+    age--;
+  }
+
+  return age;
+}
+export function calculateEndDate(
+  personID: string,
+  startDate: string,
+  months: String
+): string {
+  if (personID.length == 18) {
+    const age = calculateAge(personID);
+    const gender = personID.substring(16, 17);
+    console.log(age, gender);
+  }
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + Number(months));
   endDate.setDate(0);

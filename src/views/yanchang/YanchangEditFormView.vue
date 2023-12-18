@@ -27,39 +27,39 @@
     <a-form-item label="月数" name="payMonth" has-feedback>
       <a-input v-model:value="localEditForm.payMonth" />
     </a-form-item>
-    <a-form-item label="开始日期" name="startDate" has-feedback>
-      <a-date-picker v-model:value="startDate" />
-    </a-form-item>
-    <a-form-item
-      label="终止日期"
-      name="endDate"
-      v-if="initialEditForm.personID !== ''"
-    >
-      <a-input v-model:value="localEditForm.endDate" />
-    </a-form-item>
+    <a-space direction="horizontal">
+      <a-form-item label="开始/终止日期" name="startDate" has-feedback>
+        <a-date-picker v-model:value="startDate" />
+      </a-form-item>
+      <a-form-item name="endDate">
+        <a-input v-model:value="localEditForm.endDate" />
+      </a-form-item>
+    </a-space>
+
     <a-form-item label="备注">
       <a-textarea v-model:value="localEditForm.note" />
     </a-form-item>
+
+    <a-form-item label="选择未登记">
+      <a-radio-group v-model:value="localEditForm.status">
+        <a-radio value="0">已登记</a-radio>
+        <a-radio value="2">待登记</a-radio>
+        <a-radio value="3">已取消</a-radio>
+      </a-radio-group>
+    </a-form-item>
+    <a-form-item label="原件">
+      <a-radio-group v-model:value="localEditForm.originalFile">
+        <a-radio value="0">未收到</a-radio>
+        <a-radio value="1">已收到</a-radio>
+      </a-radio-group>
+    </a-form-item>
+    <a-form-item label="是否错核">
+      <a-radio-group v-model:value="localEditForm.wrongTag">
+        <a-radio value="1">标记错核</a-radio>
+        <a-radio value="0">未错核</a-radio>
+      </a-radio-group>
+    </a-form-item>
   </a-form>
-  <a-form-item label="选择未登记">
-    <a-radio-group v-model:value="localEditForm.status">
-      <a-radio value="0">已登记</a-radio>
-      <a-radio value="2">待登记</a-radio>
-      <a-radio value="3">已取消</a-radio>
-    </a-radio-group>
-  </a-form-item>
-  <a-form-item label="原件">
-    <a-radio-group v-model:value="localEditForm.originalFile">
-      <a-radio value="0">未收到</a-radio>
-      <a-radio value="1">已收到</a-radio>
-    </a-radio-group>
-  </a-form-item>
-  <a-form-item label="是否错核">
-    <a-radio-group v-model:value="localEditForm.wrongTag">
-      <a-radio value="1">标记错核</a-radio>
-      <a-radio value="0">未错核</a-radio>
-    </a-radio-group>
-  </a-form-item>
 </template>
 <script lang="ts" setup>
 import { onBeforeMount, ref, watch } from "vue";
@@ -98,6 +98,7 @@ watch(
   () => {
     if (startDate.value) {
       localEditForm.value.endDate = calculateEndDate(
+        localEditForm.value.personID,
         startDate.value.format("YYYY-MM-DD"),
         localEditForm.value.payMonth
       );
@@ -111,6 +112,7 @@ watch(
   () => {
     if (startDate.value) {
       localEditForm.value.endDate = calculateEndDate(
+        localEditForm.value.personID,
         startDate.value.format("YYYY-MM-DD"),
         localEditForm.value.payMonth
       );
@@ -118,17 +120,18 @@ watch(
   }
 );
 onBeforeMount(() => {
-  if (initialEditForm.personID !== "") {
+  if (initialEditForm.id !== undefined) {
     startDate.value = dayjs(localEditForm.value.startDate);
   }
 });
 
 const onSubmit = () => {
-  if (initialEditForm.personID == "") {
+  if (initialEditForm.id == undefined) {
     return editableFormRef.value.validate().then(async () => {
       localEditForm.value.checkoperator = checkoperator;
       localEditForm.value.startDate = startDate.value.format("YYYY-MM-DD");
       localEditForm.value.endDate = calculateEndDate(
+        localEditForm.value.personID,
         startDate.value.format("YYYY-MM-DD"),
         localEditForm.value.payMonth
       );

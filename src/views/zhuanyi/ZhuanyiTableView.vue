@@ -7,6 +7,7 @@
         @handle-change-status="handleChangeStatus"
         @handle-change-month-select="handleChangeMonthSelect"
         @handle-change-month-range="handleChangeMonthRange"
+        @handle-change-custom-order="handleChangeCustomOrder"
         :getMonths="getMonths"
         :status-list="statusList"
         :custom-order-list="customOrderList"
@@ -240,6 +241,15 @@ watch(
     getData();
   }
 );
+// 排序选择
+const isCustomOrder = ref(null);
+watch(
+  () => isCustomOrder.value,
+  () => {
+    console.log("isCustomOrder==>", isCustomOrder.value);
+    getData();
+  }
+);
 const handleChangeStatus = (childStatus: Array<number>) => {
   status.value = childStatus;
   pager.value.current = 1;
@@ -250,6 +260,9 @@ const handleChangeMonthSelect = (childMonthSelect: Array<string>) => {
 };
 const handleChangeMonthRange = (childMonthRange: [Dayjs, Dayjs]) => {
   monthRangeSelect.value = childMonthRange;
+};
+const handleChangeCustomOrder = (childCustomOrder: number) => {
+  isCustomOrder.value = childCustomOrder;
 };
 const dataSource = ref();
 const userStore = useUserStore();
@@ -445,6 +458,7 @@ const getData = async (params?: any) => {
     ...pager.value,
     status: status.value,
     checkoperators: selectedOp.value,
+    customOrder: isCustomOrder.value,
   };
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;

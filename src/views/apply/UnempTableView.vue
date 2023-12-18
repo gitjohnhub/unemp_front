@@ -11,9 +11,10 @@
         @handle-change-show-with-status="handleChangeShowWithStatus"
         :getMonths="getMonths"
         :status-list="statusList"
+        :status-cal="statusCal"
+        :jiezhen-cal="jiezhenCal"
         :custom-order-list="customOrderList"
         :headers-with-width="unempHeader"
-        :monthSelect="monthSelect"
         file-name="失业金"
         :get-data="getData"
         :count="count"
@@ -303,16 +304,6 @@ const unempHeader = [
   { header: "街镇", key: "jiezhen", width: 25 },
   { header: "提交时间", key: "createtime", width: 35 },
 ];
-const localExportExcel = () => {
-  exportExcel(unempHeader, "失业金", getData, monthRangeSelect.value)
-    .then(() => {
-      message.info("导出成功");
-    })
-    .catch((error) => {
-      console.log(error);
-      message.error("导出失败,请查看日期是否选择");
-    });
-};
 
 // 分页
 const pager = ref({
@@ -341,7 +332,22 @@ onBeforeMount(() => {
   }
   getData();
 });
-
+const statusCal = ref([]);
+const jiezhenCal = ref([]);
+const getCount = (params?: any) => {
+  api.getUnempDataCal(params).then((res: any) => {
+    statusCal.value = statusList.map((item, index) => {
+      return {
+        label: item,
+        count: res.find((item) => Number(item.status) === index)?.count || 0,
+      };
+    });
+  });
+  api.getUnempByJiezhen(params).then((res: any) => {
+    console.log("calbyjiezhen===>", res);
+    jiezhenCal.value = res;
+  });
+};
 // 获取失业金数据
 const getData = async (params?: any) => {
   spinning.value = true;
@@ -367,6 +373,7 @@ const getData = async (params?: any) => {
     };
   }
   console.log("params==>", params);
+  getCount(params);
   return await api.getUnempVeriData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

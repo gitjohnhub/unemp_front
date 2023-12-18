@@ -11,10 +11,11 @@
         @handle-change-custom-order="handleChangeCustomOrder"
         :getMonths="getMonths"
         :status-list="statusList"
+        :status-cal="statusCal"
+        :jiezhen-cal="jiezhenCal"
         :custom-order-list="customOrderList"
         :headers-with-width="headersWithWidth"
-        :monthSelect="monthSelect"
-        file-name="失业金"
+        file-name="延长失业金"
         :get-data="getData"
         :count="count"
       >
@@ -387,10 +388,10 @@ onBeforeMount(() => {
   // getMonths();
   getData();
 });
-// 获取数据
-const getData = async (params?: any) => {
-  spinning.value = true;
-  api.getYanchangDataCal().then((res: any) => {
+const jiezhenCal = ref([]);
+
+const getCount = (params?: any) => {
+  api.getYanchangDataCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -398,7 +399,15 @@ const getData = async (params?: any) => {
       };
     });
   });
+  api.getYanchangByJiezhen(params).then((res: any) => {
+    console.log("calbyjiezhen===>", res);
+    jiezhenCal.value = res;
+  });
+};
+// 获取数据
 
+const getData = async (params?: any) => {
+  spinning.value = true;
   params = {
     ...params,
     ...pager.value,
@@ -421,6 +430,7 @@ const getData = async (params?: any) => {
       current: 1,
     };
   }
+  getCount(params);
   return await api.getYanchangData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

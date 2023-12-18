@@ -10,9 +10,10 @@
       @handle-change-custom-order="handleChangeCustomOrder"
       :getMonths="getMonths"
       :status-list="statusList"
+      :status-cal="statusCal"
+      :jiezhen-cal="jiezhenCal"
       :custom-order-list="customOrderList"
       :headers-with-width="nongbuHeader"
-      :monthSelect="monthSelect"
       file-name="农民补助金"
       :get-data="getData"
       :count="count"
@@ -243,6 +244,12 @@ const spinning = ref<boolean>(false);
 
 // 搜索相关
 const searchValue = ref();
+watch(
+  () => searchValue.value,
+  () => {
+    getData();
+  }
+);
 const statusList = ["已登记", "已审批", "已取消"];
 const customOrderList = ["按时间排序", "按街镇排序", "按原件未收到排序"];
 
@@ -362,10 +369,9 @@ watch(
 const getMonths = (params?: any) => {
   return api.getNongbuAllDate();
 };
-// 获取数据
-const getData = async (params?: any) => {
-  spinning.value = true;
-  await api.getNongbuDataCal().then((res: any) => {
+const jiezhenCal = ref([]);
+const getCount = (params?: any) => {
+  api.getNongbuDataCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
@@ -373,6 +379,14 @@ const getData = async (params?: any) => {
       };
     });
   });
+  api.getNongbuByJiezhen(params).then((res: any) => {
+    console.log("calbyjiezhen===>", res);
+    jiezhenCal.value = res;
+  });
+};
+// 获取数据
+const getData = async (params?: any) => {
+  spinning.value = true;
 
   params = {
     ...params,
@@ -387,13 +401,9 @@ const getData = async (params?: any) => {
   };
 
   if (searchValue.value !== undefined && searchValue.value !== "") {
-    params = {
-      searchValue: searchValue.value,
-      current: 1,
-    };
-  } else {
-    params.searchValue = null;
+    params.searchValue = searchValue.value;
   }
+  getCount(params);
   return await api.getNongbuData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

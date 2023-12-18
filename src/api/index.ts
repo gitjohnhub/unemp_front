@@ -31,6 +31,12 @@ export default {
   getUnempVeriAllDate(params?: any) {
     return POST("/getUnempVeriAllDate", params);
   },
+  getUnempByJiezhen(params?: any) {
+    return POST("/getUnempByJiezhen", params);
+  },
+  getUnempDataCal(params?: any) {
+    return POST("/getUnempDataCal", params);
+  },
 
   //协查
   getXiechaData(params?: any) {
@@ -110,6 +116,9 @@ export default {
   },
   getNongbuAllDate(params?: any) {
     return POST("/getNongbuAllDate", params);
+  },
+  getNongbuByJiezhen(params?: any) {
+    return POST("/getNongbuByJiezhen", params);
   },
   // Duty
   getDutyData(params?: any) {

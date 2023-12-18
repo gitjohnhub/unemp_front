@@ -82,14 +82,23 @@
     <a-col :span="12">
       <a-card>
         <a-descriptions title="统计看板" bordered>
-          <a-descriptions-item
-            v-for="item in statisticsData"
-            :label="item.label"
-            >{{ item.count }}</a-descriptions-item
-          >
+          <a-descriptions-item v-for="item in statusCal" :label="item.label">{{
+            item.count
+          }}</a-descriptions-item>
         </a-descriptions>
       </a-card>
     </a-col>
+  </a-row>
+  <a-row v-if="jiezhenCal.length > 0">
+    <a-card>
+      <a-space direction="horizontal" v-for="item in jiezhenCal">
+        <a-statistic
+          :title="item.jiezhen"
+          :value="item.count"
+          style="margin-right: 30px"
+        />
+      </a-space>
+    </a-card>
   </a-row>
 </template>
 <script lang="ts" setup>
@@ -118,7 +127,11 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
-  statisticsData: {
+  statusCal: {
+    type: Array<any>,
+    default: () => [],
+  },
+  jiezhenCal: {
     type: Array<any>,
     default: () => [],
   },
@@ -274,10 +287,23 @@ const handleChangeMonthSelect = () => {
       : ""
   );
 };
+function compareDates(date1, date2) {
+  const [year1, month1] = date1.split("-");
+  const [year2, month2] = date2.split("-");
+
+  // 比较年份
+  if (year1 !== year2) {
+    return parseInt(year1) - parseInt(year2);
+  }
+
+  // 如果年份相同，则比较月份
+  return parseInt(month1) - parseInt(month2);
+}
 const getCascadeYear = () => {
   const result = [];
   const yearMap = {};
-  months.value.forEach((month: string) => {
+  console.log(months.value);
+  months.value.sort(compareDates).forEach((month: string) => {
     const [year, monthValue] = month.split("-");
 
     if (yearMap.hasOwnProperty(year)) {

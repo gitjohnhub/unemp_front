@@ -1,7 +1,7 @@
 <template>
-  <a-row>
-    <a-col :span="12">
-      <a-card>
+  <a-row style="margin-bottom: 20px">
+    <a-col :span="10">
+      <a-card style="height: 411px">
         <a-space direction="vertical">
           <slot name="otherFilter"></slot>
           <a-space direction="vertical">
@@ -81,24 +81,25 @@
     ></a-col>
     <a-col :span="12">
       <a-card>
-        <a-descriptions title="统计看板" bordered>
+        <a-descriptions title="状态看板" bordered size="small">
           <a-descriptions-item v-for="item in statusCal" :label="item.label">{{
             item.count
           }}</a-descriptions-item>
         </a-descriptions>
+        <a-descriptions
+          title="街镇看板"
+          bordered
+          size="small"
+          v-if="jiezhenCal.length > 0"
+        >
+          <a-descriptions-item
+            v-for="item in jiezhenCal"
+            :label="item.jiezhen"
+            >{{ item.count }}</a-descriptions-item
+          >
+        </a-descriptions>
       </a-card>
     </a-col>
-  </a-row>
-  <a-row v-if="jiezhenCal.length > 0">
-    <a-card>
-      <a-space direction="horizontal" v-for="item in jiezhenCal">
-        <a-statistic
-          :title="item.jiezhen"
-          :value="item.count"
-          style="margin-right: 30px"
-        />
-      </a-space>
-    </a-card>
   </a-row>
 </template>
 <script lang="ts" setup>

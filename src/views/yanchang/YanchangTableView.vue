@@ -516,7 +516,6 @@ const buttonList = [
     icon: "RedoOutlined",
     params: {
       status: statusList.indexOf("已登记"),
-      reviewoperator: userInfo.username,
     },
     errMsg: "初核失败,请联系管理员",
     successMsg: "初核成功",

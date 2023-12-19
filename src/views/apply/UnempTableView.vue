@@ -111,6 +111,11 @@
               v-html="`<br>${record.reviewnote}`"
             ></span>
           </template>
+          <template v-if="column.key === 'status'">
+            <a-tag :color="colorList[Number(record.status)]">
+              {{ getStatus(record.status) }}
+            </a-tag>
+          </template>
           <!-- createtime column -->
           <template v-if="column.key === 'createtime'">
             <a-tag>
@@ -202,7 +207,9 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const statusList = ["已初核", "已复核", "待初核", "已删除"];
 const customOrderList = ["按时间排序", "按街镇排序"];
-
+const getStatus = (status: number) => {
+  return statusList[Number(status)];
+};
 const order = ref();
 const handleChangeCustomOrder = (value: number) => {
   order.value = value;
@@ -323,7 +330,7 @@ const pagination = computed(() => {
   };
 });
 
-const onShowSizeChange = async (page: any) => {};
+const onShowSizeChange = async (page: any) => { };
 
 onBeforeMount(() => {
   userStore.getUsers();
@@ -442,6 +449,11 @@ const columns = [
     key: "reviewoperator",
   },
   {
+    title: "进度",
+    dataIndex: 'status',
+    key: 'status'
+  },
+  {
     title: "操作",
     // dataIndex: 'action',
     key: "action",
@@ -508,6 +520,7 @@ const buttonList = [
 .deleted {
   text-decoration: line-through;
 }
+
 .table-operations {
   margin-bottom: 16px;
 }

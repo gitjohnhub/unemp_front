@@ -166,6 +166,12 @@
                 >
                   <AlipayOutlined />
                 </a-button>
+                <a-button
+                  @click="payData(record.id)"
+                  v-if="record.status == statusList.indexOf('支付失败') || record.status == statusList.indexOf('未确认冻结') "
+                >
+                  <RedoOutlined />
+                </a-button>
                 <a-button @click="showEditModal(record)">
                   <EditOutlined />
                 </a-button>
@@ -194,7 +200,7 @@
 import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
 import ActionView from "@/components/ActionView.vue";
-import { AlipayOutlined, EditOutlined } from "@ant-design/icons-vue";
+import { AlipayOutlined, EditOutlined, RedoOutlined } from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
 import ZhuanyiEditFormView from "./ZhuanyiEditFormView.vue";
@@ -550,20 +556,20 @@ const buttonList = [
     },
     color: "#ffd299",
   },
-  {
-    text: "恢复冻结变支付中",
-    icon: "RedoOutlined",
-    params: {
-      status: statusList.indexOf("支付中"),
-      reviewoperator: userInfo.username,
-    },
-    errMsg: "恢复失败,请联系管理员",
-    successMsg: "恢复成功",
-    type: "primary",
-    show: (record: any) => {
-      return record.status == statusList.indexOf("未确认冻结");
-    },
-  },
+  // {
+  //   text: "重新支付中",
+  //   icon: "RedoOutlined",
+  //   params: {
+  //     status: statusList.indexOf("支付中"),
+  //     reviewoperator: userInfo.username,
+  //   },
+  //   errMsg: "恢复失败,请联系管理员",
+  //   successMsg: "恢复成功",
+  //   type: "primary",
+  //   show: (record: any) => {
+  //     return record.status == statusList.indexOf("未确认冻结") || record.status == statusList.indexOf("支付失败") ;
+  //   },
+  // },
 
   // {
   //   text: "标记支付",

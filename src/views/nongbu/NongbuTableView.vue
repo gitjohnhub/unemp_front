@@ -205,7 +205,7 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref(null);
+const status = ref([0]);
 const statusCal = ref([]);
 // 按街镇选择子组件
 const jiezhenSelectChange = (selectJiezhens: any) => {
@@ -218,7 +218,7 @@ const hanleChangeSearch = (childSearchValue: any) => {
 const handleChangeShowWithStatus = (childShowWithStatus: number) => {
   showWithStatus.value = childShowWithStatus;
 };
-const handleChangeStatus = (childStatus: number) => {
+const handleChangeStatus = (childStatus: Array<number>) => {
   status.value = childStatus;
 };
 const handleChangeMonthSelect = (childMonthSelect: string) => {

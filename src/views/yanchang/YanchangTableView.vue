@@ -265,7 +265,8 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref([]);
+const status = ref([0]);
+;
 const statusCal = ref([]);
 //编辑数据弹窗
 const editForm = ref();

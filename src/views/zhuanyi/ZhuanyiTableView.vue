@@ -291,7 +291,7 @@ const payDate = ref<Dayjs>();
 const count = ref<number>();
 const checked = ref(false);
 const reviewChecked = ref("0");
-const status = ref(null);
+const status = ref([0]);
 // 获得月份序列
 const getMonths = (params?: any) => {
   return api.getZhuanyiAllDate();

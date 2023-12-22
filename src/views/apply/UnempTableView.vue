@@ -232,7 +232,7 @@ const jiezhenSelectChange = (selectJiezhens: any) => {
 const chosenJiezhen = ref([]);
 const showWithStatus = ref(1);
 const monthSelect = ref("");
-const status = ref(null);
+const status = ref([0]);
 watch(
   () => chosenJiezhen.value,
   () => {
@@ -250,7 +250,7 @@ const handleChangeShowWithStatus = (childShowWithStatus: number) => {
 
   getData();
 };
-const handleChangeStatus = (childStatus: number) => {
+const handleChangeStatus = (childStatus: Array<number>) => {
   status.value = childStatus;
   pager.value.current = 1;
   getData();

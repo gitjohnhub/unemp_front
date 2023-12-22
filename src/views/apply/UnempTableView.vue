@@ -165,7 +165,7 @@
                     @search="
                       updateParams({
                         id: record.id,
-                        reviewNote: record.reviewnote,
+                        reviewnote: record.reviewnote,
                       })
                     "
                   >
@@ -488,7 +488,6 @@ const buttonList = [
     icon: "RedoOutlined",
     params: {
       status: statusList.indexOf("已初核"),
-      reviewoperator: userInfo.username,
     },
     errMsg: "初核失败,请联系管理员",
     successMsg: "初核成功",

@@ -181,6 +181,7 @@ watch(
   }
 );
 onBeforeMount(() => {
+  status.value = [mapStatusList[0].value]
   props
     .getMonths()
     .then((res: any) => {

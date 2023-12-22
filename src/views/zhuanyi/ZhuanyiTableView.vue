@@ -23,6 +23,12 @@
             <div>支付时请先选择日期:</div>
             <a-date-picker v-model:value="payDate" />
           </a-space>
+          <a-cascader
+            v-model:value="payMonthSelect"
+            :options="cascaderPayMonthsList"
+            expand-trigger="hover"
+            placeholder="选择支付月份筛选数据"
+          />
         </template>
         <template #otherAction>
           <a-space>
@@ -168,7 +174,10 @@
                 </a-button>
                 <a-button
                   @click="payData(record.id)"
-                  v-if="record.status == statusList.indexOf('支付失败') || record.status == statusList.indexOf('未确认冻结') "
+                  v-if="
+                    record.status == statusList.indexOf('支付失败') ||
+                    record.status == statusList.indexOf('未确认冻结')
+                  "
                 >
                   <RedoOutlined />
                 </a-button>
@@ -200,7 +209,11 @@
 import { computed, ref, onBeforeMount, watch } from "vue";
 import { message } from "ant-design-vue";
 import ActionView from "@/components/ActionView.vue";
-import { AlipayOutlined, EditOutlined, RedoOutlined } from "@ant-design/icons-vue";
+import {
+  AlipayOutlined,
+  EditOutlined,
+  RedoOutlined,
+} from "@ant-design/icons-vue";
 import api from "@/api";
 import { pinyin } from "pinyin-pro";
 import ZhuanyiEditFormView from "./ZhuanyiEditFormView.vue";
@@ -282,6 +295,9 @@ const status = ref(null);
 // 获得月份序列
 const getMonths = (params?: any) => {
   return api.getZhuanyiAllDate();
+};
+const getPayMonths = (params?: any) => {
+  return api.getZhuanyiAllPayDate();
 };
 //编辑相关
 const editForm = ref();
@@ -450,14 +466,70 @@ const getCount = (params?: any) => {
     console.log("statusCal===>", statusCal.value);
   });
 };
+const cascaderPayMonthsList = ref([]);
+
+const getCascadePayYear = () => {
+  const result = [];
+  const yearMap = {};
+  getPayMonths().then((res: any) => {
+    res.filter((element) => element !== null).sort(compareDates).forEach((month: string) => {
+      const [year, monthValue] = month.split("-");
+      if (yearMap.hasOwnProperty(year)) {
+        // Year already exists, add child
+        const parentIndex = yearMap[year];
+        result[parentIndex].children.push({
+          value: month,
+          label: monthValue,
+        });
+      } else {
+        // Year doesn't exist, create new parent
+        const parent = {
+          value: year,
+          label: year,
+          children: [
+            {
+              value: month,
+              label: monthValue,
+            },
+          ],
+        };
+        yearMap[year] = result.length;
+        result.push(parent);
+      }
+    });
+    cascaderPayMonthsList.value = result;
+  });
+};
+function compareDates(date1, date2) {
+  const [year1, month1] = date1.split("-");
+  const [year2, month2] = date2.split("-");
+
+  // 比较年份
+  if (year1 !== year2) {
+    return parseInt(year1) - parseInt(year2);
+  }
+
+  // 如果年份相同，则比较月份
+  return parseInt(month1) - parseInt(month2);
+}
+const payMonthSelect = ref([]);
+watch(()=>payMonthSelect.value,()=>{
+  console.log('payMonthselect==>',payMonthSelect.value[1])
+  getData()
+
+})
 const getData = async (params?: any) => {
   spinning.value = true;
+  getCascadePayYear();
   params = {
     ...params,
     ...pager.value,
     status: status.value,
     customOrder: isCustomOrder.value,
   };
+  if(payMonthSelect.value){
+    params.payDate = payMonthSelect.value[1]
+  }
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
   }
@@ -466,6 +538,10 @@ const getData = async (params?: any) => {
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params.searchValue = searchValue.value;
+  }
+  if (payDate.value) {
+    console.log("payDate", payDate.value);
+    params.payDate = payDate.value.format("YYYY-MM-DD");
   }
   getCount(params);
   return await api.getZhuanyiData(params).then((res: any) => {

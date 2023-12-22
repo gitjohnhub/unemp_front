@@ -74,6 +74,9 @@ export default {
   getZhuanyiAllDate(params?: any) {
     return POST("/getZhuanyiAllDate", params);
   },
+  getZhuanyiAllPayDate(params?: any) {
+    return POST("/getZhuanyiAllPayDate", params);
+  },
 
   // yanchang
   getYanchangData(params?: any) {

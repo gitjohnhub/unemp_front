@@ -514,7 +514,6 @@ function compareDates(date1, date2) {
 }
 const payMonthSelect = ref([]);
 watch(()=>payMonthSelect.value,()=>{
-  console.log('payMonthselect==>',payMonthSelect.value[1])
   getData()
 
 })

@@ -472,31 +472,34 @@ const getCascadePayYear = () => {
   const result = [];
   const yearMap = {};
   getPayMonths().then((res: any) => {
-    res.filter((element) => element !== null).sort(compareDates).forEach((month: string) => {
-      const [year, monthValue] = month.split("-");
-      if (yearMap.hasOwnProperty(year)) {
-        // Year already exists, add child
-        const parentIndex = yearMap[year];
-        result[parentIndex].children.push({
-          value: month,
-          label: monthValue,
-        });
-      } else {
-        // Year doesn't exist, create new parent
-        const parent = {
-          value: year,
-          label: year,
-          children: [
-            {
-              value: month,
-              label: monthValue,
-            },
-          ],
-        };
-        yearMap[year] = result.length;
-        result.push(parent);
-      }
-    });
+    res
+      .filter((element) => element !== null)
+      .sort(compareDates)
+      .forEach((month: string) => {
+        const [year, monthValue] = month.split("-");
+        if (yearMap.hasOwnProperty(year)) {
+          // Year already exists, add child
+          const parentIndex = yearMap[year];
+          result[parentIndex].children.push({
+            value: month,
+            label: monthValue,
+          });
+        } else {
+          // Year doesn't exist, create new parent
+          const parent = {
+            value: year,
+            label: year,
+            children: [
+              {
+                value: month,
+                label: monthValue,
+              },
+            ],
+          };
+          yearMap[year] = result.length;
+          result.push(parent);
+        }
+      });
     cascaderPayMonthsList.value = result;
   });
 };
@@ -513,10 +516,12 @@ function compareDates(date1, date2) {
   return parseInt(month1) - parseInt(month2);
 }
 const payMonthSelect = ref([]);
-watch(()=>payMonthSelect.value,()=>{
-  getData()
-
-})
+watch(
+  () => payMonthSelect.value,
+  () => {
+    getData();
+  }
+);
 const getData = async (params?: any) => {
   spinning.value = true;
   getCascadePayYear();
@@ -526,8 +531,8 @@ const getData = async (params?: any) => {
     status: status.value,
     customOrder: isCustomOrder.value,
   };
-  if(payMonthSelect.value){
-    params.payDate = payMonthSelect.value[1]
+  if (payMonthSelect.value) {
+    params.payDate = payMonthSelect.value[1];
   }
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
@@ -538,10 +543,10 @@ const getData = async (params?: any) => {
   if (searchValue.value !== undefined && searchValue.value !== "") {
     params.searchValue = searchValue.value;
   }
-  if (payDate.value) {
-    console.log("payDate", payDate.value);
-    params.payDate = payDate.value.format("YYYY-MM-DD");
-  }
+  // if (payDate.value) {
+  //   console.log("payDate", payDate.value);
+  //   params.payDate = payDate.value.format("YYYY-MM-DD");
+  // }
   getCount(params);
   return await api.getZhuanyiData(params).then((res: any) => {
     pager.value = res.page;

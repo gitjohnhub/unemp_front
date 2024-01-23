@@ -133,4 +133,8 @@ export default {
   updateDutyData(params?: any) {
     return POST("/updateDutyData", params);
   },
+  //黑名单
+  getBlackData(params?: any) {
+    return POST("/getBlackData", params);
+  },
 };

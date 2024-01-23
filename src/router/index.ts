@@ -123,6 +123,14 @@ const router = createRouter({
                 requiresAuth: true,
               },
             },
+            {
+              path: "blackData",
+              name: "黑名单查询",
+              component: () => import("@/views/tools/BlackDataView.vue"),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
         {

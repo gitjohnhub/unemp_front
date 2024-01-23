@@ -7,7 +7,7 @@
     :wrapper-col="wrapperCol"
   >
     <a-form-item label="身份证号" name="personID" has-feedback>
-      <a-input v-model:value="localEditForm.personID">
+      <a-input v-model:value="localEditForm.personID" autocomplete="off">
         <template #suffix>
           <a-tag>{{ localEditForm.personID.length }}</a-tag>
         </template>

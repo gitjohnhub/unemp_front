@@ -29,6 +29,13 @@
             expand-trigger="hover"
             placeholder="选择支付月份筛选数据"
           />
+          <a-select
+            v-model:value="chosenOnlyRelation"
+            mode="multiple"
+            placeholder="选择关系/金额筛选"
+            style="width: 300px"
+            :options="onlyRelations"
+          ></a-select>
         </template>
         <template #otherAction>
           <a-space>
@@ -223,6 +230,7 @@ import { Dayjs } from "dayjs";
 import { useUserStore } from "@/stores";
 import { colorList } from "@/types";
 import "dayjs/locale/zh-cn";
+import { chown } from "fs";
 const statusList = [
   "已初核",
   "已复核",
@@ -263,6 +271,24 @@ watch(
 );
 // 排序选择
 const isCustomOrder = ref(null);
+const chosenOnlyRelation = ref([]);
+const onlyRelations = [
+  {
+    label: "只转关系",
+    value: "只转关系",
+  },
+  {
+    label: "转金额",
+    value: "转金额",
+  },
+];
+watch(
+  () => chosenOnlyRelation.value,
+  () => {
+    console.log("chosenOnlyRelation==>", chosenOnlyRelation.value);
+    getData();
+  }
+);
 watch(
   () => isCustomOrder.value,
   () => {
@@ -551,6 +577,9 @@ const getData = async (params?: any) => {
   }
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
+  }
+  if (chosenOnlyRelation.value.length > 0) {
+    params.chosenOnlyRelation = chosenOnlyRelation.value;
   }
   if (monthRangeSelect.value) {
     params.monthRangeSelect = monthRangeSelect.value;

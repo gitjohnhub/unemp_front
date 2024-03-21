@@ -45,6 +45,7 @@
             >
               <ZhuanyiEditFormView ref="editableFormRef" />
             </a-modal>
+            <a-button @click="payAll">一键支付成功</a-button>
           </a-space>
         </template>
       </FilterView>
@@ -303,6 +304,20 @@ const getPayMonths = (params?: any) => {
 const editForm = ref();
 const editableFormRef = ref(null);
 const addOpen = ref<boolean>(false);
+// 一键支付成功
+const payAll = async () => {
+  await api
+    .payAllDataInPayProgress()
+    .then((res) => {
+      console.log(res);
+      message.info(`一键支付成功${res}条数据`);
+      getData();
+    })
+    .catch((error) => {
+      console.log("error==>", error);
+      message.info("数据格式错误，无法提交=>", error);
+    });
+};
 
 const showEditModal = (record: any) => {
   if (record) {

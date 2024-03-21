@@ -407,7 +407,7 @@ const getColors = (user) => {
 
 watch(
   () => searchValue.value,
-  (newValue) => {
+  () => {
     getData();
   }
 );
@@ -585,7 +585,7 @@ const getData = async (params?: any) => {
     params.monthRangeSelect = monthRangeSelect.value;
   }
   if (searchValue.value !== undefined && searchValue.value !== "") {
-    params.searchValue = searchValue.value;
+    params.searchValue = searchValue.value.trim();
   }
   // if (payDate.value) {
   //   console.log("payDate", payDate.value);

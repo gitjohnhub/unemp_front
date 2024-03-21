@@ -282,8 +282,8 @@ export const exportExcel = (
                   );
                   break;
                 case "pay":
-                  ItemList.push(CalPayMonth(item.payMonth));
-                  totalPayNum += CalPayMonth(item.payMonth);
+                  ItemList.push(item.pay);
+                  totalPayNum += Number(item.pay);
                   break;
                 default:
                   ItemList.push(item[header]);

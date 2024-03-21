@@ -176,7 +176,20 @@
               <template #otherAction>
                 <a-button
                   @click="payData(record.id)"
-                  v-if="record.status == statusList.indexOf('已复核')"
+                  v-if="
+                    record.status == statusList.indexOf('已复核') &&
+                    record.isOnlyTransferRelation == '转金额'
+                  "
+                >
+                  <AlipayOutlined />
+                </a-button>
+                <a-button
+                  @click="directPaySuccess(record.id)"
+                  type="primary"
+                  v-if="
+                    record.status == statusList.indexOf('已复核') &&
+                    record.isOnlyTransferRelation == '只转关系'
+                  "
                 >
                   <AlipayOutlined />
                 </a-button>
@@ -614,6 +627,22 @@ const payData = async (id: number) => {
         id: id,
         reviewoperator: userInfo.username,
         status: "2",
+        payDate: payDate.value!.format("YYYY-MM-DD"),
+      })
+      .then((res: any) => {
+        getData();
+      });
+  } else {
+    message.info("请选择支付日期");
+  }
+};
+const directPaySuccess = async (id: number) => {
+  if (payDate.value) {
+    await api
+      .updateZhuanyiData({
+        id: id,
+        reviewoperator: userInfo.username,
+        status: "3",
         payDate: payDate.value!.format("YYYY-MM-DD"),
       })
       .then((res: any) => {

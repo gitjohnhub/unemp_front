@@ -50,6 +50,9 @@ export default {
   getwengangAllDate(params?: any) {
     return POST("/getwengangAllDate", params);
   },
+  getwengangDataCal(params?: any) {
+    return POST("/getwengangDataCal", params);
+  },
 
   //协查
   getXiechaData(params?: any) {

@@ -38,6 +38,14 @@
             <wengangEditFormView ref="editableFormRef" />
           </a-modal>
         </template>
+        <template #otherDescriptions>
+          <a-descriptions title="进度">
+            <a-descriptions-item label="电话通知进度"
+              ><a-progress
+                :percent="callPercent"
+                size="small" /></a-descriptions-item
+          ></a-descriptions>
+        </template>
       </FilterView>
     </div>
     <a-spin :spinning="spinning">
@@ -169,6 +177,7 @@ const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const statusList = ["未通知", "已通知", "已初审", "已复审"];
 const customOrderList = ["按初审时间排序", "按金额排序"];
+const callPercent = ref(0);
 const getStatus = (status: number) => {
   return statusList[Number(status)];
 };
@@ -307,14 +316,20 @@ onBeforeMount(() => {
 const statusCal = ref([]);
 const jiezhenCal = ref([]);
 const getCount = (params?: any) => {
-  // api.getwengangDataCal(params).then((res: any) => {
-  //   statusCal.value = statusList.map((item, index) => {
-  //     return {
-  //       label: item,
-  //       count: res.find((item) => Number(item.status) === index)?.count || 0,
-  //     };
-  //   });
-  // });
+  api.getwengangDataCal(params).then((res: any) => {
+    statusCal.value = statusList.map((item, index) => {
+      return {
+        label: item,
+        count: res.find((item) => Number(item.status) === index)?.count || 0,
+      };
+    });
+    callPercent.value = Number(
+      (
+        statusCal.value[0].count /
+        (statusCal.value[0].count + statusCal.value[1].count)
+      ).toFixed(2)
+    );
+  });
   // api.getwengangByJiezhen(params).then((res: any) => {
   //   console.log("calbyjiezhen===>", res);
   //   jiezhenCal.value = res;

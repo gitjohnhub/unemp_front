@@ -98,6 +98,7 @@
             >{{ item.count }}</a-descriptions-item
           >
         </a-descriptions>
+        <slot name="otherDescriptions"></slot>
       </a-card>
     </a-col>
   </a-row>
@@ -181,7 +182,7 @@ watch(
   }
 );
 onBeforeMount(() => {
-  status.value = [mapStatusList[0].value]
+  status.value = [mapStatusList[0].value];
   props
     .getMonths()
     .then((res: any) => {

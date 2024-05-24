@@ -18,7 +18,7 @@ export default {
   getUsers(params?: any) {
     return POST("/users/getUsers", params);
   },
-  // 数据
+  // 失业金数据
   getUnempVeriData(params: any) {
     return POST("/unempVeriAll", params);
   },
@@ -36,6 +36,19 @@ export default {
   },
   getUnempDataCal(params?: any) {
     return POST("/getUnempDataCal", params);
+  },
+  // 稳岗
+  getwengangData(params: any) {
+    return POST("/getwengangData", params);
+  },
+  addwengangData(params: any) {
+    return POST("/addwengangData", params);
+  },
+  updatewengangData(params: any) {
+    return POST("/updatewengangData", params);
+  },
+  getwengangAllDate(params?: any) {
+    return POST("/getwengangAllDate", params);
   },
 
   //协查

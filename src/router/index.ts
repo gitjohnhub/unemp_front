@@ -1,4 +1,8 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHistory,
+  createWebHashHistory,
+} from "vue-router";
 import storage from "@/utils/storage";
 import { h } from "vue";
 import {
@@ -13,7 +17,7 @@ import {
   UserDeleteOutlined,
 } from "@ant-design/icons-vue";
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes: [
     {
       path: "/login",
@@ -87,6 +91,26 @@ const router = createRouter({
             },
           ],
         },
+        {
+          path: "/wengang",
+          redirect: "/wengang/wengangTable",
+          meta: {
+            requiresAuth: true,
+            icon: () => h(PhoneOutlined),
+          },
+          name: "稳岗",
+          children: [
+            {
+              path: "wengangTableView",
+              name: "稳岗补贴2024",
+              component: () => import("@/views/wengang/wengangTableView.vue"),
+              meta: {
+                requiresAuth: true,
+              },
+            },
+          ],
+        },
+
         {
           path: "/contact",
           redirect: "/contact/unempContact",

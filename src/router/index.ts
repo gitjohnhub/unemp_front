@@ -108,6 +108,14 @@ const router = createRouter({
                 requiresAuth: true,
               },
             },
+            {
+              path: "checkFormView",
+              name: "批量初核工具",
+              component: () => import("@/views/wengang/checkFormView.vue"),
+              meta: {
+                requiresAuth: true,
+              },
+            },
           ],
         },
 

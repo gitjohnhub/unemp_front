@@ -39,12 +39,17 @@
           </a-modal>
         </template>
         <template #otherDescriptions>
-          <a-descriptions title="进度">
+          <a-descriptions title="进度" layout="vertical">
             <a-descriptions-item label="电话通知进度"
-              ><a-progress
-                :percent="callPercent"
-                size="small" /></a-descriptions-item
-          ></a-descriptions>
+              ><a-progress :percent="callPercent"
+            /></a-descriptions-item>
+            <a-descriptions-item label="初核进度"
+              ><a-progress :percent="checkPercent" size="small"
+            /></a-descriptions-item>
+            <a-descriptions-item label="复核进度"
+              ><a-progress :percent="reviewPercent" size="small"
+            /></a-descriptions-item>
+          </a-descriptions>
         </template>
       </FilterView>
     </div>
@@ -154,6 +159,7 @@
 </template>
 <script lang="ts" setup>
 import wengangEditFormView from "./wengangEditFormView.vue";
+import checkFormView from "./checkFormView.vue";
 import ActionView from "@/components/ActionView.vue";
 import FilterView from "@/components/FilterView.vue";
 
@@ -309,12 +315,15 @@ const onShowSizeChange = async (page: any) => {};
 onBeforeMount(() => {
   userStore.getUsers();
   if (userInfo.checkObject) {
-    selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
+    // selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
+    selectedOp.value = [userInfo.username];
   }
   getData();
 });
 const statusCal = ref([]);
 const jiezhenCal = ref([]);
+const checkPercent = ref(0);
+const reviewPercent = ref(0);
 const getCount = (params?: any) => {
   api.getwengangDataCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
@@ -323,12 +332,18 @@ const getCount = (params?: any) => {
         count: res.find((item) => Number(item.status) === index)?.count || 0,
       };
     });
+
+    const checkData = statusCal.value.find((obj) => obj.status === "2");
+    const reviewData = statusCal.value.find((obj) => obj.status === "3");
+    const totalData = statusCal.value.find((obj) => obj.status === "total");
     callPercent.value = Number(
       (
         statusCal.value[0].count /
         (statusCal.value[0].count + statusCal.value[1].count)
       ).toFixed(2)
     );
+    checkPercent.value = checkData ? checkData.count / totalData.count : 0;
+    reviewPercent.value = reviewData ? reviewData.count / totalData.count : 0;
   });
   // api.getwengangByJiezhen(params).then((res: any) => {
   //   console.log("calbyjiezhen===>", res);

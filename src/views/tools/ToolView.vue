@@ -9,6 +9,9 @@
     <a-tab-pane key="2" tab="手动输入计算工龄">
       <GonglingView />
     </a-tab-pane>
+    <a-tab-pane key="5" tab="推送转移数据">
+      <ZhuanyiPushView />
+    </a-tab-pane>
     <!-- <a-tab-pane key="3" tab="工龄计算" force-render>
       <YearGonglingView></YearGonglingView>
     </a-tab-pane> -->
@@ -20,6 +23,7 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import UnempPushView from "./UnempPushView.vue";
+import ZhuanyiPushView from "./ZhuanyiPushView.vue";
 import GonglingView from "./GonglingView.vue";
 import TesseractCalView from "./TesseractCalView.vue";
 import PersonInfoView from "./PersonInfoView.vue";

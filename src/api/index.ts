@@ -87,6 +87,9 @@ export default {
   updateZhuanyiData(params?: any) {
     return POST("/updateZhuanyiData", params);
   },
+  updateZhuanyiArrayData(params?: any) {
+    return POST("/updateZhuanyiArrayData", params);
+  },
   getZhuanyiDataCal(params?: any) {
     return POST("/getZhuanyiDataCal", params);
   },

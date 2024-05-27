@@ -25,12 +25,13 @@ export const useUserStore = defineStore("user", {
     async getUsers() {
       return await api.getUsers().then((res: any) => {
         this.usersList = res.rows;
+        console.log("getUsers_res====>", res);
         this.checkoperators = res.rows.map((userInfo) => {
-          return { value: userInfo.userName };
+          return { value: userInfo.username };
         });
         this.userColors = res.rows.map((userInfo, index) => {
           return {
-            username: userInfo.userName,
+            username: userInfo.username,
             color: colors[index],
           };
         });

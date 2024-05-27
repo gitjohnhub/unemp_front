@@ -330,13 +330,16 @@ const pagination = computed(() => {
   };
 });
 
-const onShowSizeChange = async (page: any) => { };
+const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
   userStore.getUsers();
+  console.log("userInfo===>", userInfo);
   if (userInfo.checkObject) {
     selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   }
+  console.log("checkoperators====>", userInfo.checkoperators);
+
   getData();
 });
 const statusCal = ref([]);
@@ -450,8 +453,8 @@ const columns = [
   },
   {
     title: "进度",
-    dataIndex: 'status',
-    key: 'status'
+    dataIndex: "status",
+    key: "status",
   },
   {
     title: "操作",

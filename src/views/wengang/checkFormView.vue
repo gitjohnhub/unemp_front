@@ -5,7 +5,12 @@
     :auto-size="{ minRows: 2, maxRows: 5 }"
   />
   <a-button type="primary" @click="anaylysisData">分析</a-button>
-  <a-button type="primary" @click="checkData">一键初核</a-button>
+  <a-button
+    type="primary"
+    @click="checkData"
+    :disabled="companyToCheck.length == 0"
+    >一键初核</a-button
+  >
   <a-collapse>
     <a-collapse-panel key="1">
       <template #header> 共计{{ companyToCheck.length }}家企业 </template>

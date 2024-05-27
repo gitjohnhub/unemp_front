@@ -39,7 +39,6 @@ const user = ref({
 
 const login = () => {
   api.login(user.value).then((res: any) => {
-    console.log("userInfores=>", res);
     userStore.saveUserInfo(res);
     router.push("/");
   });

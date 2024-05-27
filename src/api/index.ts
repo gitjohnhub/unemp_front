@@ -25,6 +25,9 @@ export default {
   addUnempVeriData(params: any) {
     return POST("/addUnempVeriData", params);
   },
+  addUnempArrayData(params: any) {
+    return POST("/addUnempArrayData", params);
+  },
   updateUnempVeriData(params: any) {
     return POST("/updateUnempVeriData", params);
   },

@@ -46,21 +46,17 @@ const updatedData = ref([]);
 const untouchedData = ref([]);
 const notFoundData = ref([]);
 const anaylysisData = () => {
-  console.log(comanyInfo.value);
   companyToCheck.value = parseJsonString(comanyInfo.value);
 };
 const checkData = () => {
-  console.log(comanyInfo.value);
   companyToCheck.value = parseJsonString(comanyInfo.value);
   api
     .updatewengangData({ companyToCheck: companyToCheck.value })
     .then((res) => {
       analysisResult.value = res;
-      console.log(analysisResult.value);
       updatedData.value = analysisResult.value.updated;
       notFoundData.value = analysisResult.value.notFound;
       untouchedData.value = analysisResult.value.untouched;
-      console.log("updatedData===>", updatedData.value);
     });
 };
 
@@ -68,7 +64,6 @@ function parseJsonString(jsonString) {
   try {
     const companyInfo_Json = JSON.parse(jsonString);
     const cbhmcArray = companyInfo_Json.map((item) => item.cbhmc);
-    console.log(cbhmcArray);
     return cbhmcArray;
   } catch (error) {
     console.error("Error parsing JSON:", error);

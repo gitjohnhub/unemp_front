@@ -69,7 +69,6 @@ const notFoundDataColumns = ref([]);
 const existingDataColumns = ref([]);
 
 const anaylysisData = () => {
-  console.log(ZhuanyiInfo.value);
   ZhuanyiToPush.value = parseJsonString(ZhuanyiInfo.value);
   zhuanyiToPushColumns.value = Object.keys(ZhuanyiToPush.value[0]).map(
     (key) => ({
@@ -84,7 +83,6 @@ const pushData = () => {
     .updateZhuanyiArrayData({ ZhuanyiToPush: ZhuanyiToPush.value })
     .then((res) => {
       analysisResult.value = res;
-      console.log(analysisResult.value);
       updatedData.value = analysisResult.value.updatedUsers;
       if (updatedData.value.length != 0) {
         updatedDataColumns.value = Object.keys(updatedData.value[0]).map(
@@ -116,7 +114,6 @@ const pushData = () => {
           })
         );
       }
-      console.log("updatedData===>", updatedData.value);
     });
 };
 
@@ -131,7 +128,6 @@ function parseJsonString(jsonString) {
       fromArea: item.zrdname,
       isOnlyTransferRelation: item.jze == 0 ? "只转关系" : "转金额",
     }));
-    console.log(ZhuanyiArray);
     return ZhuanyiArray;
   } catch (error) {
     console.error("Error parsing JSON:", error);

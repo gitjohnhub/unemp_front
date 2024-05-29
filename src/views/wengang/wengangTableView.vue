@@ -372,7 +372,6 @@ const getData = async (params?: any) => {
       ...pager.value,
     };
   }
-  console.log("params==>", params);
   getCount(params);
   return await api.getwengangData(params).then((res: any) => {
     pager.value = res.page;

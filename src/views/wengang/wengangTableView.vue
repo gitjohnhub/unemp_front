@@ -481,7 +481,7 @@ const buttonList = [
     text: "初核",
     icon: "CheckOutlined",
     params: {
-      status: statusList.indexOf("已初核"),
+      status: statusList.indexOf("已初审"),
     },
     errMsg: "初核失败,请联系管理员",
     successMsg: "初核成功",
@@ -495,7 +495,7 @@ const buttonList = [
     text: "复核",
     icon: "ReconciliationOutlined",
     params: {
-      status: statusList.indexOf("已复核"),
+      status: statusList.indexOf("已复审"),
     },
     errMsg: "复核失败,请联系管理员",
     successMsg: "复核成功",

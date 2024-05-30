@@ -40,6 +40,12 @@ export default {
   getUnempDataCal(params?: any) {
     return POST("/getUnempDataCal", params);
   },
+  getUnempCheckData(params?: any) {
+    return POST("/getUnempCheckData", params);
+  },
+  addUnempCheckArrayData(params: any) {
+    return POST("/addUnempCheckArrayData", params);
+  },
   // 稳岗
   getwengangData(params: any) {
     return POST("/getwengangData", params);

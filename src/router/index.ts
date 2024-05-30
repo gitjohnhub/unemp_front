@@ -17,7 +17,7 @@ import {
   UserDeleteOutlined,
 } from "@ant-design/icons-vue";
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes: [
     {
       path: "/login",

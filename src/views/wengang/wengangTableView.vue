@@ -15,6 +15,7 @@
         file-name="稳岗"
         :get-data="getData"
         :count="count"
+        :headers-with-width="wengangHeader"
         :show-jiezhen-chosen-view="false"
       >
         <template #otherFilter>
@@ -77,7 +78,9 @@
             <a-space direction="vertical">
               <a-tag>{{ record.bankName }}</a-tag>
               <a-tag>{{ record.bankNumber }}</a-tag>
-              <a-tag>{{ record.money }}</a-tag>
+              <a-tag>{{ record.jfmoney }}</a-tag>
+              <a-tag>{{ record.btmoney }}</a-tag>
+              <a-tag>{{ record.caiyuanlv }}</a-tag>
             </a-space>
           </template>
           <template v-if="column.key === 'contactPerson'">
@@ -92,11 +95,11 @@
             </a-tag>
           </template>
           <!-- createtime column -->
-          <template v-if="column.key === 'createtime'">
+          <template v-if="column.key === 'confirmDate'">
             <a-tag>
-              <a-row> {{ formattedTime(record.createtime)[0] }} </a-row>
-              <a-row> {{ formattedTime(record.createtime)[1] }} </a-row>
-              <a-row> id:{{ record.id }} </a-row>
+              <a-row> {{ record.confirmDate }} </a-row>
+              <a-row> {{ record.checkDate }} </a-row>
+              <a-row>{{ record.reviewDate }}</a-row>
             </a-tag>
           </template>
           <template v-if="column.key === 'action'">
@@ -181,8 +184,19 @@ type RangeValue = [Dayjs, Dayjs];
 const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
-const statusList = ["未通知", "已通知", "已初审", "已复审"];
-const customOrderList = ["按id排序", "按金额排序"];
+const statusList = [
+  "未确认",
+  "待审核",
+  "审核不通过",
+  "审核通过,待公示",
+  "公示中",
+  "公示不通过",
+  "公示通过,待支付",
+  "支付成功",
+  "支付不成功",
+  "放弃申领",
+];
+const customOrderList = ["按id排序", "按补贴金额排序"];
 const callPercent = ref(0);
 const getStatus = (status: number) => {
   return statusList[Number(status)];
@@ -286,10 +300,15 @@ const updateParams = (params: any) => {
 //数据导出功能
 const wengangHeader = [
   { header: "序号", key: "index", width: 10 },
-  { header: "姓名", key: "personName", width: 12 },
-  { header: "身份证", key: "personID", width: 25 },
-  { header: "街镇", key: "jiezhen", width: 25 },
-  { header: "提交时间", key: "createtime", width: 35 },
+  { header: "公司名字", key: "companyName", width: 12 },
+  { header: "状态", key: "status", width: 12 },
+  { header: "裁员率", key: "caiyuanlv", width: 10 },
+  { header: "企业划型", key: "companyCategory", width: 10 },
+  { header: "参保号码", key: "canbaoCode", width: 12 },
+  { header: "银行帐号", key: "bankNumber", width: 25 },
+  { header: "联系人", key: "contactPerson", width: 10 },
+  { header: "联系电话", key: "contactNumber", width: 10 },
+  { header: "补贴金额", key: "btmoney", width: 10 },
 ];
 
 // 分页
@@ -313,11 +332,11 @@ const pagination = computed(() => {
 const onShowSizeChange = async (page: any) => {};
 
 onBeforeMount(() => {
-  userStore.getUsers();
-  if (userInfo.checkObject) {
-    // selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
-    selectedOp.value = [userInfo.username];
-  }
+  // userStore.getUsers();
+  // if (userInfo.checkObject) {
+  //   // selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
+  //   selectedOp.value = [userInfo.username];
+  // }
   getData();
 });
 const statusCal = ref([]);
@@ -359,7 +378,6 @@ const getData = async (params?: any) => {
     sendPerson: selectedOp.value,
     status: status.value,
     customOrder: order.value,
-
   };
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;
@@ -455,8 +473,8 @@ const columns = [
   },
   {
     title: "创建时间",
-    dataIndex: "createtime",
-    key: "createtime",
+    dataIndex: "confirmDate",
+    key: "confirmDate",
   },
 ];
 const updateAction = (params: any) => {
@@ -467,7 +485,7 @@ const buttonList = [
     text: "已通知",
     icon: "PhoneOutlined",
     params: {
-      status: statusList.indexOf("已通知"),
+      status: "已通知",
       reviewoperator: userInfo.username,
     },
     errMsg: "点击通知失败,请联系管理员",
@@ -479,13 +497,13 @@ const buttonList = [
     disabled: () => false,
   },
   {
-    text: "初核",
+    text: "待审核",
     icon: "CheckOutlined",
     params: {
-      status: statusList.indexOf("已初审"),
+      status: "待审核",
     },
-    errMsg: "初核失败,请联系管理员",
-    successMsg: "初核成功",
+    errMsg: "错误,联系管理员",
+    successMsg: "待审核",
     type: "primary",
     show: (record: any) => {
       return true;
@@ -496,7 +514,7 @@ const buttonList = [
     text: "复核",
     icon: "ReconciliationOutlined",
     params: {
-      status: statusList.indexOf("已复审"),
+      status: "审核通过,待公示",
     },
     errMsg: "复核失败,请联系管理员",
     successMsg: "复核成功",

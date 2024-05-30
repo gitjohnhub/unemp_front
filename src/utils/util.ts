@@ -225,6 +225,18 @@ export const exportExcel = (
   getData: any,
   monthRangeSelect: any[] | string = []
 ) => {
+  const statusList = [
+    "未确认",
+    "待审核",
+    "审核不通过",
+    "审核通过,待公示",
+    "公示中",
+    "公示不通过",
+    "公示通过,待支付",
+    "支付成功",
+    "支付不成功",
+    "放弃申领",
+  ];
   return new Promise((resolve, reject) => {
     try {
       // 写入文件
@@ -266,7 +278,11 @@ export const exportExcel = (
                   ItemList.push(index + 1);
                   break;
                 case "status":
-                  ItemList.push(item[header] == "1" ? "已审核" : "");
+                  if (fileName == "稳岗") {
+                    ItemList.push(statusList[Number(item[header])]);
+                  } else {
+                    ItemList.push(item[header] == "1" ? "已审核" : "");
+                  }
                   break;
                 case "originalFile":
                   ItemList.push(item[header] == "1" ? "已收到原件" : "无");

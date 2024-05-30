@@ -20,18 +20,14 @@
   <a-card title="初核结果">
     <a-collapse>
       <a-collapse-panel key="2">
-        <template #header> 更新了{{ updatedData.length }}家企业状态 </template>
-        <p v-for="company in updatedData">{{ company.name }}</p>
-      </a-collapse-panel>
-      <a-collapse-panel key="3">
         <template #header>
-          {{ untouchedData.length }}家企业状态未发生变换
+          更新了{{ updatedCompanies.length }}家企业状态
         </template>
-        <p v-for="company in untouchedData">{{ company.name }}</p>
+        <p v-for="company in updatedCompanies">{{ company }}</p>
       </a-collapse-panel>
       <a-collapse-panel key="3">
-        <template #header> {{ notFoundData.length }}家企业未查询到 </template>
-        <p v-for="company in notFoundData">{{ company.name }}</p>
+        <template #header> 添加了{{ newCompanies.length }}家企业 </template>
+        <p v-for="company in newCompanies">{{ company }}</p>
       </a-collapse-panel>
     </a-collapse>
   </a-card>
@@ -39,31 +35,58 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import api from "@/api";
+import { cssinjs } from "ant-design-vue";
 const comanyInfo = ref("");
 const companyToCheck = ref([]);
 const analysisResult = ref();
-const updatedData = ref([]);
-const untouchedData = ref([]);
-const notFoundData = ref([]);
+const updatedCompanies = ref([]);
+const newCompanies = ref([]);
 const anaylysisData = () => {
   companyToCheck.value = parseJsonString(comanyInfo.value);
 };
 const checkData = () => {
-  companyToCheck.value = parseJsonString(comanyInfo.value);
   api
     .updatewengangData({ companyToCheck: companyToCheck.value })
     .then((res) => {
       analysisResult.value = res;
-      updatedData.value = analysisResult.value.updated;
-      notFoundData.value = analysisResult.value.notFound;
-      untouchedData.value = analysisResult.value.untouched;
+      console.log("return Data===>", analysisResult.value);
+      updatedCompanies.value = analysisResult.value.updatedCompanies;
+      newCompanies.value = analysisResult.value.newCompanies;
     });
 };
 
 function parseJsonString(jsonString) {
+  const statusList = [
+    "未确认",
+    "待审核",
+    "审核不通过",
+    "审核通过,待公示",
+    "公示中",
+    "公示不通过",
+    "公示通过,待支付",
+    "支付成功",
+    "支付不成功",
+    "放弃申领",
+  ];
   try {
     const companyInfo_Json = JSON.parse(jsonString);
-    const cbhmcArray = companyInfo_Json.map((item) => item.cbhmc);
+    const cbhmcArray = companyInfo_Json.map((item) => ({
+      companyName: item.cbhmc,
+      canbaoCode: item.shbxdjm,
+      companyCategory: item.dwhx,
+      bankNumber: item.yhzh,
+      companyBankName: item.yhhm,
+      contactPerson: item.lxr,
+      contactNumber: item.lxdh,
+      btmoney: item.btje,
+      caiyuanlv: item.cyl,
+      jfrenci: item.ljjfrs,
+      jfmoney: item.ljjfje,
+      status: statusList.indexOf(item.sqztName),
+      checkDate: item.sprq,
+      reviewDate: item.fhrq,
+      confirmDate: item.sqrq,
+    }));
     return cbhmcArray;
   } catch (error) {
     console.error("Error parsing JSON:", error);

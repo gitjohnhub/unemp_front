@@ -31,6 +31,7 @@ import { rules, wrapperCol, labelCol } from "@/types";
 import api from "@/api/index";
 import { useUserStore } from "@/stores";
 const checkoperator = useUserStore().userInfo.username;
+
 const props = defineProps({
   editForm: {
     type: Object,

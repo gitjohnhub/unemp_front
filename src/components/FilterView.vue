@@ -220,6 +220,16 @@ const sortMap = [
     sortColumn: "isOnlyTransferRelation",
     sortRule: "ASC",
   },
+  {
+    label: "按id排序",
+    sortColumn: "id",
+    sortRule: "ASC",
+  },
+  {
+    label: "按金额",
+    sortColumn: "money",
+    sortRule: "ASC",
+  },
 ];
 const mapCustomOrderList = props.customOrderList.map((item) => {
   return {

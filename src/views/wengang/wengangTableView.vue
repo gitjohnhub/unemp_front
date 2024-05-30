@@ -182,7 +182,7 @@ const monthRangeSelect = ref<RangeValue>();
 const selectedOp = ref<string[]>([]);
 const count = ref<number>();
 const statusList = ["未通知", "已通知", "已初审", "已复审"];
-const customOrderList = ["按初审时间排序", "按金额排序"];
+const customOrderList = ["按id排序", "按金额排序"];
 const callPercent = ref(0);
 const getStatus = (status: number) => {
   return statusList[Number(status)];
@@ -358,6 +358,8 @@ const getData = async (params?: any) => {
     ...pager.value,
     sendPerson: selectedOp.value,
     status: status.value,
+    customOrder: order.value,
+
   };
   if (monthSelect.value) {
     params.monthSelect = monthSelect.value;

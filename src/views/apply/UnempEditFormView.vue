@@ -128,13 +128,17 @@ watch(
   () => localEditForm.value.personID,
   async () => {
     if (localEditForm.value.personID.length == 18) {
-      await api.getUnempCheckData({
-        personID: localEditForm.value.personID}).then((res:any)=>{
-          localEditForm.value.personName = res.personName
-          localEditForm.value.jiezhen = res.jiezhen
-        }
-
-        )
+      await api
+        .getUnempCheckData({
+          personID: localEditForm.value.personID,
+        })
+        .then((res: any) => {
+          if (res != null) {
+            console.log("edit unemp res===>", res);
+            localEditForm.value.personName = res.personName;
+            localEditForm.value.jiezhen = res.jiezhen;
+          }
+        });
       console.log("personID==>", localEditForm.value.personID);
     }
   }

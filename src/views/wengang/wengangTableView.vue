@@ -337,6 +337,9 @@ onBeforeMount(() => {
   //   // selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   //   selectedOp.value = [userInfo.username];
   // }
+  api.getwengangDataCal((res) => {
+    console.log("getwengangDataCal res====>", res);
+  });
   getData();
 });
 const statusCal = ref([]);
@@ -344,7 +347,7 @@ const jiezhenCal = ref([]);
 const checkPercent = ref(0);
 const reviewPercent = ref(0);
 const getCount = (params?: any) => {
-  api.getwengangDataCal(params).then((res: any) => {
+  api.getwengangDateCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,

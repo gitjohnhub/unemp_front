@@ -39,31 +39,41 @@
             <wengangEditFormView ref="editableFormRef" />
           </a-modal>
         </template>
-        <template #otherDescriptions>
-          <a-descriptions title="进度" layout="vertical">
-            <a-descriptions-item label="电话通知进度"
+      </FilterView>
+    </div>
+    <a-card>
+      <a-row>
+        <a-col :span="12"
+          ><a-descriptions title="进度" layout="vertical">
+            <a-descriptions-item label="未确认占比"
               ><a-progress :percent="callPercent"
-            /></a-descriptions-item>
-            <a-descriptions-item label="初核进度"
-              ><a-progress :percent="checkPercent" size="small"
-            /></a-descriptions-item>
-            <a-descriptions-item label="复核进度"
+            /></a-descriptions-item> </a-descriptions
+        ></a-col>
+        <a-col :span="12"
+          ><a-descriptions title="进度" layout="vertical">
+            <a-descriptions-item label="公示占比"
               ><a-progress :percent="reviewPercent" size="small"
-            /></a-descriptions-item>
-          </a-descriptions>
+            /></a-descriptions-item> </a-descriptions
+        ></a-col>
+      </a-row>
+
+      <a-row>
+        <a-col :span="12">
           <p v-for="company in wengangStatisticWithCompanyCategory">
             <a-tag>{{ company.companyCategory }}</a-tag
             >企业有 <a-tag>{{ company.count }}</a-tag
             >家,涉及金额:<a-tag>{{ company.btmoney.toFixed(2) }}</a-tag>
-          </p>
-          <!-- <p v-for="statusData in wengangStatisticWithStatus">
+          </p></a-col
+        >
+        <a-col :span="12">
+          <p v-for="statusData in wengangStatisticWithStatus">
             <a-tag>{{ getStatus(Number(statusData.status)) }}</a-tag
             >企业 <a-tag>{{ statusData.count }}</a-tag
-            >家
-          </p> -->
-        </template>
-      </FilterView>
-    </div>
+            >家,金额:<a-tag>{{ statusData.btmoney.toFixed(2) }}</a-tag>
+          </p></a-col
+        >
+      </a-row>
+    </a-card>
     <a-spin :spinning="spinning">
       <a-table
         :columns="columns"

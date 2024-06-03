@@ -72,7 +72,9 @@
             }}</a-tag
             >企业 <a-tag color="#f50">{{ statusData.count }}</a-tag
             >家,占比<a-tag>{{ statusData.countPercent.toFixed(2) }}%</a-tag>
-            ,金额:<a-tag color="#108ee9">{{ statusData.btmoney }}</a-tag
+            ,金额:<a-tag color="#108ee9">{{
+              statusData.btmoney.toFixed(2)
+            }}</a-tag
             >,占比<a-tag>{{ statusData.btPercent.toFixed(4) }}%</a-tag>
           </p></a-col
         >

@@ -46,13 +46,13 @@
         <a-col :span="12"
           ><a-descriptions title="进度" layout="vertical">
             <a-descriptions-item label="未确认占比"
-              ><a-progress :percent="callPercent"
+              ><a-progress :percent="callPercent" size="small" type="circle"
             /></a-descriptions-item> </a-descriptions
         ></a-col>
         <a-col :span="12"
           ><a-descriptions title="进度" layout="vertical">
             <a-descriptions-item label="公示占比"
-              ><a-progress :percent="reviewPercent" size="small"
+              ><a-progress :percent="reviewPercent" size="small" type="circle"
             /></a-descriptions-item> </a-descriptions
         ></a-col>
       </a-row>

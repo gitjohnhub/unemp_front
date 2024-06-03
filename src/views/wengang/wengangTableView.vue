@@ -187,6 +187,7 @@ import api from "@/api";
 import { useUserStore } from "@/stores";
 import { exportExcel, formattedTime } from "@/utils/util";
 import { colorList } from "@/types";
+import { stat } from "fs";
 const dataSource = ref();
 const userStore = useUserStore();
 const userInfo = userStore.userInfo;
@@ -355,26 +356,27 @@ const statusCal = ref([]);
 const jiezhenCal = ref([]);
 const checkPercent = ref(0);
 const reviewPercent = ref(0);
-const getCount = (params?: any) => {
-  api.getwengangDateCal(params).then((res: any) => {
+const getCount = async (params?: any) => {
+  await api.getwengangDateCal(params).then((res: any) => {
     statusCal.value = statusList.map((item, index) => {
       return {
         label: item,
         count: res.find((item) => Number(item.status) === index)?.count || 0,
       };
     });
-
-    const checkData = statusCal.value.find((obj) => obj.status === "2");
-    const reviewData = statusCal.value.find((obj) => obj.status === "3");
-    const totalData = statusCal.value.find((obj) => obj.status === "total");
-    callPercent.value = Number(
-      (
-        statusCal.value[0].count /
-        (statusCal.value[0].count + statusCal.value[1].count)
-      ).toFixed(2)
+    const totalData = statusCal.value.reduce(
+      (acc, curr) => acc + curr.count,
+      0
     );
-    checkPercent.value = checkData ? checkData.count / totalData.count : 0;
-    reviewPercent.value = reviewData ? reviewData.count / totalData.count : 0;
+
+    const checkData = statusCal.value.find((obj) => obj.label == "未确认");
+    const reviewData = statusCal.value.find((obj) => obj.label == "公示中");
+    console.log("statusCal.value===>", statusCal.value);
+    console.log("checkData===>", checkData);
+    callPercent.value = Number((checkData.count / totalData).toFixed(5)) * 100;
+    reviewPercent.value = reviewData
+      ? Number((reviewData.count / totalData).toFixed(5)) * 100
+      : 0;
   });
   // api.getwengangByJiezhen(params).then((res: any) => {
   //   console.log("calbyjiezhen===>", res);

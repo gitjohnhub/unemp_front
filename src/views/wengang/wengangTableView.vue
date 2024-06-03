@@ -51,6 +51,16 @@
               ><a-progress :percent="reviewPercent" size="small"
             /></a-descriptions-item>
           </a-descriptions>
+          <p v-for="company in wengangStatisticWithCompanyCategory">
+            <a-tag>{{ company.companyCategory }}</a-tag
+            >企业有 <a-tag>{{ company.count }}</a-tag
+            >家,涉及金额:<a-tag>{{ company.btmoney.toFixed(2) }}</a-tag>
+          </p>
+          <!-- <p v-for="statusData in wengangStatisticWithStatus">
+            <a-tag>{{ getStatus(Number(statusData.status)) }}</a-tag
+            >企业 <a-tag>{{ statusData.count }}</a-tag
+            >家
+          </p> -->
         </template>
       </FilterView>
     </div>
@@ -330,16 +340,15 @@ const pagination = computed(() => {
 });
 
 const onShowSizeChange = async (page: any) => {};
-
+const wengangStatisticWithCompanyCategory = ref();
+const wengangStatisticWithStatus = ref();
 onBeforeMount(() => {
   // userStore.getUsers();
   // if (userInfo.checkObject) {
   //   // selectedOp.value = [...userInfo.checkObject.split(","), userInfo.username];
   //   selectedOp.value = [userInfo.username];
   // }
-  api.getwengangDataCal((res) => {
-    console.log("getwengangDataCal res====>", res);
-  });
+
   getData();
 });
 const statusCal = ref([]);
@@ -379,7 +388,7 @@ const getData = async (params?: any) => {
     ...params,
     ...pager.value,
     sendPerson: selectedOp.value,
-    status: status.value,
+    status: status.value.map(String),
     customOrder: order.value,
   };
   if (monthSelect.value) {
@@ -396,6 +405,12 @@ const getData = async (params?: any) => {
     };
   }
   getCount(params);
+  console.log("getData===>");
+  await api.getwengangDataCal(params).then((res: any) => {
+    console.log("getwengangDataCal res====>", res);
+    wengangStatisticWithCompanyCategory.value = res[0].companyCategoryStats;
+    wengangStatisticWithStatus.value = res[0].statusCounts;
+  });
   return await api.getwengangData(params).then((res: any) => {
     pager.value = res.page;
     count.value = pager.value.total;

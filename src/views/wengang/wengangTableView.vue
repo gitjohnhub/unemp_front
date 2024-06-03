@@ -61,15 +61,19 @@
         <a-col :span="12">
           <p v-for="company in wengangStatisticWithCompanyCategory">
             <a-tag>{{ company.companyCategory }}</a-tag
-            >企业有 <a-tag>{{ company.count }}</a-tag
+            >企业有 <a-tag color="#f50">{{ company.count }}</a-tag
             >家,涉及金额:<a-tag>{{ company.btmoney.toFixed(2) }}</a-tag>
           </p></a-col
         >
         <a-col :span="12">
           <p v-for="statusData in wengangStatisticWithStatus">
-            <a-tag>{{ getStatus(Number(statusData.status)) }}</a-tag
-            >企业 <a-tag>{{ statusData.count }}</a-tag
-            >家,金额:<a-tag>{{ statusData.btmoney.toFixed(2) }}</a-tag>
+            <a-tag color="#f50">{{
+              getStatus(Number(statusData.status))
+            }}</a-tag
+            >企业 <a-tag color="#f50">{{ statusData.count }}</a-tag
+            >家,占比<a-tag>{{ statusData.countPercent.toFixed(2) }}%</a-tag>
+            ,金额:<a-tag color="#108ee9">{{ statusData.btmoney }}</a-tag
+            >,占比<a-tag>{{ statusData.btPercent.toFixed(4) }}%</a-tag>
           </p></a-col
         >
       </a-row>
@@ -381,11 +385,9 @@ const getCount = async (params?: any) => {
 
     const checkData = statusCal.value.find((obj) => obj.label == "未确认");
     const reviewData = statusCal.value.find((obj) => obj.label == "公示中");
-    console.log("statusCal.value===>", statusCal.value);
-    console.log("checkData===>", checkData);
-    callPercent.value = Number((checkData.count / totalData).toFixed(5)) * 100;
+    callPercent.value = Number((checkData.count / totalData).toFixed(4)) * 100;
     reviewPercent.value = reviewData
-      ? Number((reviewData.count / totalData).toFixed(5)) * 100
+      ? Number((reviewData.count / totalData).toFixed(4)) * 100
       : 0;
   });
   // api.getwengangByJiezhen(params).then((res: any) => {
@@ -422,6 +424,19 @@ const getData = async (params?: any) => {
     console.log("getwengangDataCal res====>", res);
     wengangStatisticWithCompanyCategory.value = res[0].companyCategoryStats;
     wengangStatisticWithStatus.value = res[0].statusCounts;
+    let totalCount = 0;
+    let totalBtmoney = 0;
+
+    wengangStatisticWithStatus.value.forEach((item) => {
+      totalCount += item.count;
+      totalBtmoney += item.btmoney;
+    });
+
+    wengangStatisticWithStatus.value.forEach((item) => {
+      item.countPercent = (item.count / totalCount) * 100;
+      item.btPercent = (item.btmoney / totalBtmoney) * 100;
+    });
+    console.log(wengangStatisticWithStatus.value);
   });
   return await api.getwengangData(params).then((res: any) => {
     pager.value = res.page;

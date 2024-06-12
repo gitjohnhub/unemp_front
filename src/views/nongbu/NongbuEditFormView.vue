@@ -46,7 +46,7 @@
   </a-form>
 </template>
 <script lang="ts" setup>
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount,watch, ref } from "vue";
 import { useUserStore } from "@/stores";
 import api from "@/api";
 import { jiezhens, rules, wrapperCol, labelCol } from "@/types";
@@ -101,6 +101,25 @@ const onSubmit = () => {
     });
   }
 };
+watch(
+  () => localEditForm.value.personID,
+  async () => {
+    if (localEditForm.value.personID.length == 18) {
+      await api
+        .getUnempCheckData({
+          personID: localEditForm.value.personID,
+        })
+        .then((res: any) => {
+          if (res != null) {
+            console.log("edit unemp res===>", res);
+            localEditForm.value.personName = res.personName;
+            localEditForm.value.jiezhen = res.jiezhen;
+          }
+        });
+      console.log("personID==>", localEditForm.value.personID);
+    }
+  }
+);
 defineExpose({
   onSubmit,
 });

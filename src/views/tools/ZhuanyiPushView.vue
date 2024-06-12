@@ -126,7 +126,7 @@ function parseJsonString(jsonString) {
       payMonth: item.wjfdyys,
       pay: item.zje,
       fromArea: item.zrdname,
-      isOnlyTransferRelation: item.jze == 0 ? "只转关系" : "转金额",
+      isOnlyTransferRelation: item.zje == 0 ? "只转关系" : "转金额",
     }));
     return ZhuanyiArray;
   } catch (error) {

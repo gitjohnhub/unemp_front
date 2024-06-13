@@ -16,7 +16,7 @@
         <a-tag>
           {{ formattedDate }}
         </a-tag>
-        <a-tag v-if="dutyPerson"> 值班:{{ dutyPerson }} </a-tag>
+        <a-tag v-if="dutyPerson"> 值班:{{ dutyPerson }} 晚吃饭:{{ otherPerson }}</a-tag>
         <a-button key="1" type="primary" danger @click="logout">登出</a-button>
       </template>
     </a-page-header>
@@ -29,6 +29,8 @@ import { useRouter } from "vue-router";
 import api from "@/api";
 const formattedDate = ref();
 const dutyPerson = ref("");
+const otherPerson = ref("")
+
 onBeforeMount(() => {
   updateDateTime().then(() => {
     getDuty();
@@ -47,6 +49,11 @@ const getDuty = () => {
       dutyPerson.value = res.rows[0].dutyPerson;
     } else {
       dutyPerson.value = "";
+    }
+    if (res.otherPerson.length > 0) {
+      otherPerson.value = res.otherPerson[0].dutyPerson;
+    } else {
+      otherPerson.value = "";
     }
   });
 };

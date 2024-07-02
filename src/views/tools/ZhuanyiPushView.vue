@@ -119,12 +119,14 @@ const pushData = () => {
 function getStatus(ffzt) {
   // 根据 ffzt 的值返回相应的状态
   // 例如:
-  if (ffzt === '未支付') {
-    return '1';
-  } else if (ffzt === '支付中') {
-    return '2';
+  if (ffzt === "未支付") {
+    return "1";
+  } else if (ffzt === "支付中") {
+    return "2";
+  } else if (ffzt === "支付成功") {
+    return "3";
   } else {
-    return '0';
+    return "0";
   }
 }
 
@@ -138,7 +140,7 @@ function parseJsonString(jsonString) {
       pay: item.zje,
       fromArea: item.zrdname,
       isOnlyTransferRelation: item.zje == 0 ? "只转关系" : "转金额",
-      status:getStatus(item.ffzt)
+      status: getStatus(item.ffzt),
     }));
     return ZhuanyiArray;
   } catch (error) {

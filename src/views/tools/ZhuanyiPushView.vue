@@ -129,6 +129,15 @@ function getStatus(ffzt) {
     return "0";
   }
 }
+function formatDate(dateString) {
+  // 将日期字符串拆分为年份、月份和日期
+  const year = dateString.substring(0, 4);
+  const month = dateString.substring(4, 6);
+  const day = dateString.substring(6, 8);
+
+  // 拼接成所需的日期格式
+  return `${year}-${month}-${day}`;
+}
 
 function parseJsonString(jsonString) {
   try {
@@ -141,6 +150,7 @@ function parseJsonString(jsonString) {
       fromArea: item.zrdname,
       isOnlyTransferRelation: item.zje == 0 ? "只转关系" : "转金额",
       status: getStatus(item.ffzt),
+      payDate: formatDate(item.ffrq),
     }));
     return ZhuanyiArray;
   } catch (error) {

@@ -20,16 +20,19 @@
     <a-tab-pane key="6" tab="推送全量失业金待办数据">
       <UnempCheckPushView />
     </a-tab-pane>
+    <a-tab-pane key="7" tab="跨省市转移财务对账">
+      <ZhuanyiFinance />
+    </a-tab-pane>
     <!-- <a-tab-pane key="3" tab="工龄计算" force-render>
       <YearGonglingView></YearGonglingView>
     </a-tab-pane> -->
-
   </a-tabs>
 </template>
 <script lang="ts" setup>
 import { ref } from "vue";
 import UnempPushView from "./UnempPushView.vue";
 import UnempCheckPushView from "./UnempCheckPushView.vue";
+import ZhuanyiFinance from "./ZhuanyiFinance.vue";
 import ZhuanyiPushView from "./ZhuanyiPushView.vue";
 import GonglingView from "./GonglingView.vue";
 import TesseractCalView from "./TesseractCalView.vue";

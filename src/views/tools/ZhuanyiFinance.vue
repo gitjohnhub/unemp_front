@@ -114,7 +114,7 @@ export default defineComponent({
       };
     },
     generateTable(rows: any[]) {
-      if (rows.length === 0) return "No matching results found.";
+      if (rows.length === 0) return "无匹配结果.";
 
       const headers = Object.keys(rows[0]);
       let table = '<table border="1"><tr>';
@@ -135,7 +135,7 @@ export default defineComponent({
       return table;
     },
     generateSpecialTable(rows: any[]) {
-      if (rows.length === 0) return "No matching results found.";
+      if (rows.length === 0) return "无匹配结果.";
 
       const uniqueCheckRowsObj: any = {};
       rows.forEach((row) => {
@@ -158,10 +158,10 @@ export default defineComponent({
       for (const key in uniqueCheckRowsObj) {
         const checkRow = JSON.parse(key);
         table += '<div class="check-row">';
-        table += "<h3>Check Row</h3>";
+        table += "<h3>待处理数据</h3>";
         table += this.generateTable([checkRow]);
         table += "</div>";
-        table += "<h3>Corresponding Original Rows</h3>";
+        table += "<h3>财务核对数据</h3>";
 
         const correspondingOriginalRows = uniqueCheckRowsObj[key].map(
           (row: any) => ({

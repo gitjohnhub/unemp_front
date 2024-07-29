@@ -1,10 +1,10 @@
 <template>
   <div>
     <h2>输入 财务凭证 数据</h2>
-    <a-textarea v-model="originalJson" rows="10" cols="50"></a-textarea>
+    <a-textarea v-model:value="originalJson" cols="50"></a-textarea>
 
     <h2>输入 业务 数据</h2>
-    <a-textarea v-model="checkJson" rows="10" cols="50"></a-textarea>
+    <a-textarea v-model:value="checkJson" cols="50"></a-textarea>
 
     <a-button type="primary" @click="processData">处理数据</a-button>
 
@@ -34,6 +34,7 @@ export default defineComponent({
   },
   methods: {
     processData() {
+      // console.log("originalJson==>", this.originalJson);
       const original = JSON.parse(this.originalJson);
       const check = JSON.parse(this.checkJson);
 
